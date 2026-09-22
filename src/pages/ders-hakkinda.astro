@@ -15,6 +15,7 @@ const facts = [
   ['Öğretim dili', course.language],
   ['Kredi (T-U-L-K)', `${course.credits.theory}-${course.credits.practice}-${course.credits.lab}-${course.credits.local}`],
   ['AKTS', String(course.credits.ects)],
+  ['Ders günü ve saati', course.classTime],
   ['İşleniş', 'Yüz yüze, haftada 3 saat'],
   ['Yer (YY / UE)', `${course.location.faceToFace} / ${course.location.remote}`],
   ['Ön koşul', course.prerequisites],

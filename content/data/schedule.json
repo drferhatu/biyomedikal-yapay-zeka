@@ -1,19 +1,89 @@
 {
   "_aciklama": "Her haftanın ders tarihi. 'date' alanı boş bırakılırsa sitede yalnızca hafta numarası görünür. 'status' değerleri: normal | tatil | ertelendi | sinav. 'note' alanı haftanın yanında kısa bir uyarı olarak gösterilir. Tarih formatı: YYYY-AA-GG.",
   "weeks": [
-    { "week": 1, "date": "", "status": "normal", "note": "İlk ders" },
-    { "week": 2, "date": "", "status": "normal", "note": "" },
-    { "week": 3, "date": "", "status": "normal", "note": "" },
-    { "week": 4, "date": "", "status": "normal", "note": "" },
-    { "week": 5, "date": "", "status": "normal", "note": "" },
-    { "week": 6, "date": "", "status": "normal", "note": "" },
-    { "week": 7, "date": "", "status": "normal", "note": "" },
-    { "week": 8, "date": "", "status": "sinav", "note": "Ara sınav" },
-    { "week": 9, "date": "", "status": "normal", "note": "" },
-    { "week": 10, "date": "", "status": "normal", "note": "" },
-    { "week": 11, "date": "", "status": "normal", "note": "" },
-    { "week": 12, "date": "", "status": "normal", "note": "" },
-    { "week": 13, "date": "", "status": "normal", "note": "" },
-    { "week": 14, "date": "", "status": "normal", "note": "Son ders; genel sınav dönem sonu" }
+    {
+      "week": 1,
+      "date": "2026-09-23",
+      "status": "normal",
+      "note": "İlk ders"
+    },
+    {
+      "week": 2,
+      "date": "2026-09-30",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 3,
+      "date": "2026-10-07",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 4,
+      "date": "2026-10-14",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 5,
+      "date": "2026-10-21",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 6,
+      "date": "2026-10-28",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 7,
+      "date": "2026-11-04",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 8,
+      "date": "2026-11-11",
+      "status": "sinav",
+      "note": "Ara sınav"
+    },
+    {
+      "week": 9,
+      "date": "2026-11-18",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 10,
+      "date": "2026-11-25",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 11,
+      "date": "2026-12-02",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 12,
+      "date": "2026-12-09",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 13,
+      "date": "2026-12-16",
+      "status": "normal",
+      "note": ""
+    },
+    {
+      "week": 14,
+      "date": "2026-12-23",
+      "status": "normal",
+      "note": "Son ders; genel sınav dönem sonu"
+    }
   ]
 }
