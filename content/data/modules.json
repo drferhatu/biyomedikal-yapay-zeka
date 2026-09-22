@@ -1,0 +1,12 @@
+[
+  { "id": "m1", "slug": "biyomedikal-veri-temelleri", "title": "Biyomedikal Veri Temelleri", "short": "Veri Temelleri", "weeks": [1, 2, 3], "color": "teal",
+    "summary": "Beş biyomedikal veri türünü, problem tiplerini ve etik çerçeveyi tanır; eksik veri, gürültü, dengesiz sınıf ve veri sızıntısı gibi tuzakları hasta-bazlı bölme ile aşar; keşifçi analiz, öznitelik mühendisliği ve PCA/UMAP ile veriyi görünür kılarsınız." },
+  { "id": "m2", "slug": "klasik-makine-ogrenmesi", "title": "Klasik Makine Öğrenmesi", "short": "Klasik ML", "weeks": [4, 5, 6], "color": "blue",
+    "summary": "Denetimli öğrenmeyi klinik metriklerle (ROC-AUC, duyarlılık/özgüllük, kalibrasyon) değerlendirir; Random Forest, XGBoost ve SVM ile öznitelik önemini yorumlar; kümeleme ve anomali tespitiyle hasta alt-tiplerini keşfedersiniz." },
+  { "id": "m3", "slug": "sinyal-ve-zaman-serisi", "title": "Biyomedikal Sinyaller ve Ara Sınav", "short": "Sinyal Analizi", "weeks": [7, 8], "color": "violet",
+    "summary": "EEG/EKG/EMG sinyallerinde filtreleme, öznitelik çıkarımı ve zaman–frekans yöntemlerini uygular; 8. haftada ilk yedi haftanın ara sınavı yapılır." },
+  { "id": "m4", "slug": "derin-ogrenme", "title": "Derin Öğrenme", "short": "Derin Öğrenme", "weeks": [9, 10, 11], "color": "rose",
+    "summary": "Yapay sinir ağlarını geri yayılım ve eğitim pratiğiyle kurar; U-Net ve transfer öğrenme ile tıbbi görüntü sınıflandırma/segmentasyon yapar; RNN/LSTM ve Transformer'ları biyomedikal dizilere ve klinik metne uygularsınız." },
+  { "id": "m5", "slug": "aciklanabilir-ve-guvenilir-yz", "title": "Açıklanabilir ve Güvenilir Yapay Zeka", "short": "XAI & Güvenilirlik", "weeks": [12, 13, 14], "color": "amber",
+    "summary": "Permütasyon önemi, PDP/ICE, SHAP, LIME, Grad-CAM ve karşıt-olgusal açıklamalarla model kararlarını yorumlar; yanlılık ve adaleti ölçer; dış doğrulama, dağıtım kayması, model kartları ve federe öğrenme ile klinik uygulamaya hazır sistemler tasarlarsınız." }
+]

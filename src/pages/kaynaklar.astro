@@ -1,0 +1,68 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import { course, href } from '@/lib/site';
+import { getCollection } from 'astro:content';
+const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+---
+<BaseLayout title="Kaynaklar" description="Ders kitapları, yazılım kütüphaneleri, açık biyomedikal veri kaynakları, XAI makaleleri ve raporlama/regülasyon rehberleri.">
+  <div class="wrap py-14 md:py-20">
+    <SectionHeading eyebrow="Kaynaklar" title="Kitaplar, kütüphaneler, veri ve rehberler" lede="Derste kullanılan tüm yazılımlar açık kaynaktır. Ana kitapların iki tanesi tam metin ve ücretsiz olarak çevrimiçidir." />
+  </div>
+  <div class="wrap space-y-20 pb-24">
+    <section aria-labelledby="rehberler">
+      <h2 id="rehberler" class="display mb-2 text-2xl md:text-3xl">Kurulum rehberleri</h2>
+      <p class="mb-6 text-ink-2">Google Colab için kurulum gerekmez. Kendi bilgisayarında PyTorch ve SHAP ile çalışmak isteyenler için adım adım rehberler.</p>
+      <ul class="grid gap-4 md:grid-cols-2">
+        {guides.map((g) => (
+          <li><a href={href(`/rehber/${g.id}`)} class="group block h-full rounded-2xl border border-line bg-white p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lift">
+            <p class="font-display text-xl font-semibold text-ink group-hover:text-brand">{g.data.title}</p>
+            <p class="mt-2 text-sm leading-relaxed text-ink-2">{g.data.description}</p>
+            <span class="mt-4 inline-block text-sm font-semibold text-brand">Rehberi aç →</span></a></li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="kitaplar">
+      <h2 id="kitaplar" class="display mb-6 text-2xl md:text-3xl">Ders materyali</h2>
+      <ul class="grid gap-4 md:grid-cols-2">
+        {course.textbooks.map((b) => (
+          <li class="flex gap-5 rounded-2xl border border-line bg-white p-6 shadow-soft">
+            <span class="grid h-24 w-16 shrink-0 place-items-center rounded-md bg-ink font-display text-2xl text-paper" aria-hidden="true">{b.title[0]}</span>
+            <div>
+              <p class="font-display text-xl font-semibold leading-snug text-ink">{b.title}</p>
+              <p class="mt-1 text-sm text-ink-2">{b.author} · {b.publisher}, {b.year}</p>
+              {'note' in b && b.note && <p class="mt-2 text-sm text-ink-3">{b.note}</p>}
+              {'url' in b && b.url && <a href={b.url} target="_blank" rel="noopener" class="mt-3 inline-block text-sm font-semibold text-brand hover:underline">Çevrimiçi aç →</a>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="yazilim">
+      <h2 id="yazilim" class="display mb-2 text-2xl md:text-3xl">Yazılım ve kütüphaneler</h2>
+      <p class="mb-6 text-ink-2">Hepsi açık kaynak; Colab'de ya da yerel conda ortamında çalışır.</p>
+      <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {course.software.map((s) => (
+          <li><a href={s.url} target="_blank" rel="noopener" class="block h-full rounded-xl border border-line bg-white p-4 transition-colors hover:border-ink">
+            <p class="font-mono text-sm font-semibold text-ink">{s.name}</p><p class="mt-1 text-sm text-ink-2">{s.desc}</p></a></li>
+        ))}
+      </ul>
+    </section>
+
+    {course.resources.map((g, gi) => (
+      <section aria-labelledby={`grup-${gi}`}>
+        <h2 id={`grup-${gi}`} class="display mb-6 text-2xl md:text-3xl">{g.group}</h2>
+        <ul class="divide-y divide-line rounded-2xl border border-line bg-white">
+          {g.items.map((r) => (
+            <li class="flex flex-col gap-1 p-5 sm:flex-row sm:items-baseline sm:justify-between">
+              <div><a href={r.url} target="_blank" rel="noopener" class="font-semibold text-ink hover:text-brand hover:underline">{r.name}</a><p class="text-sm text-ink-2">{r.desc}</p></div>
+              <span class="max-w-[220px] truncate font-mono text-xs text-ink-3">{new URL(r.url).hostname}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</BaseLayout>

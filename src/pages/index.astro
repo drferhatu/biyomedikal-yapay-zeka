@@ -1,0 +1,242 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Roadmap from '@/components/Roadmap.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import Stat from '@/components/Stat.astro';
+import { course, modules, href, getWeeksSorted, weekHref } from '@/lib/site';
+import { getCollection } from 'astro:content';
+
+const weeks = await getWeeksSorted();
+const firstWeeks = weeks.slice(0, 3);
+const announcements = (await getCollection('announcements'))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 2);
+
+const pillars = [
+  { t: 'Veriyi tanı', d: 'Klinik tablo, EEG/EKG sinyali, tıbbi görüntü, omik ve EHR verisinin her biri farklı tuzaklar taşır: eksik veri, gürültü, dengesiz sınıf, hasta-bazlı sızıntı. Önce veriyi, sonra modeli öğrenirsiniz.', icon: 'M4 19h16M6 16V9M11 16V5M16 16v-6' },
+  { t: 'Modeli kur', d: 'Lojistik regresyondan XGBoost’a, yapay sinir ağından U-Net ve Transformer’a kadar yöntemleri scikit-learn ve PyTorch ile uygular; her birinin hangi veri türüne uyduğunu gerekçesiyle seçersiniz.', icon: 'M12 3a4 4 0 0 1 4 4v1a4 4 0 0 1-4 4 4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zM6 21v-1a6 6 0 0 1 12 0v1' },
+  { t: 'Klinik metrikle değerlendir', d: 'Doğruluk yetmez. ROC-AUC, duyarlılık/özgüllük, kalibrasyon ve dış doğrulama ile modelin klinikte gerçekten işe yarayıp yaramayacağını ölçersiniz.', icon: 'M4 20 20 4M4 20h16M4 20V4M6 17c3-8 7-10 12-11' },
+  { t: 'Kararı açıkla, güvenilir kıl', d: 'SHAP, LIME, Grad-CAM ve karşıt-olgusal açıklamalarla modelin neden o kararı verdiğini gösterir; yanlılığı ölçer, model kartı yazar ve mahremiyet-koruyucu öğrenmeyi tartışırsınız.', icon: 'M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4zM9 12l2 2 4-4' },
+];
+---
+<BaseLayout title={`${course.code} ${course.title} — ${course.university}`} bare>
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="dot-grid pointer-events-none absolute inset-0" aria-hidden="true"></div>
+    <div class="wrap relative grid gap-12 py-16 md:grid-cols-[1.1fr_0.9fr] md:items-center md:py-24">
+      <div>
+        <p class="eyebrow">{course.code} · {course.faculty} · {course.semester}</p>
+        <h1 class="display mt-4 text-[2.4rem] leading-[1.04] text-ink sm:text-5xl md:text-6xl">
+          Biyomedikal Verilerin Analizi <span class="text-brand">ve</span> Yapay Zeka
+        </h1>
+        <p class="lede mt-6 max-w-xl">
+          Klinik kayıttan EEG sinyaline, tıbbi görüntüden omik veriye: makine öğrenmesi ve derin öğrenmeyi
+          teoriden uygulamaya öğrenin; modeli klinik metriklerle değerlendirin ve kararlarını açıklanabilir kılın.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href={weekHref(1)} class="btn-primary">1. Haftadan başla</a>
+          <a href={href('/ders-akisi')} class="btn-ghost">Ders akışını gör</a>
+        </div>
+        <dl class="mt-12 grid max-w-md grid-cols-4 gap-6 border-t border-line pt-8">
+          <Stat value="14" label="hafta" />
+          <Stat value={String(modules.length)} label="modül" />
+          <Stat value={String(course.credits.local)} label="kredi" />
+          <Stat value={String(course.credits.ects)} label="AKTS" />
+        </dl>
+      </div>
+
+      <!-- Hero görseli: EKG sinyali → sinir ağı → SHAP açıklaması. Dersin üç katmanını tek şemada birleştirir. -->
+      <figure class="relative mx-auto w-full max-w-md md:max-w-none" aria-label="Bir EKG sinyalinin sinir ağından geçip her özniteliğin karara katkısını gösteren açıklama çubuklarına dönüşmesini gösteren şema">
+        <svg viewBox="0 0 560 420" class="w-full" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="sig" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#0f9b8e" />
+              <stop offset="1" stop-color="#2f3fa3" />
+            </linearGradient>
+          </defs>
+          <rect x="16" y="16" width="528" height="388" rx="20" fill="#fff" stroke="#d9dfeb" />
+          <!-- panel başlıkları -->
+          <g font-family="IBM Plex Mono, monospace" font-size="10.5" font-weight="600" letter-spacing="1.2">
+            <text x="40" y="48" fill="#0f9b8e">SİNYAL</text>
+            <text x="238" y="48" fill="#2f3fa3">MODEL</text>
+            <text x="392" y="48" fill="#b7791f">AÇIKLAMA</text>
+          </g>
+          <!-- sol: EKG -->
+          <g stroke="#eef1f7" stroke-width="1">
+            {Array.from({ length: 5 }, (_, i) => <line x1="40" y1={80 + i * 44} x2="200" y2={80 + i * 44} />)}
+            {Array.from({ length: 5 }, (_, i) => <line x1={40 + i * 40} y1="70" x2={40 + i * 40} y2="260" />)}
+          </g>
+          <path d="M40 170 H70 L78 160 L86 170 H100 L106 176 L112 100 L118 230 L124 170 H150 L158 158 L168 170 H200"
+                fill="none" stroke="url(#sig)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          <!-- pencere kutusu -->
+          <rect x="98" y="88" width="34" height="150" rx="4" fill="#0f9b8e" fill-opacity="0.08" stroke="#0f9b8e" stroke-dasharray="3 4" />
+          <text x="40" y="290" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#6b7a92">EKG · 500 Hz · derivasyon II</text>
+          <text x="40" y="308" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#6b7a92">öznitelik: QRS, HRV, ST</text>
+          <!-- akış oku -->
+          <path d="M208 170 h20" stroke="#bcc6d9" stroke-width="1.5" marker-end="url(#arr)" />
+          <!-- orta: sinir ağı -->
+          <g stroke="#c9d1e3" stroke-width="1">
+            {[100, 140, 180, 220].map((y) => [110, 160, 210].map((y2) => <line x1="248" y1={y} x2="300" y2={y2} />))}
+            {[110, 160, 210].map((y) => [130, 190].map((y2) => <line x1="300" y1={y} x2="352" y2={y2} />))}
+          </g>
+          <g fill="#fff" stroke="#2f3fa3" stroke-width="1.6">
+            {[100, 140, 180, 220].map((y) => <circle cx="248" cy={y} r="7" />)}
+            {[110, 160, 210].map((y) => <circle cx="300" cy={y} r="7" />)}
+            {[130, 190].map((y) => <circle cx="352" cy={y} r="7" fill="#2f3fa3" />)}
+          </g>
+          <text x="238" y="290" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#6b7a92">p(aritmi | sinyal) = 0.87</text>
+          <text x="238" y="308" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#6b7a92">ROC-AUC 0.93 · kalibre</text>
+          <path d="M362 170 h20" stroke="#bcc6d9" stroke-width="1.5" />
+          <!-- sağ: SHAP çubukları -->
+          <line x1="452" y1="90" x2="452" y2="250" stroke="#bcc6d9" stroke-dasharray="2 3" />
+          <g font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#2f4058">
+            <rect x="452" y="96" width="62" height="16" rx="3" fill="#0f9b8e" /><text x="392" y="108">HRV ↓</text>
+            <rect x="452" y="126" width="44" height="16" rx="3" fill="#0f9b8e" /><text x="392" y="138">QRS</text>
+            <rect x="452" y="156" width="30" height="16" rx="3" fill="#0f9b8e" /><text x="392" y="168">yaş</text>
+            <rect x="426" y="186" width="26" height="16" rx="3" fill="#be3a5a" /><text x="392" y="198">ST</text>
+            <rect x="436" y="216" width="16" height="16" rx="3" fill="#be3a5a" /><text x="392" y="228">RR</text>
+          </g>
+          <text x="392" y="290" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#6b7a92">SHAP katkısı · ← azaltır  artırır →</text>
+          <text x="392" y="308" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#6b7a92">model kartı · dış doğrulama</text>
+          <!-- alt şerit -->
+          <rect x="40" y="340" width="480" height="36" rx="8" fill="#f5f7fb" stroke="#e2e7f0" />
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#2f4058" font-weight="500">
+            <text x="56" y="363">veri</text><text x="96" y="363" fill="#bcc6d9">→</text>
+            <text x="116" y="363">ön işleme</text><text x="188" y="363" fill="#bcc6d9">→</text>
+            <text x="208" y="363">model</text><text x="256" y="363" fill="#bcc6d9">→</text>
+            <text x="276" y="363">klinik metrik</text><text x="364" y="363" fill="#bcc6d9">→</text>
+            <text x="384" y="363">açıklama</text><text x="448" y="363" fill="#bcc6d9">→</text>
+            <text x="468" y="363">güven</text>
+          </g>
+        </svg>
+        <figcaption class="sr-only">Biyomedikal sinyalden model kararına, oradan öznitelik katkılarının açıklanmasına uzanan ders yolculuğunun şeması</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- VERİ TÜRLERİ -->
+  <section class="border-y border-line bg-white">
+    <div class="wrap py-10">
+      <p class="eyebrow">Beş veri türü, tek çerçeve</p>
+      <ul class="mt-5 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-5">
+        {course.dataTypes.map((d, i) => (
+          <li class="border-l-2 border-line pl-4">
+            <p class="font-mono text-[11px] text-ink-3">0{i + 1}</p>
+            <p class="mt-1 font-semibold text-ink">{d.name}</p>
+            <p class="mt-1 text-[13px] leading-relaxed text-ink-2">{d.desc}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- NEDEN -->
+  <section class="wrap py-20 md:py-28">
+    <SectionHeading eyebrow="Dersin yaklaşımı" title="Yüksek doğruluk yetmez; açıklanabilir ve güvenilir olmalı."
+      lede={course.justification} />
+    <ul class="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2">
+      {pillars.map((p, i) => (
+        <li class="flex gap-5">
+          <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={p.icon} /></svg>
+          </span>
+          <div>
+            <p class="font-mono text-[11px] text-ink-3">0{i + 1}</p>
+            <h3 class="font-display text-xl font-semibold text-ink">{p.t}</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-ink-2">{p.d}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <!-- MODÜLLER -->
+  <section class="border-y border-line bg-paper-2/50 py-20 md:py-28">
+    <div class="wrap">
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <SectionHeading eyebrow="Dönem boyunca" title="Beş modül, on dört hafta"
+          lede="Veri temelleriyle başlar, klasik makine öğrenmesi ve sinyal analiziyle sürer; derin öğrenmeden sonra açıklanabilir ve güvenilir yapay zeka ile tamamlanır." />
+        <a href={href('/ders-akisi')} class="btn-ghost">Tam ders akışı</a>
+      </div>
+      <ol class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {modules.map((m, i) => (
+          <li style={`--mod:var(--mod-${m.color})`}>
+            <a href={href(`/ders-akisi#${m.slug}`)} class="group flex h-full flex-col rounded-2xl border border-line bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-lift">
+              <div class="flex items-center justify-between">
+                <span class="font-display text-3xl font-semibold text-[var(--mod)]">{String(i + 1).padStart(2, '0')}</span>
+                <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-3">H{m.weeks[0]}–{m.weeks.at(-1)}</span>
+              </div>
+              <h3 class="mt-4 font-bold leading-snug text-ink group-hover:text-brand">{m.title}</h3>
+              <p class="mt-2 line-clamp-5 text-[13px] leading-relaxed text-ink-2">{m.summary}</p>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="wrap py-20 md:py-28" id="yol-haritasi">
+    <SectionHeading eyebrow="Ders akışı" title="Haftadan haftaya yol haritası"
+      lede="Her hafta üç saatlik tek bir derse karşılık gelir. Tarihler akademik takvime göre güncellenir; ara sınav haftası ve olası ertelemeler haftanın yanında belirtilir." />
+    <div class="mt-14"><Roadmap weeks={weeks} /></div>
+  </section>
+
+  <!-- NEREDEN BAŞLA + DUYURU -->
+  <section class="border-t border-line bg-ink text-paper">
+    <div class="wrap grid gap-12 py-20 md:grid-cols-[1fr_1fr] md:py-24">
+      <div>
+        <p class="eyebrow !text-paper/60">Nereden başlamalıyım?</p>
+        <h2 class="display mt-2 text-3xl md:text-4xl">Ortamı kurun, ilk veri setini yükleyin.</h2>
+        <p class="mt-4 leading-relaxed text-paper/75">
+          Ders Python, scikit-learn ve PyTorch üzerinde yürür. Google Colab ile kurulum gerekmez; yerel ortam isteyenler için
+          <a href={href('/rehber/yerel-ortam')} class="underline decoration-paper/40 underline-offset-4 hover:decoration-paper">adım adım rehber</a> hazır.
+          İlk haftaya gelmeden 1. haftanın "Ön Okuma" bölümüne göz atmanız yeterli.
+        </p>
+        <ol class="mt-8 space-y-4">
+          {firstWeeks.map((w) => (
+            <li>
+              <a href={weekHref(w.data.week)} class="group flex items-start gap-4 rounded-xl border border-paper/15 p-4 transition-colors hover:border-paper/40 hover:bg-paper/5">
+                <span class="font-display text-2xl text-accent">{String(w.data.week).padStart(2, '0')}</span>
+                <span>
+                  <span class="block font-semibold group-hover:underline">{w.data.title}</span>
+                  <span class="mt-1 block text-sm text-paper/65">{w.data.description}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div>
+        <div class="flex items-baseline justify-between">
+          <p class="eyebrow !text-paper/60">Duyurular</p>
+          <a href={href('/duyurular')} class="text-sm text-paper/70 underline-offset-4 hover:underline">Tümü</a>
+        </div>
+        {announcements.length === 0 ? (
+          <p class="mt-4 text-paper/70">Henüz duyuru yok.</p>
+        ) : (
+          <ul class="mt-4 space-y-3">
+            {announcements.map((a) => (
+              <li class="rounded-xl border border-paper/15 p-4">
+                <p class="font-mono text-xs text-paper/55">{a.data.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p class="mt-1 font-semibold">{a.data.title}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div class="mt-10 rounded-2xl bg-paper/5 p-6">
+          <p class="eyebrow !text-paper/60">Değerlendirme</p>
+          <div class="mt-3 flex h-3 overflow-hidden rounded-md bg-paper/10" role="img" aria-label="Ara sınav yüzde 50, genel sınav yüzde 50">
+            <span class="bg-accent" style="width:50%"></span>
+            <span class="bg-brand-2" style="width:50%"></span>
+          </div>
+          <div class="mt-3 flex justify-between text-sm">
+            <span><span class="mr-1.5 inline-block size-2 rounded-sm bg-accent"></span>Ara sınav %50</span>
+            <span><span class="mr-1.5 inline-block size-2 rounded-sm bg-brand-2"></span>Genel sınav %50</span>
+          </div>
+          <p class="mt-3 text-xs text-paper/55">Her iki sınav yüz yüze yapılır. Ara sınav 8. haftada.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

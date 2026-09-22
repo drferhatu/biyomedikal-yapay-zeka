@@ -1,0 +1,122 @@
+{
+  "code": "SVY 5430",
+  "title": "Biyomedikal Verilerin Analizi ve Yapay Zeka",
+  "titleEn": "Biomedical Data Analysis and Artificial Intelligence",
+  "shortTitle": "Biyomedikal Veri ve YZ",
+  "university": "Fırat Üniversitesi",
+  "faculty": "Yazılım ve Bilişim Araştırma Enstitüsü",
+  "program": "Lisansüstü (Yüksek Lisans / Doktora)",
+  "audience": "Mühendislik ve sağlık bilimleri kökenli lisansüstü öğrenciler",
+  "level": "Lisansüstü",
+  "status": "Zorunlu",
+  "classYear": "1",
+  "semester": "2026–2027 Güz",
+  "academicYear": "2026–2027",
+  "language": "Türkçe",
+  "credits": { "theory": 3, "practice": 0, "lab": 0, "local": 3, "ects": 6 },
+  "prerequisites": "Yok",
+  "delivery": "Ders yüz yüze yöntemlerle haftada 3 saat olarak yapılacaktır.",
+  "location": { "faceToFace": "Seminer Salonu", "remote": "-" },
+  "classTime": "Haftalık program dönem başında duyurulacaktır",
+  "instructor": {
+    "title": "Doç. Dr.",
+    "name": "Doç. Dr. Ferhat Uçar",
+    "email": "fucar@firat.edu.tr",
+    "phone": "0424 607 42 41",
+    "officeHours": "Randevu ile"
+  },
+  "purpose": "Biyomedikal verilerin (klinik, sinyal, görüntü, omik ve elektronik sağlık kaydı verileri) analizinde kullanılan makine öğrenmesi ve derin öğrenme yöntemlerini teoriden uygulamaya öğretmek; bu yöntemleri tıp ve mühendislik problemlerine uyarlamayı, model başarımını klinik açıdan anlamlı metriklerle değerlendirmeyi ve özellikle açıklanabilir yapay zeka (XAI) yaklaşımlarıyla model kararlarını yorumlanabilir, güvenilir ve etik biçimde sunmayı kavratmak.",
+  "tagline": "Biyomedikal veriden güvenilir ve açıklanabilir modellere: 14 haftalık lisansüstü bir yolculuk.",
+  "justification": "Biyomedikal veri hacmi ve çeşitliliği hızla artıyor: elektronik sağlık kayıtları, EEG/EKG sinyalleri, tıbbi görüntüler ve omik veriler aynı hastanın farklı yüzleri. Bu veriden klinik değer üretmek, yalnızca yüksek doğruluklu model kurmayı değil; modelin neden o kararı verdiğini açıklayabilmeyi, dış veride doğrulamayı ve etik sınırlar içinde kullanmayı gerektirir. Bu ders o bütünü hedefler.",
+  "studentResponsibility": "Öğrenciler derslere düzenli katılmak, işlenen konulara ilişkin ön okuma ve uygulamaları takip etmek ve dönem içi/dönem sonu sınavlarına hazırlanmakla yükümlüdür.",
+  "methods": [
+    "Yüz yüze ders (haftada 3 saat)",
+    "Uygulamalı kod örnekleri (Python, scikit-learn, PyTorch)",
+    "Vaka çalışmaları: tıp ve mühendislik problemleri",
+    "Ön okuma ve haftalık uygulama takibi"
+  ],
+  "dataTypes": [
+    { "id": "klinik", "name": "Klinik / tablo verisi", "desc": "Laboratuvar sonuçları, vital bulgular, demografi; sınıflandırma ve risk tahmini problemlerinin çoğu burada başlar." },
+    { "id": "sinyal", "name": "Biyomedikal sinyaller", "desc": "EEG, EKG, EMG gibi zaman serileri; filtreleme, öznitelik çıkarımı ve zaman–frekans analizi gerektirir." },
+    { "id": "goruntu", "name": "Tıbbi görüntüler", "desc": "Radyoloji, patoloji, dermatoloji görüntüleri; evrişimli ağlarla sınıflandırma ve segmentasyon." },
+    { "id": "omik", "name": "Omik veriler", "desc": "Genomik, transkriptomik, proteomik; az örnek–çok öznitelik rejimi ve boyut indirgeme." },
+    { "id": "ehr", "name": "Elektronik sağlık kaydı (EHR)", "desc": "Zamanla değişen, eksik ve heterojen kayıtlar; klinik metin ve dizisel modeller." }
+  ],
+  "outcomes": [
+    { "id": "DK1", "text": "Biyomedikal veri türlerini ve bu verilere özgü ön işleme, değerlendirme ve etik konularını kavrar.", "weeks": [1, 2, 3] },
+    { "id": "DK2", "text": "Klasik makine öğrenmesi yöntemlerini biyomedikal sınıflandırma/kümeleme problemlerine uygular ve klinik açıdan anlamlı metriklerle değerlendirir.", "weeks": [4, 5, 6] },
+    { "id": "DK3", "text": "Derin öğrenme yöntemlerini (YSA, CNN, RNN/Transformer) tıbbi sinyal, görüntü ve zaman serisi verilerine uygular.", "weeks": [7, 9, 10, 11] },
+    { "id": "DK4", "text": "Python ve güncel kütüphanelerle biyomedikal veri analizi ve model geliştirme becerisi kazanır.", "weeks": [2, 3, 4, 5, 9, 10] },
+    { "id": "DK5", "text": "Açıklanabilir yapay zeka (XAI) yöntemleriyle model kararlarını yorumlar; modellerin güvenilirliğini ve yanlılığını değerlendirir.", "weeks": [12, 13, 14] }
+  ],
+  "assessment": {
+    "components": [
+      { "name": "Ara sınav", "method": "Yüz yüze", "count": 1, "weight": 50, "note": "8. hafta; 1–7. haftaların içeriğini kapsar." },
+      { "name": "Genel sınav (final)", "method": "Yüz yüze", "count": 1, "weight": 50, "note": "Dönem sonu; tüm dönem içeriği." }
+    ],
+    "optional": ["Kısa sınav", "Ödev", "Proje"],
+    "optionalNote": "Ders izlence formunda kısa sınav, ödev ve proje bileşenleri için ağırlık tanımlanmamıştır. Dönem içinde isteğe bağlı uygulama ödevleri verilebilir; nota yansıması dönem başında duyurulur.",
+    "workloadNote": "6 AKTS ≈ 180 saatlik toplam öğrenci iş yükü: 42 saat ders, kalan süre ön okuma, uygulama ve sınav hazırlığı."
+  },
+  "textbooks": [
+    { "author": "Ian Goodfellow, Yoshua Bengio, Aaron Courville", "title": "Deep Learning", "publisher": "MIT Press", "year": 2016, "url": "https://www.deeplearningbook.org/", "note": "Tam metin çevrimiçi ve ücretsiz. Derin öğrenme modülünün (9–11. hafta) ana kaynağı." },
+    { "author": "Christoph Molnar", "title": "Interpretable Machine Learning", "publisher": "Çevrimiçi (açık erişim)", "year": 2022, "url": "https://christophm.github.io/interpretable-ml-book/", "note": "XAI modülünün (12–14. hafta) ana kaynağı; ücretsiz." },
+    { "author": "Ed. (çeşitli yazarlar)", "title": "Machine Learning Methods in Biomedical Field", "publisher": "Springer Nature", "year": 2024, "note": "Biyomedikal uygulama vakaları için başvuru kaynağı." },
+    { "author": "scikit-learn ve PyTorch geliştirici ekipleri", "title": "scikit-learn ve PyTorch resmî dokümantasyonları", "publisher": "Çevrimiçi", "year": 2026, "url": "https://scikit-learn.org/stable/user_guide.html", "note": "Uygulamaların teknik referansı; paylaşılacak ders notlarıyla birlikte kullanılır." }
+  ],
+  "software": [
+    { "name": "Python 3.12", "url": "https://www.python.org/", "desc": "Dersin programlama dili." },
+    { "name": "NumPy / pandas", "url": "https://pandas.pydata.org/docs/", "desc": "Sayısal hesaplama ve tablo verisi." },
+    { "name": "scikit-learn", "url": "https://scikit-learn.org/stable/", "desc": "Klasik makine öğrenmesi, metrikler, boyut indirgeme." },
+    { "name": "PyTorch", "url": "https://pytorch.org/docs/stable/", "desc": "Derin öğrenme: YSA, CNN, RNN/Transformer." },
+    { "name": "XGBoost", "url": "https://xgboost.readthedocs.io/", "desc": "Gradyan artırma topluluk yöntemi." },
+    { "name": "SHAP", "url": "https://shap.readthedocs.io/", "desc": "Shapley temelli model açıklama." },
+    { "name": "LIME", "url": "https://github.com/marcotcr/lime", "desc": "Yerel, model-bağımsız açıklamalar." },
+    { "name": "Captum", "url": "https://captum.ai/", "desc": "PyTorch modelleri için atıf yöntemleri (Grad-CAM, IG)." },
+    { "name": "MNE-Python", "url": "https://mne.tools/stable/", "desc": "EEG/MEG sinyal işleme." },
+    { "name": "WFDB / NeuroKit2", "url": "https://neuropsychology.github.io/NeuroKit/", "desc": "EKG ve fizyolojik sinyal analizi." },
+    { "name": "umap-learn", "url": "https://umap-learn.readthedocs.io/", "desc": "Doğrusal olmayan boyut indirgeme (UMAP)." },
+    { "name": "Jupyter / Google Colab", "url": "https://colab.research.google.com/", "desc": "Not defteri ortamı; Colab ücretsiz GPU sağlar." }
+  ],
+  "resources": [
+    {
+      "group": "Açık biyomedikal veri kaynakları",
+      "items": [
+        { "name": "PhysioNet", "url": "https://physionet.org/", "desc": "EKG, EEG, yoğun bakım (MIMIC) gibi fizyolojik sinyal ve klinik veri setleri." },
+        { "name": "MIMIC-IV", "url": "https://physionet.org/content/mimiciv/", "desc": "Yoğun bakım elektronik sağlık kaydı; erişim için eğitim ve veri kullanım anlaşması gerekir." },
+        { "name": "MedMNIST", "url": "https://medmnist.com/", "desc": "Hafif, standartlaştırılmış tıbbi görüntü sınıflandırma veri setleri; CNN uygulamaları için idealdir." },
+        { "name": "UCI Machine Learning Repository", "url": "https://archive.ics.uci.edu/", "desc": "Klasik tablo veri setleri (meme kanseri, kalp hastalığı, diyabet)." },
+        { "name": "Kaggle – sağlık veri setleri", "url": "https://www.kaggle.com/datasets?tags=4202-Healthcare", "desc": "Geniş açık veri koleksiyonu; lisans koşullarına dikkat edin." },
+        { "name": "NCBI GEO", "url": "https://www.ncbi.nlm.nih.gov/geo/", "desc": "Gen ifadesi (omik) veri setleri." },
+        { "name": "ISIC Archive", "url": "https://www.isic-archive.com/", "desc": "Dermatoskopik görüntü arşivi (melanom sınıflandırma)." }
+      ]
+    },
+    {
+      "group": "Raporlama, güvenilirlik ve regülasyon",
+      "items": [
+        { "name": "TRIPOD+AI", "url": "https://www.tripod-statement.org/", "desc": "Yapay zeka tabanlı tahmin modelleri için raporlama kılavuzu (2024)." },
+        { "name": "Model Cards (Mitchell ve ark., 2019)", "url": "https://arxiv.org/abs/1810.03993", "desc": "Model kartı şablonu ve gerekçesi." },
+        { "name": "WHO – Ethics and governance of AI for health", "url": "https://www.who.int/publications/i/item/9789240029200", "desc": "Sağlıkta yapay zeka etik ve yönetişim rehberi." },
+        { "name": "AB Yapay Zeka Yasası (EU AI Act)", "url": "https://artificialintelligenceact.eu/", "desc": "Tıbbi cihaz niteliğindeki yapay zeka sistemleri için yüksek risk sınıfı yükümlülükleri." },
+        { "name": "FDA – AI/ML-enabled medical devices", "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-and-machine-learning-aiml-enabled-medical-devices", "desc": "Onaylı yapay zeka tabanlı tıbbi cihaz listesi ve düzenleyici çerçeve." },
+        { "name": "KVKK", "url": "https://www.kvkk.gov.tr/", "desc": "Türkiye'de kişisel sağlık verisi mevzuatı." }
+      ]
+    },
+    {
+      "group": "Açıklanabilir yapay zeka",
+      "items": [
+        { "name": "SHAP dokümantasyonu", "url": "https://shap.readthedocs.io/en/latest/", "desc": "Shapley değerleri, TreeExplainer, DeepExplainer ve görselleştirmeler." },
+        { "name": "Lundberg & Lee (2017) – A Unified Approach to Interpreting Model Predictions", "url": "https://arxiv.org/abs/1705.07874", "desc": "SHAP'ın temel makalesi." },
+        { "name": "Ribeiro ve ark. (2016) – LIME", "url": "https://arxiv.org/abs/1602.04938", "desc": "\"Why Should I Trust You?\" makalesi." },
+        { "name": "Selvaraju ve ark. (2017) – Grad-CAM", "url": "https://arxiv.org/abs/1610.02391", "desc": "Evrişimli ağlar için görsel açıklama." },
+        { "name": "Rudin (2019) – Stop explaining black box models", "url": "https://www.nature.com/articles/s42256-019-0048-x", "desc": "Yüksek riskli kararlarda içsel yorumlanabilir modeller savunusu; XAI tartışmasının karşı kutbu." }
+      ]
+    }
+  ],
+  "channels": [
+    { "id": "email", "name": "E-posta", "desc": "Ders, ödev ve danışma soruları için birincil kanal.", "url": "mailto:fucar@firat.edu.tr", "cta": "E-posta gönder" },
+    { "id": "phone", "name": "Ofis telefonu", "desc": "0424 607 42 41 · mesai saatlerinde.", "url": "tel:+904246074241", "cta": "Ara" },
+    { "id": "office", "name": "Ofis saati randevusu", "desc": "Tez, proje veya ders danışması için uygun bir saat seçin.", "url": "https://calendar.app.google/3woNnqLwS7RhtEBR7", "cta": "Randevu al" },
+    { "id": "calendar", "name": "Herkese açık iş takvimi", "desc": "Haftalık programım; ders, toplantı ve müsait saatlerim.", "url": "https://calendar.google.com/calendar/u/0?cid=ZDVmMWU1ZWFiNWM0ZTE2ZGVjMjU2NGI2M2ViYjNmYjI1YjkwOGI4ZjJlNmIyNTRhNzhmZWMwNjNmM2U4NWRjNUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t", "cta": "Takvimi aç" }
+  ]
+}

@@ -1,0 +1,26 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import WeekCard from '@/components/WeekCard.astro';
+import { getWeeksSorted, modules, course } from '@/lib/site';
+const weeks = await getWeeksSorted();
+---
+<BaseLayout title="Haftalar" description={`${course.title} dersinin 14 haftalık ders listesi; her hafta için hedefler, yöntemler ve uygulamalar.`}>
+  <div class="wrap py-14 md:py-20">
+    <SectionHeading eyebrow="Haftalar" title="14 hafta, 14 ders" lede="Her kart bir haftanın sayfasına gider. Modül rengi sol kenarda, haftanın yöntemleri kartın ortasında, sınav ve takvim notları altında yer alır." />
+  </div>
+  <div class="wrap space-y-14 pb-24">
+    {modules.map((m, i) => (
+      <section aria-labelledby={`mod-${m.id}`}>
+        <div class="mb-5 flex flex-wrap items-baseline gap-3">
+          <span class="size-2.5 rounded-sm" style={`background:var(--mod-${m.color})`} aria-hidden="true"></span>
+          <h2 id={`mod-${m.id}`} class="font-display text-xl font-semibold text-ink">{i + 1}. {m.title}</h2>
+          <span class="font-mono text-xs text-ink-3">Hafta {m.weeks[0]}–{m.weeks.at(-1)}</span>
+        </div>
+        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {weeks.filter((w) => w.data.module === m.id).map((w) => <li><WeekCard week={w} /></li>)}
+        </ul>
+      </section>
+    ))}
+  </div>
+</BaseLayout>

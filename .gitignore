@@ -1,0 +1,31 @@
+# bağımlılıklar ve derleme çıktıları
+node_modules/
+dist/
+.astro/
+
+# ortam ve günlükler
+.env
+.env.*
+npm-debug.log*
+
+# python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# işletim sistemi / editör
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# yerel claude ayarları
+.claude/
+
+# kaynak belgeler (klasörde kalır, depoya ve siteye girmez)
+*.docx
+*.pdf
+
+# defterlerin gömülü görünümü derlemede üretilir (scripts/build_notebooks.py)
+public/notebooks/

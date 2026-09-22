@@ -1,0 +1,111 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import Toc from '@/components/Toc.astro';
+import Channels from '@/components/Channels.astro';
+import { course, href, weekHref } from '@/lib/site';
+
+const facts = [
+  ['Ders kodu', course.code],
+  ['Birim', `${course.university} ${course.faculty}`],
+  ['Düzey', course.level],
+  ['Statü', course.status],
+  ['Sınıf', course.classYear],
+  ['Dönem', course.semester],
+  ['Öğretim dili', course.language],
+  ['Kredi (T-U-L-K)', `${course.credits.theory}-${course.credits.practice}-${course.credits.lab}-${course.credits.local}`],
+  ['AKTS', String(course.credits.ects)],
+  ['İşleniş', 'Yüz yüze, haftada 3 saat'],
+  ['Yer (YY / UE)', `${course.location.faceToFace} / ${course.location.remote}`],
+  ['Ön koşul', course.prerequisites],
+];
+const toc = [
+  { slug: 'amac', text: 'Dersin amacı' },
+  { slug: 'kimler-icin', text: 'Kimler için?' },
+  { slug: 'yaklasim', text: 'Teoriden uygulamaya, uygulamadan açıklamaya' },
+  { slug: 'kazanimlar', text: 'Ders kazanımları' },
+  { slug: 'yontem', text: 'İşleniş ve yöntem' },
+  { slug: 'materyal', text: 'Ders materyali' },
+  { slug: 'degerlendirme', text: 'Ölçme ve değerlendirme' },
+  { slug: 'sorumluluk', text: 'Öğrenci sorumluluğu' },
+  { slug: 'kunye', text: 'Ders künyesi' },
+  { slug: 'ogretim-uyesi', text: 'Ders sorumlusu' },
+  { slug: 'kanallar', text: 'İletişim kanalları' },
+];
+---
+<BaseLayout title="Ders Hakkında" description={`${course.code} ${course.title} dersinin amacı, kazanımları, değerlendirme yöntemi ve künyesi.`}>
+  <div class="wrap py-14 md:py-20">
+    <SectionHeading eyebrow={`Ders Hakkında · ${course.code}`} title="Biyomedikal veriden güvenilir modele" lede={course.justification} />
+  </div>
+
+  <div class="wrap grid gap-12 pb-24 lg:grid-cols-[220px_1fr]">
+    <aside class="hidden lg:block"><div class="sticky top-24"><Toc headings={[]} extra={toc} /></div></aside>
+
+    <article class="prose-lesson max-w-3xl">
+      <h2 id="amac">Dersin amacı</h2>
+      <p>{course.purpose}</p>
+
+      <h2 id="kimler-icin">Kimler için?</h2>
+      <p>Bu ders, {course.faculty} lisansüstü programlarında mühendislik ya da sağlık bilimleri kökenli öğrenciler için tasarlanmıştır. Temel Python bilgisi ve lisans düzeyinde doğrusal cebir–olasılık hatırası yeterlidir; makine öğrenmesi geçmişi beklenmez, ders yöntemleri sıfırdan ama lisansüstü tempoda kurar.</p>
+      <aside class="callout callout-why"><p class="callout-title">Neden önemli?</p><p>Biyomedikal alanda bir modelin yayımlanması ya da kliniğe girmesi, doğruluk tablosuyla değil; hasta-bazlı doğrulama, kalibrasyon, açıklanabilirlik ve yanlılık analiziyle mümkün olur. Bu ders tez ve makale çalışmalarınızda tam da bu bölümleri yazabilmenizi hedefler.</p></aside>
+
+      <h2 id="yaklasim">Teoriden uygulamaya, uygulamadan açıklamaya</h2>
+      <p>Her yöntem üç adımda ele alınır: <strong>teori</strong> (yöntemin varsayımları ve matematiği), <strong>uygulama</strong> (gerçek ya da açık bir biyomedikal veri setinde Python ile kurulum) ve <strong>açıklama</strong> (modelin kararını klinik açıdan yorumlanabilir kılma). Böylece ders sonunda yalnızca "model çalıştı" değil, "model neden ve ne kadar güvenilir çalıştı" sorusuna yanıt verebilirsiniz.</p>
+      <ul>
+        <li><strong>Veri türü odaklı:</strong> Klinik tablo, sinyal, görüntü, omik ve EHR verisi için ayrı ayrı ön işleme ve model seçimi.</li>
+        <li><strong>Klinik metrik odaklı:</strong> ROC-AUC, duyarlılık/özgüllük, kalibrasyon ve dış doğrulama her modelin zorunlu parçası.</li>
+        <li><strong>XAI odaklı:</strong> Permütasyon önemi, PDP/ICE, SHAP, LIME, Grad-CAM ve karşıt-olgusal açıklamalar için üç haftalık modül.</li>
+      </ul>
+
+      <h2 id="kazanimlar">Ders kazanımları</h2>
+      <p>Dersi başarıyla tamamlayan öğrenci:</p>
+      <ol class="!space-y-4">
+        {course.outcomes.map((o) => (
+          <li>
+            <span class="text-ink">{o.text}</span>
+            <span class="mt-1 flex flex-wrap gap-1.5 text-xs">
+              <span class="font-mono text-ink-3">{o.id}</span>
+              {o.weeks.map((w) => <a href={weekHref(w)} class="!no-underline rounded-md bg-paper-2 px-1.5 py-0.5 font-mono font-medium text-ink-2 hover:bg-brand-soft hover:text-brand">H{w}</a>)}
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      <h2 id="yontem">İşleniş ve yöntem</h2>
+      <p>{course.delivery} Dersler {course.location.faceToFace}'nda yapılır.</p>
+      <ul>{course.methods.map((m) => <li>{m}</li>)}</ul>
+      <p>Uygulamalar Python, scikit-learn ve PyTorch ile yürütülür. Google Colab ücretsiz GPU sağladığı için kurulum gerekmez; kendi bilgisayarında çalışmak isteyenler için <a href={href('/rehber/yerel-ortam')}>yerel ortam rehberi</a> hazırlanmıştır.</p>
+
+      <h2 id="materyal">Ders materyali</h2>
+      <ul>
+        {course.textbooks.map((b) => (
+          <li><strong>{b.title}</strong> — {b.author}, {b.publisher}, {b.year}.{'url' in b && b.url && <> <a href={b.url} target="_blank" rel="noopener">Çevrimiçi</a>.</>}{'note' in b && b.note && <span class="text-ink-3"> {b.note}</span>}</li>
+        ))}
+      </ul>
+      <p>Tam liste ve açık veri kaynakları için <a href={href('/kaynaklar')}>Kaynaklar</a> sayfasına bakın.</p>
+
+      <h2 id="degerlendirme">Ölçme ve değerlendirme</h2>
+      <table>
+        <thead><tr><th>Bileşen</th><th>Yöntem</th><th>Sayı</th><th>Ağırlık</th><th>Not</th></tr></thead>
+        <tbody>
+          {course.assessment.components.map((c) => <tr><td class="font-medium text-ink">{c.name}</td><td>{c.method}</td><td>{c.count}</td><td class="font-mono">%{c.weight}</td><td>{c.note}</td></tr>)}
+        </tbody>
+      </table>
+      <aside class="callout callout-note"><p class="callout-title">Kısa sınav, ödev ve proje</p><p>{course.assessment.optionalNote}</p></aside>
+      <p class="text-sm text-ink-3">{course.assessment.workloadNote}</p>
+
+      <h2 id="sorumluluk">Öğrenci sorumluluğu</h2>
+      <p>{course.studentResponsibility}</p>
+
+      <h2 id="kunye">Ders künyesi</h2>
+      <dl class="grid gap-x-8 gap-y-3 text-[15px] sm:grid-cols-2">
+        {facts.map(([k, v]) => <div class="border-b border-line pb-2"><dt class="eyebrow">{k}</dt><dd class="mt-0.5 text-ink">{v}</dd></div>)}
+      </dl>
+
+      <h2 id="ogretim-uyesi">Ders sorumlusu</h2>
+      <p><strong>{course.instructor.name}</strong><br /><a href={`mailto:${course.instructor.email}`}>{course.instructor.email}</a> · {course.instructor.phone}<br /><span class="text-ink-3">Öğrenci görüşme saati: {course.instructor.officeHours}</span></p>
+      <div class="mt-8"><Channels /></div>
+      <p><a href={href('/ders-akisi')} class="btn-primary !text-paper !no-underline">Ders akışına geç →</a></p>
+    </article>
+  </div>
+</BaseLayout>

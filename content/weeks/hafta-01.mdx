@@ -1,0 +1,163 @@
+---
+week: 1
+title: "Biyomedikal Veri Bilimi ve Yapay Zekaya Giriş"
+topic: "Biyomedikal veri bilimi ve yapay zekaya giriş: veri türleri (klinik, sinyal, görüntü, omik, EHR), problem tipleri, etik ve regülasyon"
+description: "Beş biyomedikal veri türü, denetimli/denetimsiz problem tipleri, dersin uçtan uca iş akışı ve etik–regülasyon çerçevesi; ilk uygulama defteriyle tüm akışın küçük ölçekli turu."
+module: m1
+exam: false
+status: hazir
+changeNote: ""
+tags:
+  - "giriş"
+  - "veri türleri"
+  - "EHR"
+  - "omik"
+  - "etik"
+  - "regülasyon"
+  - "problem tipleri"
+  - "iş akışı"
+objectives:
+  - "Klinik, sinyal, görüntü, omik ve EHR verilerinin yapısal farklarını ve her birine özgü analiz zorluklarını açıklar."
+  - "Bir biyomedikal soruyu sınıflandırma, regresyon, kümeleme, segmentasyon veya zaman serisi tahmini olarak çerçeveler."
+  - "Veri → ön işleme → model → klinik metrik → açıklama → güven iş akışını tanımlar ve dersin modülleriyle eşler."
+  - "Sağlıkta yapay zeka için etik ilkeleri (mahremiyet, adalet, hesap verebilirlik) ve temel regülasyon çerçevelerini (KVKK, AB YZ Yasası, FDA) tanır."
+methods:
+  - "Problem çerçeveleme"
+  - "İş akışı (pipeline)"
+  - "Etik & regülasyon"
+tools:
+  - "Python"
+  - "Google Colab"
+  - "pandas"
+  - "scikit-learn"
+  - "scipy"
+datasets:
+  - name: "Breast Cancer Wisconsin (Diagnostic)"
+    url: "https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic"
+    note: "İlk uygulamada klinik tablo verisi örneği; scikit-learn ile gelir."
+  - name: "PhysioNet"
+    url: "https://physionet.org/"
+    note: "Sinyal ve EHR veri türlerine genel bakış için."
+notebook:
+  file: notebooks/hafta-01.ipynb
+  title: "Hafta 1 · Uçtan Uca İlk Tur"
+  embed: true
+  placement: inline
+resources:
+  - title: "Topol E. High-performance medicine: the convergence of human and artificial intelligence. Nat Med 2019."
+    url: "https://www.nature.com/articles/s41591-018-0300-7"
+    kind: makale
+    note: "Sağlıkta YZ'nin panoramik derlemesi."
+  - title: "Rajkomar A, Dean J, Kohane I. Machine Learning in Medicine. NEJM 2019."
+    url: "https://www.nejm.org/doi/full/10.1056/NEJMra1814259"
+    kind: makale
+    note: "Klinisyen gözüyle makine öğrenmesi."
+  - title: "Molnar C. Interpretable Machine Learning — Introduction ve Interpretability bölümleri."
+    url: "https://christophm.github.io/interpretable-ml-book/"
+    kind: kitap
+    note: "Ders öncesi okuma."
+  - title: "WHO. Ethics and governance of artificial intelligence for health. 2021."
+    url: "https://www.who.int/publications/i/item/9789240029200"
+    kind: dokuman
+    note: "Altı etik ilke."
+  - title: "Avrupa Parlamentosu. Yapay Zeka Yasası (AI Act) — yüksek riskli sistemler."
+    url: "https://artificialintelligenceact.eu/high-level-summary/"
+    kind: dokuman
+---
+
+import NotebookEmbed from '@/components/NotebookEmbed.astro';
+
+## Ön Okuma ve Hazırlık
+
+- Molnar'ın *Interpretable Machine Learning* kitabının **Introduction** ve **Interpretability** bölümlerini (yaklaşık 20 sayfa) okuyun; kitap açık erişimlidir.
+- Google hesabınızla [colab.research.google.com](https://colab.research.google.com) adresine giriş yapabildiğinizi kontrol edin. Kendi bilgisayarında çalışmak isteyenler için [yerel ortam rehberi](/rehber/yerel-ortam) hazır.
+- Şu soruyu düşünerek gelin: *Tez ya da çalışma alanınızda hangi biyomedikal veri türüyle karşılaşıyorsunuz ve bu veride sizi en çok ne zorluyor?*
+
+> [!not] Dersin işlenişi
+> Ders yüz yüze, haftada 3 saat. İlk iki saat kavramsal çerçeve ve tartışma; son saat birlikte kodlama. Defter Colab'de çalışır; kurulum gerekmez.
+
+## Ders Notları
+
+### Biyomedikal veri neden "zor" veridir?
+
+Makine öğrenmesi ders kitaplarındaki veri setleri temiz, dengeli ve bağımsız örneklerden oluşur. Biyomedikal veri ise neredeyse hiçbir zaman öyle değildir:
+
+- **Heterojendir.** Aynı hastanın tablo hâlindeki laboratuvar sonuçları, dakikada 250 örnekli EKG'si, milyonlarca piksellik BT görüntüsü ve on binlerce genin ifade profili vardır. Her biri farklı temsil, farklı ön işleme ve farklı model ister.
+- **Eksik ve yanlıdır.** Bir test istenmemişse değeri yoktur; ama istenmemiş olması bile bilgidir (hasta stabil). Eksiklik rastgele değildir.
+- **Bağımlıdır.** Aynı hastadan çok kayıt, aynı hastaneden çok hasta. Bağımsızlık varsayımı çöker; rastgele bölme sızıntı üretir.
+- **Az örnek, çok öznitelikli** olabilir (omik veride 200 hasta × 20.000 gen).
+- **Etiketi pahalı ve gürültülüdür.** Altın standart bir patolog, bir kardiyolog ya da bir yıl sonraki sonlanımdır; uzmanlar arası uyum sınırlıdır.
+- **Yüksek risklidir.** Yanlış karar hastaya zarar verir; model yalnızca doğru değil, açıklanabilir ve denetlenebilir olmalıdır.
+
+Bu dersin tamamı, bu altı zorluğun her birine karşılık gelen yöntemleri sırayla kurar.
+
+### Beş veri türü
+
+| Veri türü | Tipik örnek | Temsil | Öne çıkan zorluk | Bu derste |
+|---|---|---|---|---|
+| Klinik / tablo | Laboratuvar, vital, demografi | Satır = hasta, sütun = öznitelik | Eksik veri, dengesiz sınıf | Hafta 2–6, 12–13 |
+| Sinyal | EEG, EKG, EMG | Zaman serisi (Hz) | Gürültü, artefakt, kayıt-bazlı bölme | Hafta 7, 11 |
+| Görüntü | Röntgen, patoloji, dermatoskopi | Piksel/voksel matrisi | Kısayol öğrenme, dağıtım kayması | Hafta 10, 13 |
+| Omik | Gen ifadesi, proteomik | p ≫ n matris | Boyut laneti, çoklu test | Hafta 3, 6 |
+| EHR | Zaman damgalı kayıt, klinik not | Düzensiz dizi + metin | Düzensiz örnekleme, mahremiyet | Hafta 2, 11, 14 |
+
+> [!tanim] Elektronik sağlık kaydı (EHR)
+> Hastanın zaman içinde biriken tüm dijital kayıtları: tanılar, ilaçlar, laboratuvar, görüntü raporları, serbest metin notlar. Diğer dört veri türünü zaman ekseninde birleştiren "kap"tır ve o yüzden hem en zengin hem en dağınık kaynaktır.
+
+### Problem tipleri: soruyu makine öğrenmesi diline çevirmek
+
+Bir klinik soru, model kurulmadan önce **problem tipine** çevrilir. Bu çeviri, sonraki her kararı (kayıp fonksiyonu, metrik, doğrulama) belirler.
+
+- **İkili / çok sınıflı sınıflandırma:** Bu görüntü malign mi? Bu hasta 30 gün içinde yeniden yatar mı?
+- **Regresyon:** Yatış süresi kaç gün? eGFR bir yıl sonra ne olur?
+- **Kümeleme (denetimsiz):** Sepsis hastaları kaç klinik fenotipe ayrılır?
+- **Segmentasyon:** Görüntüde tümör hangi piksellerde?
+- **Zaman serisi tahmini / olay tespiti:** Nöbet ne zaman başlayacak? Sonraki 6 saatte hipotansiyon gelişir mi?
+- **Sağkalım analizi:** Olaya kadar geçen süre; sansürlü veriyle çalışır.
+
+> [!uyari] Etiket tanımı modelin tavanını belirler
+> "Sepsis" etiketi Sepsis-3 kriterleriyle mi, ICD koduyla mı, antibiyotik başlangıcıyla mı tanımlandı? Üç tanım üç farklı model üretir. Etiketin nasıl tanımlandığını sormadan hiçbir başarım rakamını yorumlamayın.
+
+### Dersin iş akışı
+
+Her hafta aşağıdaki zincirin bir halkasını derinleştirir:
+
+**veri → ön işleme → model → klinik metrik → açıklama → güven**
+
+1. **Veri** (Hafta 1–3): türü tanı, keşfet, öznitelik türet, boyut indirge.
+2. **Ön işleme** (Hafta 2): eksik veri, ölçekleme, dengesiz sınıf, hasta-bazlı bölme, sızıntı.
+3. **Model** (Hafta 4–7, 9–11): lojistik regresyondan Transformer'a.
+4. **Klinik metrik** (Hafta 4, her hafta tekrar): ROC-AUC, duyarlılık/özgüllük, kalibrasyon, karar eğrisi.
+5. **Açıklama** (Hafta 12–13): permütasyon önemi, PDP, SHAP, LIME, Grad-CAM, karşıt-olgusal.
+6. **Güven** (Hafta 14): dış doğrulama, dağıtım kayması, model kartı, federe öğrenme, regülasyon.
+
+> [!neden] Neden "açıklama" ve "güven" ayrı halkalar?
+> Bir model dış veride doğrulanmadan ve kararlarının gerekçesi gösterilmeden ne yayına ne kliniğe girer. Yüksek doğruluk tek başına yeterli olsaydı 2018'de göğüs röntgeni modelleri başka hastanede çökmezdi (10. hafta). Ders bu iki halkaya toplam dört hafta ayırır; bu, izlencenin bilinçli bir tercihidir.
+
+### Etik ve regülasyon çerçevesi
+
+- **Mahremiyet:** Sağlık verisi KVKK'da "özel nitelikli kişisel veri"dir; işlenmesi açık rıza ya da kanuni istisna gerektirir. Anonimleştirme yeterli değildir; yeniden tanımlama riski vardır (Hafta 11, 14).
+- **Adalet:** Model bazı alt-gruplarda sistematik kötü çalışabilir (Hafta 13: Obermeyer ve ark., 2019). Alt-grup analizi rapor standardıdır.
+- **Hesap verebilirlik ve şeffaflık:** Kim sorumlu? Model ne yaptığını açıklayabiliyor mu? Model kartı ve TRIPOD+AI raporlaması (Hafta 14).
+- **Regülasyon:** AB Yapay Zeka Yasası tıbbi cihaz niteliğindeki YZ'yi **yüksek riskli** sınıfa koyar; FDA, YZ/ML tabanlı tıbbi cihazları ayrı bir listeyle izler. Tez çalışmanız bir gün ürün olacaksa bu çerçeveler tasarımın parçasıdır.
+
+> [!nerede] Nerede kullanılır?
+> Göğüs röntgeninde pnömoni tespiti (görüntü, sınıflandırma), yoğun bakımda sepsis erken uyarısı (EHR + sinyal, zaman serisi), EEG'de nöbet tespiti (sinyal, olay tespiti), tümör alt-tiplendirme (omik, kümeleme), radyoloji raporundan bulgu çıkarımı (EHR metni, NLP). Her biri bu derste bir haftanın vaka çalışmasıdır.
+
+## Uygulama / Laboratuvar
+
+İlk defter, dersin tüm iş akışını **tek oturumda, küçük ölçekte** gösterir: klinik tablo verisi yükleme, sızıntısız ön işleme, lojistik regresyon, ROC ve kalibrasyon, permütasyon önemi ile açıklama, sentetik EKG'de filtreleme ve spektrum, görüntünün bir matris olduğu fikri. Hedef bugün yöntemleri öğrenmek değil; her adımın *neden* var olduğunu görmek.
+
+<NotebookEmbed file="notebooks/hafta-01.ipynb" title="Hafta 1 · Uçtan Uca İlk Tur" />
+
+**Ders içi çalışma:** Verilen üç problemi (sepsis erken uyarı, EEG'de nöbet tespiti, patoloji lamında tümör segmentasyonu) veri türü, problem tipi, etiket kaynağı, uygun klinik metrik ve olası sızıntı kaynağı açısından bir tabloya dökün. Grup hâlinde 10 dakikada tamamlayıp bir satırı sınıfa sunun.
+
+## Tartışma Soruları
+
+1. Aynı hastanın verisinin hem eğitim hem test kümesinde bulunması neden "sızıntı"dır ve bu neden biyomedikal veride diğer alanlardan daha sık görülür?
+2. Yüksek doğruluklu ama açıklanamayan bir model ile daha düşük doğruluklu ama yorumlanabilir bir model arasında klinik seçim hangi koşullara bağlıdır? (Bu soruya 12. haftada Rudin'in makalesiyle geri döneceğiz.)
+3. Kendi tez konunuzu yukarıdaki problem tiplerinden hangisine çevirirsiniz; etiketi kim, nasıl tanımlar?
+
+## Haftanın Özeti
+
+Dersin haritasını çizdik: beş veri türü, problem tipleri, uçtan uca iş akışı ve etik–regülasyon çerçevesi. İlk defterle akışın tamamını küçük ölçekte çalıştırdık. Bundan sonraki her hafta bu haritanın bir bölgesini derinleştirecek; gelecek hafta veriyle uğraşmanın en kritik adımı olan ön işleme ve sızıntıyla başlıyoruz.
