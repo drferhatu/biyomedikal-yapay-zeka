@@ -351,18 +351,18 @@
   ],
   "channels": [
     {
+      "id": "instagram",
+      "name": "Instagram · dr.ferhatucar",
+      "desc": "Biyomedikal yapay zeka, veri bilimi ve akademik üretkenlik üzerine kısa, faydalı paylaşımlar.",
+      "url": "https://www.instagram.com/dr.ferhatucar",
+      "cta": "Takip et"
+    },
+    {
       "id": "email",
       "name": "E-posta",
       "desc": "Ders, ödev ve danışma soruları için birincil kanal.",
       "url": "mailto:fucar@firat.edu.tr",
       "cta": "E-posta gönder"
-    },
-    {
-      "id": "phone",
-      "name": "Ofis telefonu",
-      "desc": "0424 607 42 41 · mesai saatlerinde.",
-      "url": "tel:+904246074241",
-      "cta": "Ara"
     },
     {
       "id": "office",
@@ -377,6 +377,13 @@
       "desc": "Haftalık programım; ders, toplantı ve müsait saatlerim.",
       "url": "https://calendar.google.com/calendar/u/0?cid=ZDVmMWU1ZWFiNWM0ZTE2ZGVjMjU2NGI2M2ViYjNmYjI1YjkwOGI4ZjJlNmIyNTRhNzhmZWMwNjNmM2U4NWRjNUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t",
       "cta": "Takvimi aç"
+    },
+    {
+      "id": "phone",
+      "name": "Ofis telefonu",
+      "desc": "0424 607 42 41 · mesai saatlerinde.",
+      "url": "tel:+904246074241",
+      "cta": "Ara"
     }
   ]
 }
