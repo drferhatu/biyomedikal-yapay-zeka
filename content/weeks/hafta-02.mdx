@@ -1,0 +1,161 @@
+---
+week: 2
+title: "Biyomedikal Verinin Doğası ve Ön İşleme"
+topic: "Biyomedikal verinin doğası ve ön işleme: eksik veri, gürültü, normalizasyon, dengesiz sınıflar, veri sızıntısı ve hasta-bazlı veri bölme"
+description: "Eksik veri mekanizmaları ve imputasyon, gürültü ve aykırı değer, ölçekleme, dengesiz sınıf stratejileri, veri sızıntısı ve GroupKFold ile hasta-bazlı bölme."
+module: m1
+exam: false
+status: hazir
+changeNote: ""
+tags:
+  - "eksik veri"
+  - "imputasyon"
+  - "normalizasyon"
+  - "dengesiz sınıf"
+  - "veri sızıntısı"
+  - "GroupKFold"
+  - "SMOTE"
+objectives:
+  - "Eksik veri mekanizmalarını (MCAR, MAR, MNAR) ayırt eder ve uygun imputasyon stratejisini gerekçelendirir."
+  - "Ölçekleme ve normalizasyonu yalnızca eğitim kümesine uydurup test kümesine uygulayarak sızıntıyı önler."
+  - "Dengesiz sınıflarda yeniden örnekleme, sınıf ağırlığı ve eşik ayarı seçeneklerini karşılaştırır."
+  - "Hasta-bazlı (grup) bölme ve zaman-farkında bölmeyi scikit-learn `Pipeline` ve `GroupKFold` ile uygular."
+methods:
+  - "MCAR/MAR/MNAR"
+  - "İmputasyon"
+  - "StandardScaler"
+  - "SMOTE / ağırlıklandırma"
+  - "GroupKFold"
+tools:
+  - "pandas"
+  - "scikit-learn"
+  - "imbalanced-learn"
+datasets:
+  - name: "Pima Indians Diabetes"
+    url: "https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database"
+    note: "Sıfırla kodlanmış eksik değerler; imputasyon alıştırması."
+  - name: "MIMIC-III Clinical Database Demo"
+    url: "https://physionet.org/content/mimiciii-demo/"
+    note: "100 hastalık açık demo; hasta-bazlı bölme için."
+notebook:
+  file: notebooks/hafta-02.ipynb
+  title: "Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme"
+  embed: true
+  placement: inline
+resources:
+  - title: "Kaufman S ve ark. Leakage in data mining: formulation, detection, and avoidance. ACM TKDD 2012."
+    url: "https://dl.acm.org/doi/10.1145/2382577.2382579"
+    kind: makale
+    note: "Sızıntının sistematik sınıflaması."
+  - title: "van Buuren S. Flexible Imputation of Missing Data (2. baskı, çevrimiçi)."
+    url: "https://stefvanbuuren.name/fimd/"
+    kind: kitap
+    note: "İmputasyon için açık erişimli referans."
+  - title: "Sterne JAC ve ark. Multiple imputation for missing data in epidemiological and clinical research. BMJ 2009."
+    url: "https://www.bmj.com/content/338/bmj.b2393"
+    kind: makale
+    note: "Klinik araştırmada çoklu imputasyonun kısa ve okunur rehberi."
+  - title: "Saito T, Rehmsmeier M. The precision-recall plot is more informative than the ROC plot on imbalanced datasets. PLOS ONE 2015."
+    url: "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0118432"
+    kind: makale
+  - title: "scikit-learn: Pipelines and composite estimators"
+    url: "https://scikit-learn.org/stable/modules/compose.html"
+    kind: dokuman
+---
+
+import NotebookEmbed from '@/components/NotebookEmbed.astro';
+
+## Ön Okuma ve Hazırlık
+
+Derse gelmeden scikit-learn dokümantasyonunda "Cross-validation: evaluating estimator performance" sayfasının `GroupKFold` ve `TimeSeriesSplit` kısımlarına göz atın; on dakikalık bir okuma. Bir de şunu düşünün: kendi tez verinizde bir hastanın kaç satırı var? Bir mi, on mu, bin mi? Bu haftanın en önemli sorusu bu olacak.
+
+> [!not] Dersin akışı
+> İlk saat eksik veri ve sızıntı üzerine anlatım, ikinci saat hasta-bazlı bölme ve dengesiz sınıf, son saat defter. Defterde beş küçük deney var; hepsini birlikte çalıştıracağız.
+
+## Ders Notları
+
+### Model kurmadan önce
+
+Geçen hafta dersin haritasını çizdik ve zincirin tamamını küçük ölçekte bir kez çalıştırdık. Bu hafta o zincirin en az ilgi çeken ama en çok hata üreten halkasındayız: veriyi modele vermeden önce yapılanlar. Bir makine öğrenmesi projesinde zamanın büyük kısmı burada geçer, ama makalelerde bu bölüm genellikle iki cümleyle geçiştirilir. "Eksik değerler medyanla dolduruldu, veri %80-%20 olarak bölündü." O iki cümlenin arkasında, modelin klinikte çalışıp çalışmayacağını belirleyen kararlar saklıdır.
+
+Biyomedikal verinin ders kitabı verisinden farkını geçen hafta altı maddede saymıştık: heterojen, eksik, bağımlı, az örnekli, gürültülü etiketli ve yüksek riskli. Bugün bunlardan üçüyle yüzleşiyoruz. Eksiklik, bağımlılık ve sınıf dengesizliği. Aralara da hepsini kesen bir kavram giriyor: sızıntı.
+
+### Eksik veri ölçülmemiş değer değildir
+
+Sağlık verisinde boş hücre görmeye alışkınız, ama boşluğun ne anlama geldiğini pek sormayız. Oysa bir laboratuvar değerinin eksik olmasının en az üç farklı nedeni olabilir ve bu üç neden birbirinden tamamen farklı şeyler söyler.
+
+Bazen eksiklik gerçekten rastgeledir. Tüp kırılmıştır, cihaz arızalanmıştır, kayıt sistemi o gün çökmüştür. Buna literatürde **MCAR** deniyor, tamamen rastgele eksiklik. Bu en masum durumdur; eksik satırları atsanız bile yanlılık oluşmaz, yalnızca örnek kaybedersiniz.
+
+Çoğu zaman eksiklik gözlediğimiz başka bir şeye bağlıdır. Yaşlı hastalarda daha çok test istenir, acilden gelen hastanın kan gazı vardır ama poliklinik hastasının yoktur. Buna **MAR** deniyor: eksiklik, elimizdeki diğer değişkenlerle açıklanabilir. Bu durumda diğer değişkenleri kullanarak eksik değeri tahmin etmek, yani imputasyon yapmak makul ve savunulabilir bir yoldur.
+
+Asıl ilginç olan üçüncü durum. Yoğun bakımda laktat ölçümü eksikse bunun en olası nedeni hastanın laktat ölçtürecek kadar kötü olmamasıdır. Eksikliğin nedeni, eksik olan değerin kendisiyle ilişkilidir. Buna **MNAR** deniyor ve burada eksiklik artık bir sorun değil, bir bilgidir. Laktatın ölçülmemiş olması, hastanın stabil olduğunu söyler. Bu bilgiyi medyanla doldurarak yok ederseniz modelinizin elinden en değerli özniteliklerden birini almış olursunuz.
+
+> [!ornek] Pima veri setinde insülin
+> Bugün defterde kullanacağımız diyabet veri setinde insülin sütununun yaklaşık yarısı boş. Ama boşluk sıfır olarak kodlanmış; `describe()` çıktısında minimum 0 görünür ve geçersiniz. Sıfırları gerçek boşluğa çevirip diyabetli ve diyabetsiz gruplarda eksiklik oranına baktığınızda iki oranın farklı olduğunu göreceksiniz. Eksiklik rastgele değil; sınıfla ilişkili.
+
+Bu üç mekanizmayı veriden kesin olarak ayırt etmenin bir yolu yok, çünkü eksik değeri görmüyoruz. Ama ipuçları var. Eksiklik oranı sınıfa, yaşa, servise göre değişiyor mu? Eksik olan hastalar sonlanım açısından farklı mı? Bu sorulara bakmak, hangi imputasyon stratejisinin mantıklı olduğunu söyler. Ve pratikte en kestirme çözüm çoğu zaman şudur: değeri doldurun, ama "bu değer eksikti" bilgisini ayrı bir gösterge sütunu olarak saklayın. scikit-learn'de bunun adı `add_indicator=True`. Tek satır, ama MNAR durumunda başarımı gözle görülür biçimde değiştirebilir.
+
+İmputasyon yöntemlerine gelince, bir uyarı. Ders kitapları medyan, KNN, MICE gibi yöntemleri uzun uzun karşılaştırır ve hangisinin daha iyi olduğu üzerine bölümler yazar. Defterde beş yöntemi yan yana koyacağız ve farkın ne kadar küçük olduğunu göreceksiniz. Yöntemin seçimi genellikle sonucu değiştirmez; eksikliğin **neden** olduğunu anlamak değiştirir. Enerjinizi oraya harcayın.
+
+### Gürültü, aykırı değer ve ölçek
+
+Eksik verinin yanında iki daha sessiz sorun var. Biri gürültü ve aykırı değer: sistolik tansiyonu 1200 olan hasta, boyu 17 cm olan yetişkin. Bunlar genellikle birim hatası ya da giriş hatasıdır ve alan bilgisiyle yakalanır; istatistiksel bir kural bunları bulamaz çünkü kuralın "makul" dediği aralık klinikte anlamsız olabilir. İyi bir alışkanlık, her sütun için fizyolojik olarak mümkün aralığı baştan yazmak ve dışına düşenleri eksik saymaktır.
+
+Diğeri ölçek. Yaş 20 ile 90 arasında, insülin 0 ile 800 arasında değişirken uzaklığa dayalı yöntemler (k-NN, SVM, sinir ağları) büyük ölçekli değişkene teslim olur. Bu yüzden standartlaştırırız. Ama burada bir tuzak var ve o tuzak bizi haftanın asıl konusuna götürüyor: ölçekleyicinin ortalamasını ve standart sapmasını **hangi veriden** hesaplıyorsunuz? Tüm veriden hesaplarsanız test kümesinin dağılımı eğitime sızmış olur. Etkisi küçüktür, ama ilke büyüktür. Ölçekleyici yalnızca eğitim kümesine uydurulur, test kümesine uygulanır. Bunu her seferinde elle yapmak yerine `Pipeline` içine koyarsınız ve çapraz doğrulama her katlamada bunu sizin yerinize doğru yapar.
+
+### Sızıntı: modelin sınavdan önce cevap anahtarını görmesi
+
+Sızıntı, eğitim sırasında modelin normalde erişemeyeceği bilgiye erişmesidir. Sınavdan önce cevap anahtarını görmüş öğrenci gibi; notu yüksektir ama hiçbir şey öğrenmemiştir. Biyomedikal veride sızıntı o kadar çok kılığa girer ki Kaufman ve arkadaşları 2012'de bunun için bir sınıflama makalesi yazdılar.
+
+En açık biçimi zamansal sızıntı. Sepsis tahmini yapıyorsunuz ve özniteliklerinizin arasında "antibiyotik başlandı mı" var. Antibiyotik sepsisten sonra başlanır; model geleceği görüyor. Bir başka biçimi az önce konuştuğumuz ön işleme sızıntısı: ölçekleyici, imputasyon ya da özellik seçimi tüm veriye bakarak yapılmış. Özellik seçimi bunların en tehlikelisi, çünkü etkisi küçük değil, devasa. Defterde bunu tamamen rastgele veriyle göstereceğiz: 200 hasta, 2000 rastgele öznitelik, rastgele etiket. Öğrenilecek hiçbir şey yok, doğru cevap AUC 0.50. Özellik seçimini çapraz doğrulamanın dışında yaparsanız 0.80 civarında bir AUC alırsınız. Bu, gen ifadesi çalışmalarında yıllarca tekrarlanmış bir hatadır ve bugün hâlâ dergilere gönderilen makalelerde görülür.
+
+> [!uyari] Kural tek cümle
+> Test katlamasının etiketine ya da dağılımına dokunan her adım, ölçekleme, imputasyon, özellik seçimi, yeniden örnekleme, ne varsa hepsi, çapraz doğrulama döngüsünün içinde olmalıdır. scikit-learn'de bunun pratik karşılığı, her şeyi `Pipeline` içine koymaktır.
+
+Bir de daha sinsi bir biçim var, ve o bizi haftanın son konusuna götürüyor.
+
+### Aynı hasta iki kümede: bağımlılık sızıntısı
+
+Pima veri setinde her hasta bir satırdır ve rastgele bölme sorun çıkarmaz. Ama düşünün: EEG kaydını iki saniyelik pencerelere böldünüz ve bir hastadan bin pencere elde ettiniz. Ya da bir hastanın on farklı kesitten röntgeni var. Ya da yoğun bakım hastasının her saati bir satır. Bu satırlar birbirinden bağımsız değildir; aynı hastanın imzasını taşırlar. Rastgele bölme yaparsanız aynı hastanın bazı pencereleri eğitime, bazıları teste düşer. Model hastalığı değil, hastayı öğrenir. Testte o hastayı tanır ve doğru cevabı verir. AUC 0.98 çıkar. Sonra modeli yeni hastalarda denersiniz ve 0.75'e düşer.
+
+Bu, biyomedikal makine öğrenmesinde en sık yapılan ve en geç fark edilen hatadır. Çözümü basit ama disiplin ister: hasta kimliğini verinin ilk gününden itibaren bir sütun olarak taşıyın ve bölmeyi `GroupKFold` ile, hasta kimliğine göre yapın. Böylece bir hasta ya tamamen eğitimdedir ya tamamen testte. Defterde bunu Pima'yı yapay olarak çoğaltarak göstereceğiz; rastgele bölme ile grup bölmesi arasındaki fark çıplak gözle görülecek.
+
+Zaman serisinde aynı ilkenin bir uzantısı var: gelecek geçmişi tahmin edemez. 2024 verisiyle eğitip 2022'yi test edemezsiniz; `TimeSeriesSplit` bunu zorunlu kılar. Ve çok merkezli veride en sert doğrulama biçimi, bir hastaneyi tamamen dışarıda bırakmaktır. Bu, 14. haftada dış doğrulama başlığı altında geri gelecek.
+
+### Dengesiz sınıf: doğruluk yüzde doksan, model işe yaramaz
+
+Son konu. Nadir hastalıklarda, komplikasyon tahmininde, taramada pozitif sınıf genellikle azınlıktadır; yüzde beş, yüzde bir, bazen binde bir. Bu rejimde doğruluk anlamsız bir sayıya dönüşür. Yüzde bir prevalansta "herkes sağlıklı" diyen model yüzde doksan dokuz doğrudur ve hiçbir hastayı yakalamaz.
+
+İlk refleks genellikle veriyi dengelemek olur: azınlık sınıfı çoğalt, çoğunluğu azalt, ya da SMOTE gibi sentetik örnekler üret. Bunlar işe yarayabilir, ama defterde göreceğiniz gibi çoğu zaman yaptıkları şey, karar eşiğini kaydırmaktan ibarettir. Sınıf ağırlığı vermek de aynı etkiyi daha temiz bir yoldan sağlar. Modelin sıralama gücü, yani ROC-AUC, üç yaklaşımda da neredeyse aynı kalır; değişen şey duyarlılık ile özgüllük arasındaki dengedir ve o dengeyi zaten klinik maliyete göre siz seçmelisiniz. Eşik seçimini 4. haftada ayrıntılı konuşacağız.
+
+Dengesiz sınıfta asıl değişmesi gereken şey metriğinizdir. ROC eğrisi, negatiflerin çok olduğu durumda iyimser görünür; PR eğrisi ve altındaki alan, pozitif sınıfa odaklandığı için gerçeği daha iyi anlatır. Ve eğer SMOTE kullanacaksanız, o da `Pipeline` içinde olmalıdır. Sentetik örnekleri tüm veriye uygulayıp sonra bölerseniz test kümesinde eğitimden türetilmiş kopyalar bulunur ve sızıntının bir başka biçimini yaratmış olursunuz.
+
+> [!neden] Neden bu hafta bu kadar önemli?
+> Bu derste kuracağımız her model, 4. haftadan 14. haftaya kadar, bu haftanın disiplinine dayanacak. Hasta-bazlı bölme yapılmamış bir CNN'in AUC'si, sızıntılı bir XGBoost'un öznitelik önemi, dengesiz veride doğrulukla raporlanmış bir sonuç; hepsi güzel görünür ve hepsi yanlıştır. Tez jürisi ya da hakem, modelinizin ne kadar iyi olduğundan önce bu üç soruyu sorar.
+
+## Temel Kavramlar
+
+- **Eksik veri mekanizması** — MCAR: tamamen rastgele; MAR: gözlenen değişkenlerle açıklanabilir; MNAR: eksikliğin kendisi bilgi taşır. Klinik veride MNAR sanıldığından yaygındır.
+- **Eksiklik göstergesi** — Doldurulan değerin yanına "bu değer eksikti" bilgisini taşıyan ikili sütun; `add_indicator=True`.
+- **Veri sızıntısı** — Eğitim sırasında modelin test bilgisine ya da geleceğe erişmesi. Zamansal, ön işleme kaynaklı ve bağımlılık kaynaklı biçimleri vardır.
+- **Pipeline** — Ön işleme adımlarını ve modeli tek nesnede zincirleyen yapı; çapraz doğrulama her katlamada tümünü yeniden uydurur ve sızıntıyı yapısal olarak önler.
+- **Hasta-bazlı bölme** — Aynı hastanın tüm kayıtlarının tek kümede kalmasını sağlayan bölme; `GroupKFold`. Zaman serisinde `TimeSeriesSplit`, çok merkezde merkez-dışı bırakma.
+- **Dengesiz sınıf** — Pozitif oranının düşük olduğu rejim; doğruluk anlamsızlaşır, PR-AUC ve eşik seçimi öne çıkar.
+
+## Uygulama / Laboratuvar
+
+Defterde beş deney var ve hepsi bugün anlattıklarımızın kanıtı niteliğinde: Pima'daki gizli eksikler ve eksikliğin sınıfla ilişkisi, beş imputasyon yönteminin `Pipeline` içinde dürüst karşılaştırması, tamamen rastgele veriyle sızıntı yoluyla elde edilen AUC 0.80, çoğaltılmış hastalarda `KFold` ile `GroupKFold` arasındaki uçurum ve dengesiz sınıfta doğruluğun çöküşü.
+
+<NotebookEmbed file="notebooks/hafta-02.ipynb" title="Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme" />
+
+**Ders içi çalışma:** Kendi tez verinizi ya da tanıdığınız bir veri setini düşünün ve üç soruyu bir kâğıda yazın. Hangi sütunlar MNAR olabilir? "Grup" hangi sütundur, yani bir hastanın kaç satırı var? Pozitif sınıf oranı kaç? Bu üç cevap, o veriyle kuracağınız her modelin doğrulama tasarımını belirler.
+
+## Tartışma Soruları
+
+1. Eksiklik göstergesi eklemek ne zaman bilgi kazandırır, ne zaman bir tür sızıntıdır? İpucu: gösterge, tahmin anında gerçekten bilinebilecek bir şey mi?
+2. Aynı hastanın verisinin iki kümeye düşmesi neden özellikle biyomedikal veride diğer alanlardan daha sık görülür?
+3. SMOTE gibi sentetik örnekleme yöntemleri klinik veride hangi riskleri taşır? Sentetik bir "hasta" fizyolojik olarak mümkün müdür?
+
+## Haftanın Özeti
+
+Model kurmadan önce veriyle uğraştık ve dört disiplin edindik. Eksikliğin nedenini sormak, çünkü eksiklik çoğu zaman bilgidir. Test bilgisine dokunan her adımı `Pipeline` içine koymak, çünkü sızıntı kolaydır ve görünmezdir. Hasta kimliğini ilk günden taşıyıp bölmeyi ona göre yapmak, çünkü model aksi hâlde hastalığı değil hastayı öğrenir. Dengesiz sınıfta doğruluğa bakmamak, çünkü doğruluk orada hiçbir şey söylemez. Gelecek hafta veriyi keşfetmeye ve yeniden temsil etmeye geçiyoruz: keşifçi analiz, öznitelik mühendisliği ve boyut indirgeme.

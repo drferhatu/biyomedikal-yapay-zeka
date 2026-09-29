@@ -163,7 +163,189 @@ md("""## 7 · Bugün ne gördük, nerede derinleşecek?
 """),
 ]
 
-NOTEBOOKS = {"hafta-01": ("Hafta 1 · Uçtan Uca İlk Tur", WEEK01)}
+# --------------------------------------------------------------------------
+# HAFTA 2 — Biyomedikal verinin doğası ve ön işleme
+# --------------------------------------------------------------------------
+WEEK02 = [
+md("""# Hafta 2 · Biyomedikal Verinin Doğası ve Ön İşleme
+
+**SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka** · Fırat Üniversitesi Yazılım ve Bilişim Araştırma Enstitüsü
+
+Bu defterde model kurmaktan çok, modelden önce yapılması gerekenlerle uğraşıyoruz. Beş bölüm var: eksik verinin
+gerçek yüzü, imputasyon seçeneklerinin dürüst karşılaştırması, veri sızıntısının ne kadar kolay olduğu, aynı hastanın
+iki kümeye düşmesinin başarımı nasıl şişirdiği ve dengesiz sınıflarda doğruluğun neden anlamsızlaştığı.
+
+Her bölümün sonunda küçük bir "deneyin" notu var; derste birlikte ilerleyeceğiz."""),
+md("""## 1 · Veri: Pima diyabet seti ve gizli eksikler
+
+768 kadın hasta, 8 klinik ölçüm, ikili sonuç (5 yıl içinde diyabet). Veri setinin ünlü bir tuzağı var:
+ölçülmemiş değerler **0** olarak kaydedilmiş. Glukozu 0 olan hasta olmaz; o hücre aslında boş."""),
+code('''import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+
+URL = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv"
+COLS = ["gebelik", "glukoz", "tansiyon", "deri_kalinligi", "insulin", "vki", "soyagaci", "yas", "diyabet"]
+try:
+    df = pd.read_csv(URL, header=None, names=COLS)
+    print("Veri indirildi:", df.shape)
+except Exception as e:
+    print("İndirme başarısız, sentetik veri üretiliyor:", e)
+    rng = np.random.default_rng(0); n = 768
+    df = pd.DataFrame({"gebelik": rng.integers(0, 15, n), "glukoz": rng.normal(120, 30, n).clip(0),
+                       "tansiyon": rng.normal(70, 12, n).clip(0), "deri_kalinligi": rng.normal(20, 10, n).clip(0),
+                       "insulin": rng.normal(80, 100, n).clip(0), "vki": rng.normal(32, 7, n).clip(0),
+                       "soyagaci": rng.random(n), "yas": rng.integers(21, 70, n)})
+    df["diyabet"] = (rng.random(n) < 1 / (1 + np.exp(-(df.glukoz - 125) / 25))).astype(int)
+    oranlar = {"glukoz": 0.01, "tansiyon": 0.05, "deri_kalinligi": 0.3, "insulin": 0.49, "vki": 0.015}
+    for c, o in oranlar.items():
+        df.loc[rng.random(n) < o, c] = 0
+
+sifir_olamaz = ["glukoz", "tansiyon", "deri_kalinligi", "insulin", "vki"]
+print("\\nSıfır olarak kodlanmış hücre sayısı:")
+print((df[sifir_olamaz] == 0).sum())'''),
+md("""`describe()` bu tuzağı size söylemez; minimum 0 görünür ve geçer gidersiniz. Önce sıfırları gerçek boşluğa (`NaN`) çevirelim,
+sonra eksikliğin **rastgele olup olmadığına** bakalım. Sorumuz şu: insülin ölçülmeyen hastalar, ölçülenlerle aynı hastalar mı?"""),
+code('''X = df.drop(columns="diyabet").copy()
+y = df["diyabet"]
+X[sifir_olamaz] = X[sifir_olamaz].replace(0, np.nan)
+
+eksik = X.isna().mean().sort_values(ascending=False)
+print("Eksik oranı:\\n", eksik.round(3), "\\n")
+
+# Eksiklik sonuçla ilişkili mi?  (MAR/MNAR ipucu)
+tablo = pd.DataFrame({
+    "insulin_eksik_orani": [X.loc[y == 0, "insulin"].isna().mean(), X.loc[y == 1, "insulin"].isna().mean()],
+    "deri_eksik_orani":    [X.loc[y == 0, "deri_kalinligi"].isna().mean(), X.loc[y == 1, "deri_kalinligi"].isna().mean()],
+}, index=["diyabet yok", "diyabet var"]).round(3)
+tablo'''),
+md("""> **Deneyin:** İnsülin eksikliği iki grupta aynı oranda mı? Değilse eksikliğin kendisi bilgi taşıyor demektir. Bu durumda
+> "eksik mi?" sorusunu ayrı bir sütun olarak modele vermek (eksiklik göstergesi) çoğu zaman başarımı artırır."""),
+md("""## 2 · İmputasyon: beş yöntem, tek dürüst karşılaştırma
+
+Karşılaştırmayı dürüst yapmanın tek yolu, imputasyonu **çapraz doğrulama döngüsünün içine** koymak. Yani `Pipeline`.
+Aksi hâlde test katlamasındaki bilgi, medyanı hesaplarken eğitime karışır. Etkisi küçük olabilir ama alışkanlık büyük."""),
+code('''from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer, KNNImputer
+from sklearn.experimental import enable_iterative_imputer  # noqa
+from sklearn.impute import IterativeImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+def boru(imputer):
+    return Pipeline([("impute", imputer), ("olcek", StandardScaler()),
+                     ("lr", LogisticRegression(max_iter=2000))])
+
+adaylar = {
+    "medyan":                 SimpleImputer(strategy="median"),
+    "medyan + gösterge":      SimpleImputer(strategy="median", add_indicator=True),
+    "KNN (k=5)":              KNNImputer(n_neighbors=5),
+    "MICE (iteratif)":        IterativeImputer(random_state=0, max_iter=10),
+    "MICE + gösterge":        IterativeImputer(random_state=0, max_iter=10, add_indicator=True),
+}
+for ad, imp in adaylar.items():
+    s = cross_val_score(boru(imp), X, y, cv=cv, scoring="roc_auc")
+    print(f"{ad:22s} ROC-AUC = {s.mean():.3f} ± {s.std():.3f}")'''),
+md("""Farklar küçük; bu normal. Ders kitapları imputasyonu büyük bir mesele gibi anlatır ama pratikte **hangi yöntemi seçtiğinizden çok,
+eksikliğin neden olduğunu anlamanız** sonucu değiştirir. Göstergeli sürümlerin öne çıkıp çıkmadığına bakın."""),
+md("""## 3 · Sızıntı ne kadar kolay? Tamamen rastgele veriyle AUC 0.80
+
+Şimdi kasıtlı bir hata yapacağız. 200 hastalık bir veri seti, **tamamen rastgele** 2000 öznitelik, rastgele etiket.
+Hiçbir şey öğrenilemez; doğru AUC 0.50 olmalı. Ama özellik seçimini çapraz doğrulamanın *dışında* yaparsak..."""),
+code('''from sklearn.feature_selection import SelectKBest, f_classif
+
+rng = np.random.default_rng(1)
+Xr = rng.standard_normal((200, 2000)); yr = rng.integers(0, 2, 200)
+
+# YANLIŞ: en iyi 20 özniteliği tüm veriye bakarak seç, sonra çapraz doğrula
+Xsec = SelectKBest(f_classif, k=20).fit_transform(Xr, yr)
+yanlis = cross_val_score(LogisticRegression(max_iter=2000), Xsec, yr, cv=cv, scoring="roc_auc").mean()
+
+# DOĞRU: seçim de Pipeline'ın içinde, her katlamada yeniden
+dogru_boru = Pipeline([("sec", SelectKBest(f_classif, k=20)), ("lr", LogisticRegression(max_iter=2000))])
+dogru = cross_val_score(dogru_boru, Xr, yr, cv=cv, scoring="roc_auc").mean()
+
+print(f"Rastgele veri, seçim dışarıda : ROC-AUC = {yanlis:.3f}   <- sızıntı")
+print(f"Rastgele veri, seçim Pipeline  : ROC-AUC = {dogru:.3f}   <- gerçek")'''),
+md("""Bu, omik verideki (p ≫ n) en yaygın hatadır ve yayımlanmış makalelerde defalarca görülmüştür. Kural basit:
+**test katlamasının etiketine dokunan her adım Pipeline'ın içinde olmalı.** Ölçekleme, imputasyon, özellik seçimi, hepsi."""),
+md("""## 4 · Aynı hasta iki kümede: hasta-bazlı bölme
+
+Pima'da her hasta bir satır. Ama EEG segmentleri, çok sayıda görüntü ya da tekrarlayan yatışlarla çalışırken aynı hastadan
+onlarca satır olur. Bunu simüle edelim: her hastadan 5 "kayıt" üretelim (küçük gürültüyle), sonra rastgele bölme ile hasta-bazlı
+bölmeyi karşılaştıralım. Model olarak bilerek ezberlemeye yatkın bir şey seçiyoruz: k-NN (k=1)."""),
+code('''from sklearn.model_selection import KFold, GroupKFold
+from sklearn.neighbors import KNeighborsClassifier
+
+Xi = SimpleImputer(strategy="median").fit_transform(X)
+rng = np.random.default_rng(2)
+tekrar = 5
+Xg = np.vstack([Xi + rng.normal(0, 0.02 * Xi.std(axis=0), Xi.shape) for _ in range(tekrar)])
+yg = np.tile(y.values, tekrar)
+hasta_id = np.tile(np.arange(len(y)), tekrar)
+
+ezber = Pipeline([("olcek", StandardScaler()), ("knn", KNeighborsClassifier(n_neighbors=1))])
+rastgele = cross_val_score(ezber, Xg, yg, cv=KFold(5, shuffle=True, random_state=0), scoring="roc_auc").mean()
+gruplu   = cross_val_score(ezber, Xg, yg, cv=GroupKFold(5), groups=hasta_id, scoring="roc_auc").mean()
+
+print(f"Rastgele KFold   (aynı hasta iki kümede olabilir): ROC-AUC = {rastgele:.3f}")
+print(f"GroupKFold       (hasta tek kümede):               ROC-AUC = {gruplu:.3f}")'''),
+md("""> **Deneyin:** Gürültüyü 0.02 yerine 0.3 yapın; rastgele bölmedeki AUC ne kadar düşüyor? Fark sürdükçe model hastalığı değil
+> hastayı tanıyor. 7. haftada EEG'de aynı deneyi gerçek kayıtlarla yapacağız."""),
+md("""## 5 · Dengesiz sınıf: doğruluk %90 ama model işe yaramıyor
+
+Pozitif oranını yapay olarak %8'e düşürelim (nadir hastalık senaryosu). "Herkes sağlıklı" diyen bir model %92 doğru olur.
+Klinik olarak sıfır değeri vardır. Doğruluk yerine PR-AUC ve duyarlılığa bakalım; sınıf ağırlığı ve SMOTE'un ne yaptığını görelim."""),
+code('''from sklearn.metrics import average_precision_score, recall_score, accuracy_score, roc_auc_score
+from sklearn.model_selection import cross_val_predict
+
+pos = np.where(y == 1)[0]; neg = np.where(y == 0)[0]
+rng = np.random.default_rng(3)
+sec_pos = rng.choice(pos, size=int(len(neg) * 0.08), replace=False)
+idx = np.concatenate([neg, sec_pos]); rng.shuffle(idx)
+Xd, yd = X.iloc[idx], y.iloc[idx]
+print(f"Örneklem: {len(yd)} hasta, pozitif oranı %{100*yd.mean():.1f}\\n")
+
+def degerlendir(ad, model):
+    p = cross_val_predict(model, Xd, yd, cv=cv, method="predict_proba")[:, 1]
+    yhat = (p >= 0.5).astype(int)
+    print(f"{ad:24s} doğruluk {accuracy_score(yd, yhat):.3f} | duyarlılık {recall_score(yd, yhat):.3f} | "
+          f"ROC-AUC {roc_auc_score(yd, p):.3f} | PR-AUC {average_precision_score(yd, p):.3f}")
+
+taban = [("impute", SimpleImputer(strategy="median")), ("olcek", StandardScaler())]
+degerlendir("düz lojistik", Pipeline(taban + [("lr", LogisticRegression(max_iter=2000))]))
+degerlendir("class_weight='balanced'", Pipeline(taban + [("lr", LogisticRegression(max_iter=2000, class_weight="balanced"))]))
+try:
+    from imblearn.pipeline import Pipeline as ImbPipeline
+    from imblearn.over_sampling import SMOTE
+    degerlendir("SMOTE (Pipeline içinde)", ImbPipeline(taban + [("smote", SMOTE(random_state=0)), ("lr", LogisticRegression(max_iter=2000))]))
+except ImportError:
+    print("imbalanced-learn kurulu değil; SMOTE satırı atlandı (pip install imbalanced-learn)")'''),
+md("""Üç şeye dikkat edin. Birincisi, ROC-AUC üç modelde de neredeyse aynı; sıralama gücü değişmedi. İkincisi, duyarlılık düz modelde
+çok düşük, ağırlıklı modelde yükseldi; değişen şey aslında **eşik**. Üçüncüsü, SMOTE'un `Pipeline` içinde olması şart: sentetik
+örnekler test katlamasına sızarsa PR-AUC yalan söyler.
+
+Klinik sonuç: dengesiz sınıfta yeniden örnekleme çoğu zaman şık bir eşik ayarından fazlasını vermez. Önce eşiği klinik maliyete göre
+seçin (4. hafta), sonra hâlâ gerekiyorsa örneklemeye bakın."""),
+md("""## 6 · Bugün ne gördük?
+
+| Konu | Bugünkü kanıt | Alışkanlık |
+|---|---|---|
+| Sıfır = eksik | Pima'da insülinin yarısı | `describe()` yetmez; alan bilgisiyle bak |
+| Eksiklik bilgi taşır | Eksiklik oranı sınıfa göre farklı | `add_indicator=True` dene |
+| İmputasyon yöntemi | Farklar küçük | Mekanizmayı anla, yöntemi abartma |
+| Sızıntı | Rastgele veriyle AUC 0.80 | Etikete dokunan her adım Pipeline'da |
+| Hasta-bazlı bölme | KFold vs GroupKFold farkı | Grup kimliğini ilk günden taşı |
+| Dengesiz sınıf | Doğruluk yüksek, duyarlılık düşük | PR-AUC + eşik; SMOTE'u Pipeline'da |
+
+**Ders sonrası (isteğe bağlı):** Bölüm 4'te `tekrar=20` ile deneyi yineleyin; Bölüm 5'te eşiği 0.5 yerine 0.2 yapıp
+duyarlılık–özgüllük değişimini not edin. Kendi tez verinizde "grup" hangi sütun olurdu, bir cümleyle yazın.
+"""),
+]
+
+NOTEBOOKS = {"hafta-01": ("Hafta 1 · Uçtan Uca İlk Tur", WEEK01),
+             "hafta-02": ("Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme", WEEK02)}
 
 
 def build(name, title, cells, force=False):
