@@ -344,8 +344,206 @@ duyarlılık–özgüllük değişimini not edin. Kendi tez verinizde "grup" han
 """),
 ]
 
+# --------------------------------------------------------------------------
+# HAFTA 3 — Keşifçi veri analizi, öznitelik mühendisliği ve boyut indirgeme
+# --------------------------------------------------------------------------
+WEEK03 = [
+md("""# Hafta 3 · Veriyi Tanımak: Keşif, Yeni Öznitelikler ve Boyut İndirgeme
+
+**SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka** · Fırat Üniversitesi Yazılım ve Bilişim Araştırma Enstitüsü
+
+Bu hafta model kurmuyoruz. Veriye bakıyoruz, ona sorular soruyoruz, ondan yeni sütunlar türetiyoruz ve çok sütunlu
+veriyi iki boyuta indirip resmini çiziyoruz. Dört bölüm var: keşif, yeni öznitelik türetme, özellik seçimi (ve geçen
+haftadan tanıdık bir tuzak), PCA ve UMAP.
+
+Veri seti: UCI Heart Disease (Cleveland). 303 hasta, 13 klinik ölçüm, hedef: koroner arter hastalığı var mı?"""),
+md("""## 1 · Veriyi yükle ve ilk bakış
+
+Veri setini doğrudan UCI'dan çekiyoruz. İnternet yoksa benzer yapıda sentetik bir veri üretiliyor; kod aynı şekilde çalışır."""),
+code('''import warnings; warnings.filterwarnings("ignore")
+import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_theme(style="whitegrid", font_scale=0.9)
+
+URL = "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+COLS = ["yas", "cinsiyet", "gogus_agrisi", "tansiyon", "kolesterol", "aclik_sekeri", "ekg", "max_nabiz",
+        "efor_anjina", "st_depresyon", "st_egim", "damar_sayisi", "talasemi", "hedef"]
+try:
+    df = pd.read_csv(URL, header=None, names=COLS, na_values="?")
+    print("Veri indirildi:", df.shape)
+except Exception as e:
+    print("İndirme başarısız, sentetik veri üretiliyor:", e)
+    rng = np.random.default_rng(0); n = 303
+    df = pd.DataFrame({"yas": rng.integers(29, 78, n), "cinsiyet": rng.integers(0, 2, n), "gogus_agrisi": rng.integers(1, 5, n),
+        "tansiyon": rng.normal(131, 17, n), "kolesterol": rng.normal(246, 50, n), "aclik_sekeri": rng.integers(0, 2, n),
+        "ekg": rng.integers(0, 3, n), "max_nabiz": rng.normal(150, 23, n), "efor_anjina": rng.integers(0, 2, n),
+        "st_depresyon": rng.exponential(1, n), "st_egim": rng.integers(1, 4, n), "damar_sayisi": rng.integers(0, 4, n),
+        "talasemi": rng.choice([3, 6, 7], n)})
+    df["hedef"] = (rng.random(n) < 1 / (1 + np.exp(-(0.05 * (df.yas - 55) + 0.8 * (df.gogus_agrisi == 4) + 0.6 * df.damar_sayisi - 0.02 * (df.max_nabiz - 150) - 1)))).astype(int)
+
+# UCI'da hedef 0–4 arası; 0 = hastalık yok, 1–4 = var. İkili yapıyoruz.
+df["hedef"] = (df["hedef"] > 0).astype(int)
+print(df["hedef"].value_counts().rename({0: "hastalık yok", 1: "hastalık var"}))
+df.head()'''),
+md("""İlk bakışta üç soru soruyoruz: kaç satır, kaç sütun, kaç sınıf? Sonra her sütunun ne olduğunu anlamaya çalışıyoruz.
+Burada sütunların bir kısmı **sayı** (yaş, kolesterol), bir kısmı aslında **kategori** ama sayıyla kodlanmış (göğüs ağrısı tipi 1–4,
+talasemi 3/6/7). Bu ayrımı yapmazsanız model "göğüs ağrısı tipi 4, tip 2'nin iki katı" diye düşünür. Öyle bir şey yok."""),
+code('''sayisal = ["yas", "tansiyon", "kolesterol", "max_nabiz", "st_depresyon"]
+kategorik = ["cinsiyet", "gogus_agrisi", "aclik_sekeri", "ekg", "efor_anjina", "st_egim", "damar_sayisi", "talasemi"]
+
+print("Eksik değer sayısı:\\n", df.isna().sum()[df.isna().sum() > 0], "\\n")
+df[sayisal].describe().round(1)'''),
+md("""## 2 · Keşif: dağılımlar ve gruplar arası farklar
+
+Keşifçi analizin amacı basit: veriyi görmek. Hangi değişken iki grupta farklı dağılıyor? Nerede garip bir değer var?
+Aşağıdaki grafikte her sayısal değişkeni hastalığı olan ve olmayan gruplar için yan yana çiziyoruz."""),
+code('''fig, axes = plt.subplots(1, 5, figsize=(15, 3.4))
+for ax, c in zip(axes, sayisal):
+    sns.boxplot(data=df, x="hedef", y=c, ax=ax, palette=["#0f9b8e", "#be3a5a"], hue="hedef", legend=False)
+    ax.set_xlabel(""); ax.set_xticks([0, 1]); ax.set_xticklabels(["yok", "var"]); ax.set_title(c)
+plt.suptitle("Sayısal değişkenler: hastalık yok / var", y=1.03); plt.tight_layout()'''),
+md("""**Okuyun:** Hangi kutular belirgin biçimde kayıyor? Maksimum nabız ve ST depresyonu iki grupta ayrışıyor; kolesterol pek ayrışmıyor.
+Bu, modeli kurmadan önce hangi değişkenlerin işe yarayacağına dair ilk sezgidir.
+
+Kategorik değişkenler için oran tablosu daha anlamlı: her kategoride hastalık oranı kaç?"""),
+code('''fig, axes = plt.subplots(2, 4, figsize=(14, 6))
+for ax, c in zip(axes.ravel(), kategorik):
+    oran = df.groupby(c)["hedef"].mean()
+    oran.plot.bar(ax=ax, color="#2f3fa3"); ax.set_ylim(0, 1); ax.set_ylabel("hastalık oranı"); ax.set_title(c)
+    ax.tick_params(axis="x", rotation=0)
+plt.suptitle("Kategorik değişkenler: her kategoride hastalık oranı", y=1.02); plt.tight_layout()'''),
+md("""Göğüs ağrısı tipi 4 (asemptomatik) ve tıkalı damar sayısı arttıkça hastalık oranı belirgin artıyor. Bir kardiyolog için bu şaşırtıcı değil;
+bizim için de iyi haber: veri klinik bilgiyle uyumlu, yani etiket makul görünüyor.
+
+Son olarak sayısal değişkenlerin birbiriyle ilişkisine bakalım. Birbirine çok benzeyen iki sütun varsa bunu bilmek isteriz."""),
+code('''plt.figure(figsize=(5.5, 4.5))
+sns.heatmap(df[sayisal + ["hedef"]].corr(), annot=True, fmt=".2f", cmap="RdBu_r", vmin=-1, vmax=1, square=True)
+plt.title("Korelasyon matrisi"); plt.tight_layout()'''),
+md("""## 3 · Yeni öznitelik türetmek
+
+Modelin elindeki sütunlar, hastaneden geldiği hâliyle her zaman en kullanışlı biçimde değildir. Bazen iki sütunu birleştirince
+daha anlamlı bir şey çıkar. Buna öznitelik mühendisliği diyoruz; aslında yaptığımız şey klinik bilgiyi sütuna çevirmek.
+
+Üç örnek:
+- **Yaşa göre beklenen maksimum nabız:** 220 − yaş. Hastanın ulaştığı nabzın bu beklentiye oranı, "efor kapasitesi" gibi bir şey söyler.
+- **Yaş grubu:** 40 altı, 40–55, 55–65, 65 üstü. Bazen yaşın etkisi düz bir çizgi değildir.
+- **Risk sayacı:** Yüksek tansiyon, yüksek kolesterol, açlık şekeri yüksek, erkek... kaç risk faktörü bir arada?"""),
+code('''df2 = df.copy()
+df2["nabiz_orani"] = df2["max_nabiz"] / (220 - df2["yas"])
+df2["yas_grubu"] = pd.cut(df2["yas"], bins=[0, 40, 55, 65, 120], labels=[0, 1, 2, 3]).astype(int)
+df2["risk_sayaci"] = ((df2["tansiyon"] > 140).astype(int) + (df2["kolesterol"] > 240).astype(int)
+                      + df2["aclik_sekeri"] + df2["cinsiyet"])
+
+fig, axes = plt.subplots(1, 3, figsize=(12, 3.4))
+sns.boxplot(data=df2, x="hedef", y="nabiz_orani", ax=axes[0], hue="hedef", legend=False, palette=["#0f9b8e", "#be3a5a"]); axes[0].set_title("nabız / (220 − yaş)")
+df2.groupby("yas_grubu")["hedef"].mean().plot.bar(ax=axes[1], color="#2f3fa3"); axes[1].set_title("yaş grubuna göre hastalık oranı"); axes[1].tick_params(axis="x", rotation=0)
+df2.groupby("risk_sayaci")["hedef"].mean().plot.bar(ax=axes[2], color="#2f3fa3"); axes[2].set_title("risk sayacına göre hastalık oranı"); axes[2].tick_params(axis="x", rotation=0)
+plt.tight_layout()'''),
+md("""> **Deneyin:** Kendi klinik bilginizle bir öznitelik daha türetin. Örneğin ST depresyonu ile ST eğimini birleştirmek anlamlı mı?
+> Türettiğiniz sütunun iki grupta farklı dağılıp dağılmadığına bakın."""),
+md("""## 4 · Özellik seçimi: hangi sütunlar kalsın?
+
+Elimizde artık 16 sütun var. Hepsine ihtiyaç var mı? Özellik seçimi bu soruya cevap arar. İki basit yol gösteriyoruz:
+istatistiksel bir skorla en iyi k sütunu seçmek (`SelectKBest`) ve bir modelin en az önem verdiği sütunları teker teker atmak (`RFE`).
+
+Geçen haftadan hatırlayın: seçimi çapraz doğrulamanın **dışında** yaparsanız sonucu şişirirsiniz. O yüzden ikisi de `Pipeline` içinde."""),
+code('''from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_selection import SelectKBest, f_classif, RFE
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+X = df2.drop(columns="hedef"); y = df2["hedef"]
+cv = StratifiedKFold(5, shuffle=True, random_state=42)
+taban = [("impute", SimpleImputer(strategy="median")), ("olcek", StandardScaler())]
+
+def dene(ad, adimlar):
+    s = cross_val_score(Pipeline(taban + adimlar), X, y, cv=cv, scoring="roc_auc")
+    print(f"{ad:28s} ROC-AUC = {s.mean():.3f} ± {s.std():.3f}")
+
+dene("tüm sütunlar (16)", [("lr", LogisticRegression(max_iter=2000))])
+for k in [4, 8, 12]:
+    dene(f"SelectKBest k={k}", [("sec", SelectKBest(f_classif, k=k)), ("lr", LogisticRegression(max_iter=2000))])
+dene("RFE 8 sütun", [("sec", RFE(LogisticRegression(max_iter=2000), n_features_to_select=8)), ("lr", LogisticRegression(max_iter=2000))])'''),
+md("""Hangi sütunların seçildiğine de bakalım. Tüm veriye uydurup (yalnızca görmek için, başarım ölçmüyoruz) seçilenleri yazdırıyoruz."""),
+code('''sec = Pipeline(taban + [("sec", SelectKBest(f_classif, k=8))]).fit(X, y)
+secilen = X.columns[sec.named_steps["sec"].get_support()]
+print("SelectKBest'in seçtiği 8 sütun:", list(secilen))
+rfe = Pipeline(taban + [("sec", RFE(LogisticRegression(max_iter=2000), n_features_to_select=8))]).fit(X, y)
+print("RFE'nin seçtiği 8 sütun:      ", list(X.columns[rfe.named_steps["sec"].get_support()]))'''),
+md("""İki yöntem tamamen aynı listeyi vermez; bu normal. Türettiğimiz özniteliklerden hangileri seçildi? Seçildiyse klinik bilgiyi
+sütuna çevirmek işe yaramış demektir."""),
+md("""## 5 · Boyut indirgeme: 16 sütunu 2 boyutta görmek
+
+16 sütunlu bir veriyi gözle göremeyiz. Boyut indirgeme, veriyi mümkün olduğunca az bilgi kaybıyla 2 boyuta sıkıştırır ki çizebilelim.
+
+**PCA** bunu düz çizgilerle yapar: verinin en çok yayıldığı yönü bulur, ona "1. bileşen" der; ona dik en çok yayılan yönü bulur, "2. bileşen" der.
+Her bileşenin verideki toplam değişimin yüzde kaçını taşıdığını söyleyebilir. Bu dürüst bir yöntemdir; neyi attığını bilirsiniz."""),
+code('''from sklearn.decomposition import PCA
+
+Xs = Pipeline(taban).fit_transform(X)
+pca = PCA().fit(Xs)
+kum = np.cumsum(pca.explained_variance_ratio_)
+
+fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+axes[0].bar(range(1, len(kum) + 1), pca.explained_variance_ratio_, color="#bcc6d9", label="bileşen başına")
+axes[0].plot(range(1, len(kum) + 1), kum, "o-", color="#2f3fa3", label="birikimli")
+axes[0].axhline(0.8, ls="--", c="gray", lw=1); axes[0].set_xlabel("bileşen"); axes[0].set_ylabel("açıklanan varyans oranı"); axes[0].legend(); axes[0].set_title("Kaç bileşen yeter?")
+Z = pca.transform(Xs)[:, :2]
+axes[1].scatter(Z[y == 0, 0], Z[y == 0, 1], s=18, c="#0f9b8e", label="hastalık yok", alpha=.7)
+axes[1].scatter(Z[y == 1, 0], Z[y == 1, 1], s=18, c="#be3a5a", label="hastalık var", alpha=.7)
+axes[1].set_xlabel(f"PC1 (%{100*pca.explained_variance_ratio_[0]:.0f})"); axes[1].set_ylabel(f"PC2 (%{100*pca.explained_variance_ratio_[1]:.0f})")
+axes[1].legend(); axes[1].set_title("İlk iki bileşen")
+plt.tight_layout()
+print(f"Varyansın %80'i için gereken bileşen sayısı: {int(np.argmax(kum >= 0.8)) + 1}")'''),
+md("""Sol grafik "kaç bileşen yeter?" sorusuna cevap verir. Sağ grafikte iki grup kısmen ayrılıyor ama iç içe; bu veri setinde hastalık
+tek bir yöne sığmıyor. Hangi ölçümlerin PC1'i oluşturduğuna bakmak da öğreticidir: buna **yükleme** deniyor. Aşağıda göreceğiniz gibi
+bir uçta maksimum nabız, diğer uçta ST depresyonu, efor anjinası, yaş ve damar sayısı var: PCA kendi başına bir "hastalık yükü" ekseni bulmuş."""),
+code('''yukleme = pd.Series(pca.components_[0], index=X.columns).sort_values()
+plt.figure(figsize=(6, 4.5)); yukleme.plot.barh(color=np.where(yukleme > 0, "#be3a5a", "#0f9b8e"))
+plt.title("PC1'i oluşturan sütunlar (yüklemeler)"); plt.xlabel("ağırlık"); plt.tight_layout()'''),
+md("""**UMAP** ise eğri yolları da kullanır. Amacı birbirine yakın hastaları yakın, uzak olanları uzak tutmaktır; ama "uzaklık" kavramı
+burada esnektir. Çok güzel resimler çıkarır ve o yüzden tehlikelidir: iki kümenin arasındaki boşluğun genişliği, kümelerin şekli,
+hiçbiri sayısal olarak yorumlanamaz. UMAP keşif içindir, kanıt için değil."""),
+code('''try:
+    import umap
+    emb = umap.UMAP(n_neighbors=15, min_dist=0.1, random_state=0).fit_transform(Xs)
+    baslik = "UMAP"
+except ImportError:
+    from sklearn.manifold import TSNE
+    emb = TSNE(perplexity=30, random_state=0).fit_transform(Xs)
+    baslik = "t-SNE (umap-learn kurulu değil)"
+
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
+axes[0].scatter(emb[y == 0, 0], emb[y == 0, 1], s=18, c="#0f9b8e", alpha=.7, label="hastalık yok")
+axes[0].scatter(emb[y == 1, 0], emb[y == 1, 1], s=18, c="#be3a5a", alpha=.7, label="hastalık var")
+axes[0].set_title(f"{baslik} · hedefe göre renk"); axes[0].legend(); axes[0].set_xticks([]); axes[0].set_yticks([])
+sc = axes[1].scatter(emb[:, 0], emb[:, 1], s=18, c=X["gogus_agrisi"], cmap="viridis", alpha=.8)
+axes[1].set_title(f"{baslik} · göğüs ağrısı tipine göre renk"); axes[1].set_xticks([]); axes[1].set_yticks([])
+plt.colorbar(sc, ax=axes[1], label="göğüs ağrısı tipi"); plt.tight_layout()'''),
+md("""> **Deneyin:** `n_neighbors` değerini 5 ve 50 yapın. Resim ne kadar değişiyor? Değişiyorsa gördüğünüz kümeler verinin mi,
+> parametrenin mi eseri? Bu soruyu her UMAP grafiğinde sormalısınız."""),
+md("""## 6 · Bugün ne gördük?
+
+| Adım | Ne yaptık | Alışkanlık |
+|---|---|---|
+| İlk bakış | Satır, sütun, sınıf; sayısal mı kategorik mi | Sayıyla kodlanmış kategorilere dikkat |
+| Keşif | Kutu grafikleri, oran tabloları, korelasyon | Modelden önce veriye bak; etiket klinikle uyumlu mu? |
+| Yeni öznitelik | nabız oranı, yaş grubu, risk sayacı | Klinik bilgiyi sütuna çevir |
+| Özellik seçimi | SelectKBest, RFE, hepsi Pipeline içinde | Seçim de çapraz doğrulamanın içinde |
+| PCA | Açıklanan varyans, yüklemeler | Kaç bileşen yettiğini söyle, neyi attığını bil |
+| UMAP | 2 boyutlu harita | Keşif için kullan, kanıt sayma |
+
+**Ders sonrası (isteğe bağlı):** Bölüm 3'te kendi özniteliğinizi ekleyip Bölüm 4'te seçilip seçilmediğine bakın.
+Bölüm 5'te UMAP'i üç farklı `random_state` ile çalıştırın; kümeler yerinde duruyor mu?
+"""),
+]
+
 NOTEBOOKS = {"hafta-01": ("Hafta 1 · Uçtan Uca İlk Tur", WEEK01),
-             "hafta-02": ("Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme", WEEK02)}
+             "hafta-02": ("Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme", WEEK02),
+             "hafta-03": ("Hafta 3 · Veriyi Tanımak: Keşif, Öznitelik, PCA ve UMAP", WEEK03)}
 
 
 def build(name, title, cells, force=False):

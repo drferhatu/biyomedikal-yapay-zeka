@@ -1,0 +1,151 @@
+---
+week: 3
+title: "Keşifçi Veri Analizi, Öznitelik Mühendisliği ve Boyut İndirgeme"
+topic: "Keşifçi veri analizi, öznitelik mühendisliği ve boyut indirgeme (PCA, UMAP)"
+description: "Veriye bakmayı, ondan yeni sütunlar türetmeyi, hangi sütunların kalacağına karar vermeyi ve çok sütunlu veriyi PCA ve UMAP ile iki boyutta görmeyi öğreniyoruz."
+module: m1
+exam: false
+status: hazir
+changeNote: ""
+tags:
+  - "EDA"
+  - "öznitelik mühendisliği"
+  - "PCA"
+  - "UMAP"
+  - "t-SNE"
+  - "özellik seçimi"
+  - "omik"
+objectives:
+  - "Dağılım, korelasyon ve grup karşılaştırmalarıyla veri setini sistematik biçimde keşfeder ve veri kalitesi sorunlarını raporlar."
+  - "Alan bilgisine dayalı öznitelikler (oranlar, zaman pencereleri, klinik skorlar) türetir ve filtre/sarmal/gömülü seçim yöntemlerini uygular."
+  - "PCA'yı kovaryans matrisinin özayrışımı olarak açıklar; açıklanan varyans ve yüklemeleri yorumlar."
+  - "UMAP ve t-SNE'yi keşif amaçlı kullanır; gömme uzaklıklarının yorum sınırlarını bilir."
+methods:
+  - "EDA"
+  - "Öznitelik türetme"
+  - "PCA"
+  - "UMAP"
+  - "Özellik seçimi"
+tools:
+  - "pandas"
+  - "seaborn"
+  - "scikit-learn"
+  - "umap-learn"
+datasets:
+  - name: "GEO GDS / TCGA örnek ifade matrisi"
+    url: "https://www.ncbi.nlm.nih.gov/geo/"
+    note: "p ≫ n rejiminde PCA/UMAP."
+  - name: "UCI Heart Disease"
+    url: "https://archive.ics.uci.edu/dataset/45/heart+disease"
+    note: "Öznitelik türetme alıştırması."
+notebook:
+  file: notebooks/hafta-03.ipynb
+  title: "Hafta 3 · Veriyi Tanımak: Keşif, Öznitelik, PCA ve UMAP"
+  embed: true
+  placement: inline
+resources:
+  - title: "McInnes L, Healy J, Melville J. UMAP: Uniform Manifold Approximation and Projection. 2018."
+    url: "https://arxiv.org/abs/1802.03426"
+    kind: makale
+  - title: "Chari T, Pachter L. The specious art of single-cell genomics. PLOS Comput Biol 2023."
+    url: "https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011288"
+    kind: makale
+    note: "t-SNE/UMAP gömmelerinin yorum sınırları."
+  - title: "Guyon I, Elisseeff A. An introduction to variable and feature selection. JMLR 2003."
+    url: "https://www.jmlr.org/papers/v3/guyon03a.html"
+    kind: makale
+---
+
+import NotebookEmbed from '@/components/NotebookEmbed.astro';
+
+## Ön Okuma ve Hazırlık
+
+Bu hafta ön okuma hafif. scikit-learn dokümantasyonunda PCA sayfasının ilk yarısına göz atın; formülleri atlayabilirsiniz, şekillere bakmanız yeterli. Bir de şunu düşünerek gelin: elinizdeki bir veri setinde "bu iki sütunu birleştirsem daha anlamlı bir şey çıkar" dediğiniz bir durum oldu mu? Olduysa aklınızda tutun, derste kullanacağız.
+
+> [!not] Dersin akışı
+> İlk saat veriye bakmak ve yeni sütun türetmek, ikinci saat özellik seçimi ve PCA, son saat UMAP ve defter. Defterde Heart Disease veri setiyle çalışıyoruz; 303 hasta, 13 ölçüm.
+
+## Ders Notları
+
+### Önce bakmak, sonra kurmak
+
+Geçen hafta veriyi modele vermeden önce nelere dikkat edeceğimizi konuştuk: eksik değerler, sızıntı, aynı hastanın iki kümeye düşmesi. Bunlar kaçınılması gereken hatalardı. Bu hafta daha olumlu bir işimiz var. Veriyi tanıyacağız.
+
+Burada basit bir gerçekle başlayalım. Bir veri setini ilk kez açtığınızda yapılacak en iyi şey, hemen model kurmak değil, bir süre sadece bakmaktır. Kaç hasta var, kaç ölçüm var, hastaların kaçı hasta? Hangi sütun sayı, hangisi aslında kategori? Hastalığı olan ve olmayan grupları yan yana koyduğunuzda hangi ölçüm farklı görünüyor? Bu sorular model kurmanın bir ön hazırlığı gibi görünür ama aslında kendileri bir sonuçtur. Bir kardiyolog bu grafiklere bakıp "evet, bu veri mantıklı" ya da "burada bir terslik var" diyebilir. Bu kontrolü atlarsanız, sonraki her adım sağlam olmayan bir zemine kurulur.
+
+Buna keşifçi veri analizi deniyor. Adı büyük ama yaptığı şey mütevazı: grafik çizmek ve tabloya bakmak.
+
+### Sayı gibi görünen kategoriler
+
+Veriye bakarken ilk fark edeceğiniz tuzaklardan biri şudur. Heart Disease veri setinde göğüs ağrısı tipi 1, 2, 3, 4 diye kodlanmış. Bilgisayar için bunlar sayıdır; 4, 2'nin iki katıdır. Ama klinik olarak tip 4 "asemptomatik", tip 2 "atipik anjina"dır. Aralarında bir büyüklük sıralaması yok. Bu sütunu sayı olarak modele verirseniz model var olmayan bir düzen arar.
+
+Bu yüzden ilk işlerden biri sütunları ikiye ayırmaktır: gerçekten sayı olanlar ve sayıyla kodlanmış kategoriler. Sayı olanlar için kutu grafiği çizersiniz, kategoriler için her kategoride hastalık oranına bakarsınız. Defterin ikinci bölümünde bunu yapıyoruz ve sonuç rahatlatıcı: tıkalı damar sayısı arttıkça hastalık oranı artıyor, asemptomatik göğüs ağrısında oran yüksek. Veri, kardiyoloji bilgisiyle uyumlu. Bu da etiketin, yani "hasta mı değil mi" bilgisinin makul olduğunu söylüyor.
+
+### Yeni sütun türetmek
+
+Hastaneden gelen veri, model için her zaman en kullanışlı biçimde gelmez. Bazen iki sütunu birleştirince çok daha anlamlı bir şey ortaya çıkar. Buna öznitelik mühendisliği deniyor ama ben şöyle anlatmayı tercih ediyorum: klinik bilgiyi sütuna çevirmek.
+
+Bir örnek. Veri setinde hastanın efor testinde ulaştığı maksimum nabız var. Tek başına 150 atım/dakika ne anlama gelir? Yirmi yaşındaki biri için düşük, yetmiş yaşındaki biri için yüksektir. Kardiyologların kullandığı kaba bir kural var: beklenen maksimum nabız yaklaşık 220 eksi yaş. Hastanın ulaştığı nabzı bu beklentiye bölerseniz, yaştan bağımsız bir "efor kapasitesi" ölçüsü elde edersiniz. Bu yeni sütun, iki eski sütunun ayrı ayrı söyleyemediği bir şeyi söyler.
+
+Başka bir örnek, risk faktörlerini saymak. Tansiyon yüksek mi, kolesterol yüksek mi, açlık şekeri yüksek mi, erkek mi? Her biri birer evet/hayır. Toplarsanız 0 ile 4 arasında bir sayı çıkar ve bu sayı arttıkça hastalık oranının artıp artmadığına bakabilirsiniz. Defterde bakıyoruz.
+
+Burada önemli olan nokta şu: bu sütunları türetmek için makine öğrenmesi bilmeniz gerekmiyor, alanı bilmeniz gerekiyor. Mühendislik kökenli arkadaşlar için bu, sağlık bilimleri kökenli arkadaşlarla neden aynı masada oturduğumuzun cevabı.
+
+> [!ornek] Yoğun bakımda zaman penceresi
+> Yoğun bakım verisinde her saatte bir nabız ölçümü vardır. Modele "son ölçüm" vermek yerine son altı saatin ortalamasını, en yükseğini ve eğimini (yükseliyor mu, düşüyor mu) ayrı sütunlar olarak verirseniz, model hastanın kötüleşip kötüleşmediğini çok daha iyi görür. Bu da öznitelik türetmedir; sadece zaman ekseninde.
+
+### Hangi sütunlar kalsın?
+
+Yeni sütunlar türettikçe sütun sayısı artar. Hepsine ihtiyaç var mı? Gereksiz sütunlar modeli yavaşlatır, bazen de şaşırtır. Özellik seçimi bu soruya cevap arar.
+
+İki basit yol var. Birincisi, her sütunun hedefle ilişkisini tek tek ölçüp en yüksek skorlu birkaçını almak. İkincisi, bir model kurup en az önem verdiği sütunu atmak, sonra tekrar kurmak, tekrar atmak; istediğiniz sayıya inene kadar. Defterde ikisini de deniyoruz ve ikisinin seçtiği listeler tamamen aynı çıkmıyor. Bu normal; "doğru sütun listesi" diye tek bir şey yok.
+
+Ama geçen haftadan bir uyarı burada tekrar ediyor. Sütun seçimini tüm veriye bakarak yapıp sonra çapraz doğrulama yaparsanız, sonucu şişirirsiniz. Geçen hafta bunu tamamen rastgele veriyle göstermiştik; AUC 0.84 çıkmıştı. O yüzden seçim de boru hattının içinde, her katlamada yeniden yapılmalı.
+
+### Çok sütunu iki boyutta görmek: PCA
+
+Şimdi şöyle bir sorun var. Elimizde on altı sütun var ve bunu gözle göremeyiz; en fazla üç boyut görebiliyoruz. Boyut indirgeme, çok sütunlu veriyi mümkün olduğunca az bilgi kaybıyla iki boyuta sıkıştırır ki çizebilelim.
+
+PCA'nın yaptığı şeyi şöyle düşünün. Elinizde havada asılı duran bir nokta bulutu var. Bu buluta bir fener tutup gölgesini duvara düşüreceksiniz. Feneri hangi yönden tutarsanız gölge en çok yayılır, en az üst üste biner? PCA tam o yönü bulur ve ona birinci bileşen der. Sonra ona dik yönler arasında yine en çok yayılanı bulur, ikinci bileşen. Her bileşenin verideki toplam değişimin yüzde kaçını taşıdığını da söyler. "İlk iki bileşen değişimin yüzde kırkını taşıyor" gibi.
+
+PCA'nın en sevdiğim özelliği dürüst olması. Neyi attığını bilirsiniz. Yüzde seksen için kaç bileşen gerektiğini sayıyla söyler. Her bileşenin hangi sütunlardan oluştuğuna bakabilirsiniz; buna yükleme deniyor. Defterde birinci bileşenin yüklemelerine bakıyoruz. Bir ucunda efor testinde ulaşılan nabız var; diğer ucunda ST depresyonu, efor anjinası, yaş ve tıkalı damar sayısı. Yani PCA kimse söylemeden, "genel hastalık yükü" diyebileceğimiz bir eksen bulmuş: bir yanda eforu iyi tolere eden genç hastalar, öbür yanda bulgusu çok olan yaşlı hastalar.
+
+Bir sınırı var: sadece düz çizgiler kullanır. Veri kıvrımlı bir yapıdaysa PCA onu göremez.
+
+### Güzel resimler ve bir uyarı: UMAP
+
+UMAP işte o kıvrımlı yapıları da yakalar. Amacı birbirine benzeyen hastaları haritada yakın, benzemeyenleri uzak tutmaktır ve bunu yaparken düz çizgiyle sınırlı değildir. Sonuç genellikle çok etkileyici bir resimdir: ayrık kümeler, net sınırlar.
+
+Tam da bu yüzden dikkatli olmak gerekiyor. UMAP'in çizdiği haritada iki küme arasındaki boşluğun genişliği bir şey ifade etmez. Kümenin şekli bir şey ifade etmez. Komşuluk sayısı parametresini değiştirirseniz resim değişir. Defterde bunu deneyeceksiniz: aynı veri, üç farklı ayar, üç farklı harita. Hangisi doğru? Hiçbiri ya da hepsi.
+
+> [!uyari] UMAP keşif içindir, kanıt için değil
+> Tek hücre genomiği literatüründe bu konuda sert bir tartışma var. Chari ve Pachter'in makalesi, UMAP ve t-SNE haritalarındaki uzaklıkların ne kadar yanıltıcı olabileceğini gösteriyor. Bir UMAP grafiğini "bakın, hastalar iki alt gruba ayrılıyor" diye kanıt olarak sunmadan önce, aynı ayrımı başka bir yöntemle, tercihen kümelemede kullanmadığınız klinik bir değişkenle doğrulamalısınız. Bu konuya 6. haftada, hasta alt-tiplendirmede geri döneceğiz.
+
+Peki o zaman UMAP ne işe yarar? Keşfe. Veride beklemediğiniz bir yapı var mı, bir grup hasta diğerlerinden kopuk mu duruyor, bir hastane diğerinden farklı bir bölgede mi toplanmış? Bu soruları sormak için harika bir araçtır. Sorunun cevabını vermek için değil.
+
+## Temel Kavramlar
+
+- **Keşifçi veri analizi** — Model kurmadan önce veriye bakmak: dağılımlar, gruplar arası farklar, ilişkiler. Amaç veriyi tanımak ve tersliği erken yakalamak.
+- **Sayıyla kodlanmış kategori** — Göğüs ağrısı tipi gibi, sayı görünen ama sıralaması olmayan değişkenler. Sayı olarak modele verilmemeli.
+- **Öznitelik türetme** — Var olan sütunlardan daha anlamlı yeni sütunlar üretmek; klinik bilgiyi sütuna çevirmek. Örnek: nabız / (220 − yaş).
+- **Özellik seçimi** — Hangi sütunların kalacağına karar vermek. Çapraz doğrulamanın içinde yapılmalı, yoksa sonuç şişer.
+- **PCA** — Veriyi en çok yayıldığı yönlere yansıtan düz çizgili boyut indirgeme. Neyi attığını söyler; yüklemelerle bileşenin anlamı okunur.
+- **UMAP** — Kıvrımlı yapıları da yakalayan boyut indirgeme. Güzel haritalar çizer ama haritadaki uzaklıklar nicel yorum kabul etmez.
+
+## Uygulama / Laboratuvar
+
+Defter altı bölümden oluşuyor ve bugünkü anlatımın sırasını izliyor: veriyi yükleyip sayı ve kategori sütunlarını ayırmak, kutu grafikleri ve oran tablolarıyla keşif, üç yeni öznitelik türetmek, iki yöntemle özellik seçimi (boru hattının içinde), PCA ile kaç bileşen yettiğini ve birinci bileşeni hangi ölçümlerin oluşturduğunu görmek, son olarak UMAP haritası ve parametre deneyi.
+
+<NotebookEmbed file="notebooks/hafta-03.ipynb" title="Hafta 3 · Veriyi Tanımak: Keşif, Öznitelik, PCA ve UMAP" />
+
+**Ders içi çalışma:** İkişerli gruplar hâlinde, biri mühendislik biri sağlık kökenli olacak şekilde, Heart Disease verisinden klinik olarak anlamlı yeni bir öznitelik türetin. Türettiğiniz sütunun hastalığı olan ve olmayan gruplarda farklı dağılıp dağılmadığını çizin ve iki cümleyle sınıfa anlatın.
+
+## Tartışma Soruları
+
+1. UMAP haritasında iki küme birbirinden uzak görünüyor. Bu, o hastaların klinik olarak çok farklı olduğu anlamına gelir mi? Nasıl kontrol edersiniz?
+2. Özellik seçimini çapraz doğrulamanın dışında yapmak neden sızıntıdır? Geçen haftaki rastgele veri deneyini hatırlayın.
+3. PCA'nın birinci bileşeni "genel hastalık yükü" gibi bir şey çıktı. Bu bileşeni doğrudan bir klinik skor olarak kullanabilir miyiz? Neden, neden değil?
+
+## Haftanın Özeti
+
+Bu hafta model kurmadık; veriyi tanıdık. Önce baktık ve verinin klinik bilgiyle uyumlu olduğunu gördük. Sonra klinik bilgiyi yeni sütunlara çevirdik ve hangi sütunların kalacağına, geçen haftanın dersini unutmadan, boru hattının içinde karar verdik. Son olarak on altı sütunu iki boyuta indirip resmini çizdik; PCA ile dürüst bir biçimde, UMAP ile güzel ama dikkatle. Birinci modülü böylece tamamlamış olduk. Gelecek hafta ilk gerçek modelimizi kuruyoruz ve asıl soruyu soruyoruz: bu model klinik olarak iyi mi, nereden bileceğiz?
