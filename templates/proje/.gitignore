@@ -1,0 +1,27 @@
+# veri dosyaları depoya girmez
+data/*
+!data/README.md
+*.csv
+*.parquet
+*.npz
+*.h5
+*.zip
+
+# python / jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+
+# latex ara dosyaları (PDF depoda kalır)
+rapor/*.aux
+rapor/*.log
+rapor/*.out
+rapor/*.toc
+rapor/*.bbl
+rapor/*.blg
+rapor/*.fls
+rapor/*.fdb_latexmk
+rapor/*.synctex.gz
+
+.DS_Store

@@ -1,0 +1,121 @@
+% SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka — Dönem Projesi Rapor Şablonu
+% Derleme: pdflatex main && bibtex main && pdflatex main && pdflatex main   (ya da Overleaf'e yükleyin)
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[turkish,shorthands=:!]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{float}
+\hypersetup{colorlinks=true, linkcolor=black, citecolor=blue!60!black, urlcolor=blue!60!black}
+\graphicspath{{sekiller/}}
+
+% ---- Künye: burayı doldurun ------------------------------------------------
+\newcommand{\projekodu}{BVYZ-XX}
+\newcommand{\projebaslik}{Proje Başlığı: Hangi Veriyle Neyi Tahmin Ediyorsunuz}
+\newcommand{\ogrenci}{Ad Soyad}
+\newcommand{\ogrencino}{Öğrenci No}
+\newcommand{\depo}{https://github.com/kullanici/depo}
+% ----------------------------------------------------------------------------
+
+\title{\projebaslik\\[0.4em]{\large SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka --- Dönem Projesi (\projekodu)}}
+\author{\ogrenci\ (\ogrencino)\\Fırat Üniversitesi, Yazılım ve Bilişim Araştırma Enstitüsü\\\small Kod ve defterler: \url{\depo}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+En fazla 200 kelime. Klinik soru, veri (kaynak, örnek sayısı), yöntem (ön işleme, model, doğrulama), ana sonuç (en iyi modelin ROC-AUC ve kalibrasyonu) ve açıklanabilirlik bulgusunun bir cümlelik özeti. Son cümle: sınırlılık ve klinik anlamı.
+\end{abstract}
+
+\section{Giriş ve Klinik Soru}
+Problemi bir klinisyene anlatır gibi yazın: Hangi hastalar, hangi sonuç, neden önemli? Ardından soruyu makine öğrenmesi diline çevirin (sınıflandırma / regresyon / kümeleme / segmentasyon) ve etiketin nasıl tanımlandığını açıkça belirtin. Literatürden en az üç çalışmaya atıf yapın~\cite{steyerberg2010}.
+
+\section{Veri}
+\subsection{Kaynak ve Erişim}
+Veri setinin adı, kaynağı, lisansı ve nasıl indirildiği. Hasta verisi için etik/erişim koşulları.
+
+\subsection{Tanımlayıcı Özet}
+Örnek sayısı, öznitelik sayısı, hedef değişken ve sınıf oranı. Tablo~\ref{tab:veri} şablonunu kullanın.
+
+\begin{table}[H]
+\centering
+\caption{Veri setinin özeti.}
+\label{tab:veri}
+\begin{tabular}{lrr}
+\toprule
+Özellik & Değer & Not \\
+\midrule
+Örnek (hasta / kayıt) & \ldots & \\
+Öznitelik sayısı & \ldots & \\
+Pozitif sınıf oranı & \ldots\,\% & \\
+Eksik değer oranı (en yüksek sütun) & \ldots\,\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Keşifçi Analiz}
+En fazla iki şekil: hedefe göre en ayırt edici değişkenler ve (varsa) PCA/UMAP görünümü. Şekil~\ref{fig:eda} gibi.
+
+\begin{figure}[H]
+\centering
+% \includegraphics[width=0.8\textwidth]{eda.png}
+\fbox{\parbox{0.8\textwidth}{\centering\vspace{2cm} sekiller/eda.png \vspace{2cm}}}
+\caption{Keşifçi analiz: \ldots}
+\label{fig:eda}
+\end{figure}
+
+\section{Yöntem}
+\subsection{Ön İşleme}
+Eksik veri mekanizması ve imputasyon kararı, ölçekleme, kategorik kodlama, dengesiz sınıf stratejisi. Her kararın \emph{neden} verildiğini bir cümleyle yazın.
+
+\subsection{Doğrulama Tasarımı}
+Bölme stratejisi (hasta-bazlı mı, zaman-farkında mı), katlama sayısı, sızıntıya karşı alınan önlemler (Pipeline). Bu bölüm kısa ama zorunludur.
+
+\subsection{Modeller}
+Temel model (lojistik regresyon) ve en az bir ileri model. Hiperparametre arama yöntemi. Kullandığınız kütüphaneler ve sürümleri.
+
+\subsection{Değerlendirme Ölçütleri}
+ROC-AUC, PR-AUC, duyarlılık/özgüllük (seçilen eşikte), kalibrasyon (eğri ve Brier). Eşiği neden o değerde seçtiğinizi klinik maliyetle gerekçelendirin.
+
+\section{Sonuçlar}
+\begin{table}[H]
+\centering
+\caption{Model başarımı (5 katlı çapraz doğrulama, ortalama $\pm$ s.s.).}
+\label{tab:sonuc}
+\begin{tabular}{lcccc}
+\toprule
+Model & ROC-AUC & PR-AUC & Brier & Duyarlılık@eşik \\
+\midrule
+Lojistik regresyon & \ldots & \ldots & \ldots & \ldots \\
+\ldots & \ldots & \ldots & \ldots & \ldots \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+ROC ve kalibrasyon eğrilerini tek şekilde yan yana verin. Alt-grup analizi (cinsiyet, yaş grubu) yaptıysanız burada raporlayın.
+
+\section{Açıklanabilirlik}
+En az bir küresel (permütasyon önemi, SHAP özet) ve bir yerel (tek hasta için SHAP şelale / Grad-CAM) açıklama~\cite{lundberg2017shap}. Açıklamanın klinik olarak anlamlı olup olmadığını tartışın: model doğru yere mi bakıyor?
+
+\section{Tartışma}
+Bulguların klinik anlamı, literatürle karşılaştırma, sınırlılıklar (veri boyutu, tek merkez, etiket kalitesi), dağıtım kayması riski ve bu modelin kliniğe girmesi için ne gerektiği~\cite{collins2024tripod}.
+
+\section{Sonuç}
+Üç–dört cümle. Ne öğrendiniz, bir sonraki adım ne olurdu?
+
+\section*{Tekrarlanabilirlik Beyanı}
+Kod ve defterler: \url{\depo}. Rastgelelik tohumu, ortam dosyası ve veri indirme talimatı depoda yer alır. Veri dosyaları depoya konmamıştır.
+
+\bibliographystyle{plain}
+\bibliography{kaynaklar}
+
+\end{document}

@@ -541,9 +541,172 @@ Bölüm 5'te UMAP'i üç farklı `random_state` ile çalıştırın; kümeler ye
 """),
 ]
 
+# --------------------------------------------------------------------------
+# HAFTA 4 — Denetimli öğrenme ve klinik metrikler
+# --------------------------------------------------------------------------
+WEEK04 = [
+md("""# Hafta 4 · İlk Model ve "İyi mi?" Sorusu: Klinik Metrikler
+
+**SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka** · Fırat Üniversitesi Yazılım ve Bilişim Araştırma Enstitüsü
+
+Bugün ilk gerçek modelimizi kuruyoruz ve asıl soruyu soruyoruz: bu model iyi mi? "Yüzde 85 doğru" cevabı yetmez.
+Beş bölüm: model, karışıklık matrisi ve eşik, ROC ile PR eğrileri, kalibrasyon, karar eğrisi.
+
+Veri: geçen haftaki Heart Disease (Cleveland). 303 hasta, hedef: koroner arter hastalığı."""),
+code('''import warnings; warnings.filterwarnings("ignore")
+import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+
+URL = "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+COLS = ["yas", "cinsiyet", "gogus_agrisi", "tansiyon", "kolesterol", "aclik_sekeri", "ekg", "max_nabiz",
+        "efor_anjina", "st_depresyon", "st_egim", "damar_sayisi", "talasemi", "hedef"]
+try:
+    df = pd.read_csv(URL, header=None, names=COLS, na_values="?"); print("Veri indirildi:", df.shape)
+except Exception as e:
+    print("İndirme başarısız, sentetik veri üretiliyor:", e)
+    rng = np.random.default_rng(0); n = 303
+    df = pd.DataFrame({"yas": rng.integers(29, 78, n), "cinsiyet": rng.integers(0, 2, n), "gogus_agrisi": rng.integers(1, 5, n),
+        "tansiyon": rng.normal(131, 17, n), "kolesterol": rng.normal(246, 50, n), "aclik_sekeri": rng.integers(0, 2, n),
+        "ekg": rng.integers(0, 3, n), "max_nabiz": rng.normal(150, 23, n), "efor_anjina": rng.integers(0, 2, n),
+        "st_depresyon": rng.exponential(1, n), "st_egim": rng.integers(1, 4, n), "damar_sayisi": rng.integers(0, 4, n),
+        "talasemi": rng.choice([3, 6, 7], n)})
+    df["hedef"] = (rng.random(n) < 1 / (1 + np.exp(-(0.05 * (df.yas - 55) + 0.8 * (df.gogus_agrisi == 4) + 0.6 * df.damar_sayisi - 0.02 * (df.max_nabiz - 150) - 1)))).astype(int)
+df["hedef"] = (df["hedef"] > 0).astype(int)
+X = df.drop(columns="hedef"); y = df["hedef"]
+print(f"Hastalık oranı: %{100*y.mean():.0f}")'''),
+md("""## 1 · İlk model: lojistik regresyon
+
+Lojistik regresyon, her hasta için 0 ile 1 arasında bir **olasılık** üretir: "bu hastada hastalık olma olasılığı 0.72".
+Bu olasılığı bir eşikle (çoğu zaman 0.5) evet/hayır'a çeviririz. Bugün göreceğiz ki asıl iş o eşikte.
+
+Çapraz doğrulamayla her hastanın olasılığını, o hasta modelin **görmediği** katlamadayken alıyoruz (`cross_val_predict`)."""),
+code('''from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
+
+cv = StratifiedKFold(5, shuffle=True, random_state=42)
+model = Pipeline([("impute", SimpleImputer(strategy="median")), ("olcek", StandardScaler()),
+                  ("lr", LogisticRegression(max_iter=2000))])
+p = cross_val_predict(model, X, y, cv=cv, method="predict_proba")[:, 1]
+print("İlk 8 hastanın olasılığı:", np.round(p[:8], 2))
+print("Gerçek etiketleri:       ", y.values[:8])'''),
+md("""## 2 · Karışıklık matrisi ve eşik
+
+Eşik 0.5 deyince dört grup oluşur: doğru pozitif, yanlış pozitif, doğru negatif, yanlış negatif. Buradan dört sayı türer:
+
+- **Duyarlılık** — hastaların kaçını yakaladık?
+- **Özgüllük** — sağlıklıların kaçını doğru bıraktık?
+- **PPV** — "hasta" dediklerimizin kaçı gerçekten hasta?
+- **NPV** — "sağlıklı" dediklerimizin kaçı gerçekten sağlıklı?
+
+Eşiği değiştirince bu dört sayı birlikte değişir. Aşağıda üç farklı eşikte görüyoruz."""),
+code('''from sklearn.metrics import confusion_matrix
+
+def dort_sayi(y, p, esik):
+    yhat = (p >= esik).astype(int)
+    tn, fp, fn, tp = confusion_matrix(y, yhat).ravel()
+    return dict(esik=esik, duyarlilik=tp/(tp+fn), ozgulluk=tn/(tn+fp), PPV=tp/(tp+fp), NPV=tn/(tn+fn),
+                dogruluk=(tp+tn)/len(y), yanlis_pozitif=fp, yanlis_negatif=fn)
+
+pd.DataFrame([dort_sayi(y, p, e) for e in [0.2, 0.5, 0.8]]).round(3).set_index("esik")'''),
+md("""**Okuyun:** Eşik 0.2'de neredeyse hiç hasta kaçmıyor ama çok sağlıklıya "hasta" diyoruz. Eşik 0.8'de tam tersi.
+Hangisi doğru? Sorunun cevabı matematikte değil, klinikte: bir hastayı kaçırmanın bedeli mi büyük, gereksiz anjiyografinin mi?
+
+> **Deneyin:** Eşik listesine 0.35 ve 0.65 ekleyin. Doğruluk hangi eşikte en yüksek? O eşik klinik olarak da en iyi mi?"""),
+md("""## 3 · Tüm eşikleri aynı anda görmek: ROC ve PR eğrileri
+
+Her eşik için bir duyarlılık–özgüllük çifti var. Hepsini çizince **ROC eğrisi** çıkar; altındaki alan (AUC) eşikten bağımsız
+tek bir özet verir: "rastgele bir hasta ile rastgele bir sağlıklıyı alsam, model hastayı daha yüksek sıralar mı?"
+
+**PR eğrisi** ise duyarlılık ile PPV'yi çizer. Pozitif sınıf nadirse (geçen haftaki %7'lik örnek gibi) ROC iyimser görünür,
+PR gerçeği söyler. Burada sınıflar dengeli; ikisi de benzer hikâye anlatır."""),
+code('''from sklearn.metrics import roc_curve, roc_auc_score, precision_recall_curve, average_precision_score
+
+fpr, tpr, _ = roc_curve(y, p)
+prec, rec, _ = precision_recall_curve(y, p)
+fig, ax = plt.subplots(1, 2, figsize=(10, 4))
+ax[0].plot(fpr, tpr, lw=2, c="#2f3fa3", label=f"AUC = {roc_auc_score(y, p):.3f}")
+ax[0].plot([0, 1], [0, 1], "--", c="gray", lw=1, label="rastgele")
+ax[0].set(xlabel="1 − özgüllük (yanlış pozitif oranı)", ylabel="duyarlılık", title="ROC eğrisi"); ax[0].legend()
+ax[1].plot(rec, prec, lw=2, c="#0f9b8e", label=f"PR-AUC = {average_precision_score(y, p):.3f}")
+ax[1].axhline(y.mean(), ls="--", c="gray", lw=1, label=f"rastgele = prevalans {y.mean():.2f}")
+ax[1].set(xlabel="duyarlılık", ylabel="PPV (kesinlik)", title="PR eğrisi"); ax[1].legend()
+plt.tight_layout()'''),
+md("""## 4 · Kalibrasyon: model "0.70" diyorsa gerçekten %70 mi?
+
+AUC modelin **sıralama** gücünü ölçer. Ama klinikte olasılığın kendisi de kullanılır: "riskiniz %70" denir.
+Bu sayı doğru mu? Kalibrasyon eğrisi bunu sınar: 0.6–0.7 arası olasılık verilen hastaların gerçekten %60–70'i hasta mı?
+
+**Brier skoru** bunun tek sayılık özeti: olasılık ile gerçek (0/1) arasındaki kare farkın ortalaması. Küçük iyi."""),
+code('''from sklearn.calibration import calibration_curve, CalibratedClassifierCV
+from sklearn.metrics import brier_score_loss
+
+gozlenen, tahmin = calibration_curve(y, p, n_bins=8, strategy="quantile")
+fig, ax = plt.subplots(figsize=(5, 4.5))
+ax.plot(tahmin, gozlenen, "o-", c="#2f3fa3", label=f"lojistik (Brier = {brier_score_loss(y, p):.3f})")
+ax.plot([0, 1], [0, 1], "--", c="gray", lw=1, label="mükemmel kalibrasyon")
+ax.set(xlabel="modelin verdiği olasılık", ylabel="gözlenen hastalık oranı", title="Kalibrasyon eğrisi"); ax.legend()
+plt.tight_layout()'''),
+md("""Lojistik regresyon genellikle doğuştan iyi kalibredir. Ağaç toplulukları ve sinir ağları öyle değildir; onlar için sonradan
+kalibrasyon (Platt ya da izotonik) gerekir. Aşağıda bilerek kötü kalibre bir model (Random Forest) alıp düzeltiyoruz."""),
+code('''from sklearn.ensemble import RandomForestClassifier
+
+rf = Pipeline([("impute", SimpleImputer(strategy="median")), ("rf", RandomForestClassifier(300, random_state=0))])
+p_rf = cross_val_predict(rf, X, y, cv=cv, method="predict_proba")[:, 1]
+rf_kal = Pipeline([("impute", SimpleImputer(strategy="median")),
+                   ("rf", CalibratedClassifierCV(RandomForestClassifier(300, random_state=0), method="isotonic", cv=5))])
+p_rfk = cross_val_predict(rf_kal, X, y, cv=cv, method="predict_proba")[:, 1]
+
+fig, ax = plt.subplots(figsize=(5, 4.5))
+for q, ad, c in [(p, "lojistik", "#2f3fa3"), (p_rf, "Random Forest", "#be3a5a"), (p_rfk, "RF + izotonik", "#0f9b8e")]:
+    g, t = calibration_curve(y, q, n_bins=8, strategy="quantile")
+    ax.plot(t, g, "o-", c=c, label=f"{ad} (AUC {roc_auc_score(y, q):.2f}, Brier {brier_score_loss(y, q):.3f})")
+ax.plot([0, 1], [0, 1], "--", c="gray", lw=1); ax.set(xlabel="modelin verdiği olasılık", ylabel="gözlenen oran", title="Kalibrasyon karşılaştırması")
+ax.legend(fontsize=8); plt.tight_layout()'''),
+md("""**Okuyun:** AUC'ler birbirine yakın ama eğriler farklı. Aynı sıralama gücüne sahip iki modelden biri "%70" derken
+yanılıyor olabilir. Klinik karar destekte bu, AUC kadar önemlidir."""),
+md("""## 5 · Karar eğrisi: model kullanmaya değer mi?
+
+Son soru en pratik olanı. Diyelim bir hekim "riski %20'nin üstünde olanı anjiyografiye gönderirim" diyor. Modeli kullanmak,
+"herkesi gönder" ya da "kimseyi gönderme" stratejilerinden daha fazla **net fayda** sağlıyor mu?
+Karar eğrisi analizi bunu her eşik için çizer. Model eğrisi iki düz stratejinin üstündeyse, o eşik aralığında model işe yarar."""),
+code('''def net_fayda(y, p, esikler):
+    n = len(y); out = []
+    for t in esikler:
+        yhat = p >= t
+        tp = np.sum(yhat & (y == 1)); fp = np.sum(yhat & (y == 0))
+        out.append(tp / n - fp / n * t / (1 - t))
+    return np.array(out)
+
+esikler = np.linspace(0.05, 0.8, 40)
+prev = y.mean()
+herkes = prev - (1 - prev) * esikler / (1 - esikler)
+fig, ax = plt.subplots(figsize=(6, 4.2))
+ax.plot(esikler, net_fayda(y.values, p, esikler), lw=2, c="#2f3fa3", label="model (lojistik)")
+ax.plot(esikler, herkes, c="#be3a5a", lw=1.5, label="herkesi tedavi et")
+ax.axhline(0, c="gray", lw=1.5, label="kimseyi tedavi etme")
+ax.set(xlabel="eşik olasılığı", ylabel="net fayda", title="Karar eğrisi analizi", ylim=(-0.05, prev + 0.05)); ax.legend()
+plt.tight_layout()'''),
+md("""## 6 · Bugün ne gördük?
+
+| Soru | Araç | Ne söyler |
+|---|---|---|
+| Hastaları yakalıyor mu? | Duyarlılık, özgüllük, PPV, NPV | Seçilen eşikte dört sayı |
+| Sıralama gücü ne? | ROC-AUC, PR-AUC | Eşikten bağımsız özet; nadir sınıfta PR |
+| Olasılık doğru mu? | Kalibrasyon eğrisi, Brier | "%70" gerçekten %70 mi |
+| Kullanmaya değer mi? | Karar eğrisi | Hangi eşik aralığında net fayda var |
+
+**Ders sonrası (isteğe bağlı):** Bölüm 2'de kendi klinik senaryonuz için bir eşik seçin ve gerekçesini iki cümleyle yazın.
+Bölüm 4'te `method="sigmoid"` (Platt) ile izotonik kalibrasyonu karşılaştırın. Proje veri setinizde aynı dört grafiği çizin; bu, raporunuzun Sonuçlar bölümünün iskeleti.
+"""),
+]
+
 NOTEBOOKS = {"hafta-01": ("Hafta 1 · Uçtan Uca İlk Tur", WEEK01),
              "hafta-02": ("Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme", WEEK02),
-             "hafta-03": ("Hafta 3 · Veriyi Tanımak: Keşif, Öznitelik, PCA ve UMAP", WEEK03)}
+             "hafta-03": ("Hafta 3 · Veriyi Tanımak: Keşif, Öznitelik, PCA ve UMAP", WEEK03),
+             "hafta-04": ("Hafta 4 · İlk Model ve Klinik Metrikler", WEEK04)}
 
 
 def build(name, title, cells, force=False):
