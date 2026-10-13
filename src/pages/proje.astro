@@ -5,7 +5,7 @@ import Toc from '@/components/Toc.astro';
 import { href, course } from '@/lib/site';
 import projectsData from '@content/data/projects.json';
 
-const { salt, projects } = projectsData;
+const { salt, iter, projects } = projectsData;
 const timeline = [
   { when: '14 Ekim (Hafta 4)', what: 'Projeler dağıtılır. Veri setinin bağlantısını açın, indirin, bir göz atın.' },
   { when: '4 Kasım (Hafta 7)', what: 'Teslim 1 · Depo bağlantısı: README taslağı, data/README.md (indirme talimatı), veriyi yükleyip tanıyan ilk defter.' },
@@ -46,8 +46,8 @@ const toc = [
         <p class="eyebrow !text-paper/60">Projemi bul</p>
         <h2 class="display mt-2 text-2xl md:text-3xl">Öğrenci numaranızı yazın</h2>
         <p class="mt-3 text-sm leading-relaxed text-paper/75">
-          Numaranız hiçbir yere gönderilmez. Tarayıcınız numaranın parmak izini (SHA-256) hesaplar ve yalnızca size ait proje kartını aşağıda gösterir.
-          Başka kimsenin projesi görünmez; sitede ne isim ne numara açık olarak yer alır.
+          Numaranız hiçbir yere gönderilmez. Her kart, sahibinin numarasından türetilen bir anahtarla şifrelenmiştir; tarayıcınız aynı anahtarı türetir
+          ve yalnızca sizin kartınızı çözebilir. Sayfanın kaynağında da şifreli metinden başka bir şey yoktur.
         </p>
         <form id="bul-form" class="mt-5 flex flex-col gap-3 sm:flex-row" autocomplete="off">
           <label class="sr-only" for="ogrno">Öğrenci numarası</label>
@@ -64,30 +64,31 @@ const toc = [
         <p class="mt-2 text-ink-2">Sınıfta yedi proje ve beş veri türü var. Kartınız veri setini, klinik soruyu, önerilen adımları ve sık yapılan hataları içerir.</p>
         <p id="proje-bos" class="mt-6 rounded-xl border border-dashed border-line-2 p-6 text-center text-sm text-ink-3">Henüz bir proje gösterilmiyor. Yukarıdaki kutuya öğrenci numaranızı yazın.</p>
         <ol class="mt-8 space-y-5">
-          {projects.map((p) => (
-            <li id={`proje-${p.id}`} data-hash={p.hash} class="proje-kart hidden rounded-2xl border border-accent bg-white p-6 shadow-soft ring-4 ring-accent/15">
-              <div class="flex flex-wrap items-center gap-2 text-xs">
-                <span class="font-mono font-semibold text-brand">{p.code}</span>
-                <span class="chip-mono">{p.dataType}</span>
-                <span class="ml-auto font-mono text-ink-3" aria-label="Öğrenci (maskelenmiş)">{p.student}</span>
-              </div>
-              <h3 class="mt-3 font-display text-xl font-semibold text-ink">{p.title}</h3>
-              <p class="mt-2 text-[15px] leading-relaxed text-ink-2">{p.question}</p>
-              <dl class="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-                <div><dt class="eyebrow">Veri seti</dt><dd class="mt-0.5"><a href={p.url} target="_blank" rel="noopener" class="link font-medium text-ink">{p.dataset} ↗</a></dd></div>
-                <div><dt class="eyebrow">Boyut</dt><dd class="mt-0.5 text-ink-2">{p.size}</dd></div>
-                <div><dt class="eyebrow">Erişim</dt><dd class="mt-0.5 text-ink-2">{p.access}</dd></div>
-                <div><dt class="eyebrow">Görev</dt><dd class="mt-0.5 text-ink-2">{p.task}</dd></div>
-              </dl>
-              <details class="mt-4 rounded-xl border border-line bg-paper px-4 py-3 text-sm">
-                <summary class="cursor-pointer font-semibold text-ink">Önerilen adımlar, tuzaklar ve kaynaklar</summary>
-                <ol class="mt-3 list-decimal space-y-1.5 pl-5 text-ink-2">{p.steps.map((s) => <li>{s}</li>)}</ol>
-                <p class="mt-3 text-ink-2"><span class="font-semibold text-[#c2410c]">Dikkat:</span> {p.pitfalls}</p>
-                <p class="mt-2 text-ink-3"><span class="font-semibold">Başlangıç okuması:</span> {p.refs.join(' · ')}</p>
-              </details>
-            </li>
-          ))}
+          {projects.map((p) => <li id={`proje-${p.id}`} class="proje-kart hidden" data-iv={p.iv} data-ct={p.ct}></li>)}
         </ol>
+        <template id="kart-sablon">
+          <div class="rounded-2xl border border-accent bg-white p-6 shadow-soft ring-4 ring-accent/15">
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <span class="font-mono font-semibold text-brand" data-f="code"></span>
+              <span class="chip-mono" data-f="dataType"></span>
+              <span class="ml-auto font-mono text-ink-3" data-f="student"></span>
+            </div>
+            <h3 class="mt-3 font-display text-xl font-semibold text-ink" data-f="title"></h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-ink-2" data-f="question"></p>
+            <dl class="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+              <div><dt class="eyebrow">Veri seti</dt><dd class="mt-0.5"><a data-f="dataset" target="_blank" rel="noopener" class="link font-medium text-ink"></a></dd></div>
+              <div><dt class="eyebrow">Boyut</dt><dd class="mt-0.5 text-ink-2" data-f="size"></dd></div>
+              <div><dt class="eyebrow">Erişim</dt><dd class="mt-0.5 text-ink-2" data-f="access"></dd></div>
+              <div><dt class="eyebrow">Görev</dt><dd class="mt-0.5 text-ink-2" data-f="task"></dd></div>
+            </dl>
+            <details open class="mt-4 rounded-xl border border-line bg-paper px-4 py-3 text-sm">
+              <summary class="cursor-pointer font-semibold text-ink">Önerilen adımlar, tuzaklar ve kaynaklar</summary>
+              <ol class="mt-3 list-decimal space-y-1.5 pl-5 text-ink-2" data-f="steps"></ol>
+              <p class="mt-3 text-ink-2"><span class="font-semibold text-[#c2410c]">Dikkat:</span> <span data-f="pitfalls"></span></p>
+              <p class="mt-2 text-ink-3"><span class="font-semibold">Başlangıç okuması:</span> <span data-f="refs"></span></p>
+            </details>
+          </div>
+        </template>
       </section>
 
       <!-- TESLİMLER -->
@@ -175,33 +176,58 @@ const toc = [
     </div>
   </div>
 
-  <script is:inline define:vars={{ salt }}>
+  <script is:inline define:vars={{ salt, iter }}>
     (() => {
       const form = document.getElementById('bul-form');
       const input = document.getElementById('ogrno');
       const out = document.getElementById('bul-sonuc');
-      const cards = Array.from(document.querySelectorAll('.proje-kart'));
       const bos = document.getElementById('proje-bos');
-      const reset = () => { cards.forEach((c) => c.classList.add('hidden')); bos.classList.remove('hidden'); };
-      async function sha256(text) {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-        return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+      const tpl = document.getElementById('kart-sablon');
+      const cards = Array.from(document.querySelectorAll('.proje-kart'));
+      const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+      const reset = () => { cards.forEach((c) => { c.classList.add('hidden'); c.innerHTML = ''; }); bos.classList.remove('hidden'); };
+
+      async function deriveKey(no) {
+        const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(no), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: new TextEncoder().encode(salt), iterations: iter, hash: 'SHA-256' },
+          base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
       }
+      async function tryOpen(key, card) {
+        try {
+          const buf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(card.dataset.iv) }, key, b64(card.dataset.ct));
+          return JSON.parse(new TextDecoder().decode(buf));
+        } catch { return null; }
+      }
+      function render(card, p) {
+        const node = tpl.content.cloneNode(true);
+        for (const el of node.querySelectorAll('[data-f]')) {
+          const f = el.dataset.f;
+          if (f === 'dataset') { el.textContent = p.dataset + ' ↗'; el.href = p.url; }
+          else if (f === 'steps') { p.steps.forEach((t) => { const li = document.createElement('li'); li.textContent = t; el.appendChild(li); }); }
+          else if (f === 'refs') { el.textContent = p.refs.join(' · '); }
+          else el.textContent = p[f] ?? '';
+        }
+        card.innerHTML = ''; card.appendChild(node); card.classList.remove('hidden');
+      }
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const no = input.value.replace(/\D/g, '');
         reset();
         if (!no) { out.textContent = 'Lütfen öğrenci numaranızı yazın.'; return; }
-        if (!window.isSecureContext || !crypto.subtle) { out.textContent = 'Bu tarayıcıda özet hesaplanamıyor; listeden kodunuzu bulun.'; return; }
-        const h = await sha256(`${salt}:${no}`);
-        const hit = cards.find((c) => c.dataset.hash === h);
-        if (!hit) { out.textContent = 'Bu numarayla eşleşen proje bulunamadı. Numarayı kontrol edin ya da öğretim üyesine yazın.'; return; }
-        bos.classList.add('hidden');
-        hit.classList.remove('hidden');
-        hit.querySelector('details')?.setAttribute('open', '');
-        const code = hit.querySelector('.font-mono.font-semibold')?.textContent ?? '';
-        out.textContent = `Projeniz: ${code}. Kartınız aşağıda açıldı.`;
-        hit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!window.isSecureContext || !crypto.subtle) { out.textContent = 'Bu tarayıcıda şifre çözülemiyor; güncel bir tarayıcı kullanın.'; return; }
+        out.textContent = 'Kartınız çözülüyor…';
+        const key = await deriveKey(no);
+        for (const card of cards) {
+          const p = await tryOpen(key, card);
+          if (p) {
+            render(card, p); bos.classList.add('hidden');
+            out.textContent = `Projeniz: ${p.code}. Kartınız aşağıda açıldı.`;
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+          }
+        }
+        out.textContent = 'Bu numarayla eşleşen proje bulunamadı. Numarayı kontrol edin ya da öğretim üyesine yazın.';
       });
       input.addEventListener('input', () => { if (!input.value) { reset(); out.textContent = ''; } });
     })();
