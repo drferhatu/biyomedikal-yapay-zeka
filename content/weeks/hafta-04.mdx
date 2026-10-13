@@ -1,0 +1,132 @@
+---
+week: 4
+title: "Klasik Makine Öğrenmesi I: Denetimli Öğrenme ve Klinik Metrikler"
+topic: "Klasik makine öğrenmesi I: denetimli öğrenme ve klinik değerlendirme metrikleri (ROC-AUC, duyarlılık/özgüllük, kalibrasyon)"
+description: "İlk modelimizi kuruyoruz ve asıl soruyu soruyoruz: bu model iyi mi? Duyarlılık ve özgüllük, eşik seçimi, ROC ve PR eğrileri, kalibrasyon ve karar eğrisi; hepsi klinik örneklerle."
+module: m2
+exam: false
+status: hazir
+changeNote: ""
+tags:
+  - "lojistik regresyon"
+  - "ROC-AUC"
+  - "PR-AUC"
+  - "duyarlılık"
+  - "özgüllük"
+  - "kalibrasyon"
+  - "Brier"
+  - "karar eğrisi"
+objectives:
+  - "Lojistik regresyonu olasılıksal model olarak kurar; katsayıları odds oranı biçiminde yorumlar."
+  - "Karışıklık matrisinden duyarlılık, özgüllük, PPV, NPV ve F1 hesaplar; prevalansın PPV üzerindeki etkisini açıklar."
+  - "ROC-AUC ile PR-AUC'yi karşılaştırır; dengesiz sınıflarda hangisinin bilgilendirici olduğunu gerekçelendirir."
+  - "Kalibrasyon eğrisi, Brier skoru ve Platt/izotonik kalibrasyonu uygular; karar eğrisi analiziyle net faydayı yorumlar."
+methods:
+  - "Lojistik regresyon"
+  - "k-NN"
+  - "ROC / PR eğrisi"
+  - "Kalibrasyon"
+  - "Karar eğrisi analizi"
+tools:
+  - "scikit-learn"
+  - "matplotlib"
+datasets:
+  - name: "UCI Breast Cancer Wisconsin (Diagnostic)"
+    url: "https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic"
+  - name: "Kaggle: Sepsis (PhysioNet 2019 Challenge)"
+    url: "https://physionet.org/content/challenge-2019/"
+    note: "Dengesiz sınıf ve PR-AUC."
+notebook:
+  file: notebooks/hafta-04.ipynb
+  title: "Hafta 4 · İlk Model ve Klinik Metrikler"
+  embed: true
+  placement: inline
+resources:
+  - title: "Steyerberg EW ve ark. Assessing the performance of prediction models: a framework. Epidemiology 2010."
+    url: "https://journals.lww.com/epidem/fulltext/2010/01000/assessing_the_performance_of_prediction_models__a.22.aspx"
+    kind: makale
+    note: "Ayırt edicilik, kalibrasyon ve klinik fayda çerçevesi."
+  - title: "Vickers AJ, Elkin EB. Decision curve analysis. Med Decis Making 2006."
+    url: "https://journals.sagepub.com/doi/10.1177/0272989X06295361"
+    kind: makale
+  - title: "Van Calster B ve ark. Calibration: the Achilles heel of predictive analytics. BMC Med 2019."
+    url: "https://bmcmedicine.biomedcentral.com/articles/10.1186/s12916-019-1466-7"
+    kind: makale
+---
+
+import NotebookEmbed from '@/components/NotebookEmbed.astro';
+
+## Ön Okuma ve Hazırlık
+
+Kısa bir hazırlık yeterli. Şu soruyu düşünerek gelin: bir tarama testi "yüzde 95 doğru" dendiğinde bu sizce ne anlama geliyor ve bu bilgi bir hastaya sonucunu açıklamaya yeter mi? Bir de [Proje](/proje) sayfasına bakın; bugün dönem projelerini dağıtıyoruz.
+
+> [!not] Dersin akışı
+> İlk saat ilk modelimiz ve "iyi mi?" sorusu, ikinci saat kalibrasyon ve karar eğrisi, son yarım saat defter. Dersin sonunda dönem projelerini tanıtıp herkesin kendi projesini bulmasını sağlayacağız.
+
+## Ders Notları
+
+### İlk model
+
+Üç haftadır veriyle uğraştık; artık bir model kurabiliriz. İlk modelimiz lojistik regresyon. Adı korkutucu görünebilir ama yaptığı şey basit: her hastanın ölçümlerini alıp bir olasılık üretir. "Bu hastada hastalık olma olasılığı 0.72" gibi. Hepsi bu. Bu olasılığı sonra bir eşikten geçirip "hasta" ya da "sağlıklı" deriz; çoğu zaman eşik 0.5'tir.
+
+Lojistik regresyonu ilk model olarak seçmemizin nedeni, basit ve anlaşılır olması. Her ölçümün sonucu hangi yönde ve ne kadar etkilediğini doğrudan okuyabilirsiniz. Daha karmaşık modellere gelecek hafta geçeceğiz; ama onları da hep bu basit modelle karşılaştıracağız. Karmaşık model basitini geçemiyorsa karmaşıklığın bir anlamı yok.
+
+### Yüzde seksen beş doğru ne demek?
+
+Modeli kurduk, çalıştırdık, yüzde seksen beş doğru çıktı. Güzel mi? Bilmiyoruz. Çünkü "doğru" kelimesi iki farklı hatayı aynı torbaya koyuyor. Bir hastaya sağlıklı demek de hata, bir sağlıklıya hasta demek de hata; ama bu ikisinin bedeli aynı değil. Kanser taramasında bir hastayı kaçırmak, bir sağlıklıyı gereksiz biyopsiye göndermekten çok daha pahalıdır. O yüzden tek bir doğruluk sayısı yerine hataları ayrı ayrı sayarız.
+
+Bunu yapmanın yolu karışıklık matrisi dediğimiz küçük bir tablo. Dört hücresi var: doğru dediğimiz hastalar, kaçırdığımız hastalar, doğru bıraktığımız sağlıklılar ve boşuna korkuttuğumuz sağlıklılar. Bu dört sayıdan iki temel oran çıkar. Duyarlılık, hastaların kaçını yakaladığımızı söyler. Özgüllük, sağlıklıların kaçını rahat bıraktığımızı söyler.
+
+> [!ornek] İki hekim, iki eşik
+> Aynı modeli iki hekim kullanıyor. Biri acil serviste çalışıyor; hiçbir kalp hastasını kaçırmak istemiyor, eşiği düşük tutuyor, duyarlılığı yüksek. Çok sayıda sağlıklıya da "şüpheli" diyor ama onlar ek testle elenir, zararı sınırlı. Diğeri anjiyografi kararı veriyor; gereksiz girişim istemiyor, eşiği yüksek tutuyor, özgüllüğü yüksek. İkisi de aynı modeli kullanıyor, ikisi de haklı. Eşik bir matematik kararı değil, klinik bir karar.
+
+Bir de iki oran daha var ki hastayla konuşurken asıl onlar işe yarar. Modelin "hasta" dediği kişilerin kaçı gerçekten hasta? Buna pozitif öngörü değeri deniyor. Bu sayı, hastalığın ne kadar yaygın olduğuna çok bağlıdır. Nadir bir hastalıkta çok iyi bir test bile "pozitif" dediklerinin çoğunda yanılır, çünkü ortada çok az gerçek hasta vardır. Yüzde doksan beş duyarlı ve özgül bir test, yüzde bir prevalansta pozitif dediklerinin yalnızca beşte birinde haklıdır. Bu, derste sık sık geri döneceğimiz bir gerçek.
+
+### Bütün eşikleri aynı anda görmek
+
+Eşiği her değiştirdiğimizde duyarlılık ve özgüllük birlikte değişiyor. Birini artırınca öbürü düşüyor. Bütün olası eşikleri tek grafikte göstermenin yolu ROC eğrisi. Eğrinin altındaki alan, kısaca AUC, modelin sıralama gücünü tek sayıyla özetler. Şöyle düşünün: rastgele bir hasta ve rastgele bir sağlıklı seçsem, model hastaya daha yüksek olasılık verir mi? AUC 0.9 ise on seferin dokuzunda evet. AUC 0.5 ise yazı tura.
+
+AUC'nin güzel yanı eşikten bağımsız olması; kötü yanı ise pozitif sınıf nadir olduğunda fazla iyimser görünmesi. Geçen hafta yüzde yedi pozitifli örnekte bunu görmüştük. Böyle durumlarda PR eğrisine bakarız; o, duyarlılık ile pozitif öngörü değerini birlikte çizer ve nadir hastalıkta gerçeği daha dürüst anlatır. Bugünkü veride sınıflar dengeli; iki eğri de benzer bir hikâye anlatıyor. Projelerinizin bazılarında anlatmayacak.
+
+### Olasılık doğru mu?
+
+Şimdiye kadar hep sıralamadan söz ettik: model hastayı sağlıklıdan daha yukarı koyuyor mu? Ama klinikte olasılığın kendisi de kullanılıyor. Hastaya "riskiniz yüzde yetmiş" diyorsunuz. Bu sayı doğru mu? Yani modelin yüzde yetmiş dediği yüz hastanın gerçekten yetmişi hasta mı?
+
+Bu soruya kalibrasyon deniyor ve çoğu zaman ihmal ediliyor. Oysa iki model aynı AUC'ye sahip olup biri olasılıkları sistematik olarak abartıyor olabilir. Kalibrasyon eğrisi bunu gösterir: modelin verdiği olasılığı yatay eksene, gerçekleşen oranı dikey eksene koyarsınız; iyi bir model köşegen üzerinde durur. Lojistik regresyon genellikle doğuştan iyi kalibredir. Random Forest ve sinir ağları öyle değildir; onların olasılıklarını sonradan düzeltmek gerekir. Defterde bunu yapıyoruz ve düzeltilmiş eğrinin köşegene oturduğunu görüyoruz.
+
+> [!neden] Neden kalibrasyon AUC kadar önemli?
+> Bir risk modeli tedavi kararına girdiğinde hekim "yüzde yetmiş" sayısını ciddiye alır. Model aslında yüzde kırk demeliyken yetmiş diyorsa, gereksiz tedavi; tersi ise kaçan hasta. Van Calster ve arkadaşları bu yüzden kalibrasyona "tahmin modellerinin Aşil topuğu" diyor. Projenizin raporunda kalibrasyon eğrisi olmadan sonuç tablosu eksik sayılır.
+
+### Kullanmaya değer mi?
+
+Son soru en pratik olanı. Diyelim bir hekim riski yüzde yirminin üstünde olan hastayı ileri tetkike gönderiyor. Bu modeli kullanmak, iki basit alternatiften daha iyi mi: herkesi göndermek ya da kimseyi göndermemek? Karar eğrisi analizi tam olarak bunu çizer. Her eşik için modelin sağladığı net faydayı hesaplar ve iki basit stratejiyle karşılaştırır. Modelin çizgisi ikisinin de üstündeyse, o eşik aralığında model gerçekten işe yarıyor demektir. Altındaysa, AUC ne kadar yüksek olursa olsun o eşikte modele gerek yok.
+
+Bu dört soru, ilk model kurarken de, dönem sonunda da, tez savunmasında da aynı sırayla sorulacak: hastaları yakalıyor mu, sıralama gücü ne, olasılığı doğru mu, kullanmaya değer mi. Bugünkü defterin dört grafiği, proje raporunuzun sonuçlar bölümünün iskeletidir.
+
+## Temel Kavramlar
+
+- **Lojistik regresyon** — Ölçümlerden 0 ile 1 arasında bir olasılık üreten basit model; her değişkenin etkisi doğrudan okunur.
+- **Karışıklık matrisi** — Doğru ve yanlış pozitif, doğru ve yanlış negatif sayılarının dört hücreli tablosu.
+- **Duyarlılık ve özgüllük** — Hastaların kaçını yakaladık, sağlıklıların kaçını rahat bıraktık.
+- **Pozitif öngörü değeri** — "Hasta" dediklerimizin kaçı gerçekten hasta; hastalığın yaygınlığına çok bağlı.
+- **ROC-AUC ve PR-AUC** — Tüm eşikleri özetleyen sıralama ölçütleri; nadir hastalıkta PR daha dürüst.
+- **Kalibrasyon** — Modelin "%70" dediği hastaların gerçekten %70'inin hasta olması; Brier skoru tek sayılık özeti.
+- **Karar eğrisi** — Modelin, "herkesi tedavi et" ve "kimseyi tedavi etme" stratejilerine göre hangi eşiklerde net fayda sağladığı.
+
+## Uygulama / Laboratuvar
+
+Defter geçen haftaki Heart Disease verisiyle devam ediyor. Önce lojistik regresyonla her hasta için olasılık üretiyoruz; sonra üç farklı eşikte dört sayıya bakıyor, ROC ve PR eğrilerini yan yana çiziyor, kalibrasyon eğrisinde Random Forest'ın nasıl saptığını ve izotonik düzeltmeyle nasıl yola geldiğini görüyor, son olarak karar eğrisini çiziyoruz.
+
+<NotebookEmbed file="notebooks/hafta-04.ipynb" title="Hafta 4 · İlk Model ve Klinik Metrikler" />
+
+**Ders içi çalışma:** Dönem projeleri bugün dağıtılıyor. [Proje sayfasında](/proje) öğrenci numaranızla projenizi bulun, veri setinin bağlantısını açın ve dersin son on dakikasında şu üç soruya bir cümlelik cevap yazın: pozitif sınıf oranı kaç, bir hastanın kaç satırı var, eşiği hangi klinik gerekçeyle seçersiniz?
+
+## Tartışma Soruları
+
+1. Prevalansı yüzde bir olan bir hastalıkta yüzde doksan beş duyarlı ve özgül bir testin pozitif öngörü değeri kaçtır? Bunu bir hastaya nasıl açıklarsınız?
+2. İki modelin AUC'si aynı ama biri kötü kalibre. Hangisini klinik karar destek için seçersiniz, neden?
+3. Karar eğrisinde model, herkesi tedavi et çizgisinin altında kalıyorsa ne yapmalı?
+
+## Haftanın Özeti
+
+İlk modelimizi kurduk ve "iyi mi?" sorusunun tek bir sayıyla cevaplanamayacağını gördük. Dört soru sorduk: hastaları yakalıyor mu, sıralama gücü ne, olasılığı doğru mu, kullanmaya değer mi. Bu dört soru dönemin geri kalanında her modelde tekrar edecek. Gelecek hafta daha güçlü modellere geçiyoruz: Random Forest, XGBoost ve SVM. Ama onları da yine bu dört soruyla sınayacağız.

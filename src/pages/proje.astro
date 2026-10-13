@@ -1,0 +1,207 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import Toc from '@/components/Toc.astro';
+import { href, course } from '@/lib/site';
+import projectsData from '@content/data/projects.json';
+
+const { salt, projects } = projectsData;
+const timeline = [
+  { when: '14 Ekim (Hafta 4)', what: 'Projeler dağıtılır. Veri setinin bağlantısını açın, indirin, bir göz atın.' },
+  { when: '4 Kasım (Hafta 7)', what: 'Teslim 1 · Depo bağlantısı: README taslağı, data/README.md (indirme talimatı), veriyi yükleyip tanıyan ilk defter.' },
+  { when: '2 Aralık (Hafta 11)', what: 'Teslim 2 · Ara rapor: keşifçi analiz, ön işleme kararları, temel model ve klinik metrikler (rapor/main.pdf taslağı).' },
+  { when: '23 Aralık (Hafta 14)', what: 'Teslim 3 · Son rapor (PDF) ve tamamlanmış depo; son derste 5 dakikalık sunum.' },
+];
+const rubric = [
+  ['Klinik soru ve veri anlayışı', 15, 'Soru net mi, etiket nasıl tanımlanmış, veri türünün tuzakları fark edilmiş mi?'],
+  ['Ön işleme ve doğrulama tasarımı', 20, 'Eksik veri kararı gerekçeli mi, sızıntı önlenmiş mi, bölme hasta-bazlı mı?'],
+  ['Modelleme', 15, 'Temel model + en az bir ileri model; hiperparametre arama dürüst mü?'],
+  ['Klinik değerlendirme', 20, 'ROC/PR, kalibrasyon, eşik gerekçesi, karar eğrisi; alt-grup analizi varsa artı.'],
+  ['Açıklanabilirlik', 15, 'Küresel ve yerel açıklama; klinik olarak anlamlı mı tartışılmış mı?'],
+  ['Depo, README ve tekrarlanabilirlik', 10, 'Depo düzeni, README\'nin açıklayıcılığı, ortam dosyası, tohum, veri talimatı.'],
+  ['Rapor ve sunum', 5, 'LaTeX şablonuna uygun, şekil/tablo okunur, kaynakça düzgün.'],
+];
+const toc = [
+  { slug: 'projemi-bul', text: 'Projemi bul' },
+  { slug: 'projeler', text: 'Projeler' },
+  { slug: 'teslimler', text: 'Teslimler ve takvim' },
+  { slug: 'depo', text: 'GitHub deposu' },
+  { slug: 'rapor', text: 'LaTeX rapor' },
+  { slug: 'degerlendirme', text: 'Değerlendirme' },
+  { slug: 'kurallar', text: 'Kurallar ve etik' },
+];
+---
+<BaseLayout title="Dönem Projesi" description="SVY 5430 dönem projeleri: kişiye özel biyomedikal veri seti, GitHub deposu, LaTeX rapor; teslim takvimi, şablonlar ve değerlendirme ölçütleri.">
+  <div class="wrap py-14 md:py-20">
+    <SectionHeading eyebrow="Dönem Projesi" title="Kendi veri setiniz, kendi deponuz, kendi raporunuz"
+      lede="Her öğrenciye farklı bir biyomedikal veri seti ve klinik soru verildi. Beş veri türünün her biri sınıfta temsil ediliyor: klinik tablo, elektronik sağlık kaydı, sinyal, görüntü ve omik. Kod GitHub'da, rapor LaTeX'te, veri ise yalnızca indirme talimatıyla paylaşılır." />
+  </div>
+
+  <div class="wrap grid gap-12 pb-24 lg:grid-cols-[220px_1fr]">
+    <aside class="hidden lg:block"><div class="sticky top-24"><Toc headings={[]} extra={toc} /></div></aside>
+
+    <div class="min-w-0 max-w-3xl space-y-16">
+      <!-- PROJEMİ BUL -->
+      <section id="projemi-bul" class="scroll-mt-28 rounded-2xl border border-line bg-ink p-6 text-paper shadow-soft md:p-8">
+        <p class="eyebrow !text-paper/60">Projemi bul</p>
+        <h2 class="display mt-2 text-2xl md:text-3xl">Öğrenci numaranızı yazın</h2>
+        <p class="mt-3 text-sm leading-relaxed text-paper/75">
+          Numaranız hiçbir yere gönderilmez. Tarayıcınız numaranın parmak izini (SHA-256) hesaplar ve aşağıdaki listede eşleşen kartı açar.
+          Sitede ne isim ne numara açık olarak yer alır.
+        </p>
+        <form id="bul-form" class="mt-5 flex flex-col gap-3 sm:flex-row" autocomplete="off">
+          <label class="sr-only" for="ogrno">Öğrenci numarası</label>
+          <input id="ogrno" name="ogrno" inputmode="numeric" pattern="[0-9]*" placeholder="örn. 2611xxxxx" maxlength="12"
+                 class="flex-1 rounded-lg border border-paper/20 bg-paper/5 px-4 py-3 font-mono text-base text-paper placeholder:text-paper/35 focus:border-accent focus:outline-none" />
+          <button type="submit" class="btn-accent justify-center">Projemi göster</button>
+        </form>
+        <p id="bul-sonuc" class="mt-3 min-h-5 text-sm text-paper/75" aria-live="polite"></p>
+      </section>
+
+      <!-- PROJELER -->
+      <section id="projeler" class="scroll-mt-28">
+        <h2 class="display text-2xl md:text-3xl">Projeler</h2>
+        <p class="mt-2 text-ink-2">Yedi proje, beş veri türü. İsimler gizlidir; kendi kartınızı yukarıdaki kutudan bulun. Her kart veri setini, klinik soruyu, önerilen adımları ve sık yapılan hataları içerir.</p>
+        <ol class="mt-8 space-y-5">
+          {projects.map((p) => (
+            <li id={`proje-${p.id}`} data-hash={p.hash} class="proje-kart rounded-2xl border border-line bg-white p-6 shadow-soft transition-all data-[secili]:border-accent data-[secili]:ring-4 data-[secili]:ring-accent/15 data-[gizli]:opacity-40">
+              <div class="flex flex-wrap items-center gap-2 text-xs">
+                <span class="font-mono font-semibold text-brand">{p.code}</span>
+                <span class="chip-mono">{p.dataType}</span>
+                <span class="ml-auto font-mono text-ink-3" aria-label="Öğrenci (maskelenmiş)">{p.student}</span>
+              </div>
+              <h3 class="mt-3 font-display text-xl font-semibold text-ink">{p.title}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-ink-2">{p.question}</p>
+              <dl class="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                <div><dt class="eyebrow">Veri seti</dt><dd class="mt-0.5"><a href={p.url} target="_blank" rel="noopener" class="link font-medium text-ink">{p.dataset} ↗</a></dd></div>
+                <div><dt class="eyebrow">Boyut</dt><dd class="mt-0.5 text-ink-2">{p.size}</dd></div>
+                <div><dt class="eyebrow">Erişim</dt><dd class="mt-0.5 text-ink-2">{p.access}</dd></div>
+                <div><dt class="eyebrow">Görev</dt><dd class="mt-0.5 text-ink-2">{p.task}</dd></div>
+              </dl>
+              <details class="mt-4 rounded-xl border border-line bg-paper px-4 py-3 text-sm">
+                <summary class="cursor-pointer font-semibold text-ink">Önerilen adımlar, tuzaklar ve kaynaklar</summary>
+                <ol class="mt-3 list-decimal space-y-1.5 pl-5 text-ink-2">{p.steps.map((s) => <li>{s}</li>)}</ol>
+                <p class="mt-3 text-ink-2"><span class="font-semibold text-[#c2410c]">Dikkat:</span> {p.pitfalls}</p>
+                <p class="mt-2 text-ink-3"><span class="font-semibold">Başlangıç okuması:</span> {p.refs.join(' · ')}</p>
+              </details>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <!-- TESLİMLER -->
+      <section id="teslimler" class="scroll-mt-28">
+        <h2 class="display text-2xl md:text-3xl">Teslimler ve takvim</h2>
+        <p class="mt-2 text-ink-2">Üç teslim var; hepsi GitHub deposu üzerinden. Her teslimde depo bağlantısını e-posta ile gönderin; depo herkese açık ya da öğretim üyesine erişim verilmiş özel olabilir.</p>
+        <ol class="mt-6 space-y-3">
+          {timeline.map((t, i) => (
+            <li class="flex gap-4 rounded-xl border border-line bg-white p-4">
+              <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-brand font-mono text-sm font-semibold text-white">{i}</span>
+              <div><p class="font-mono text-xs text-ink-3">{t.when}</p><p class="mt-0.5 text-[15px] text-ink">{t.what}</p></div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <!-- DEPO -->
+      <section id="depo" class="scroll-mt-28 prose-lesson">
+        <h2 class="!mt-0 !border-0 !pt-0">GitHub deposu</h2>
+        <p>Depo, projenizin tamamını başkasının tekrar üretebileceği biçimde taşır. Veri dosyası <strong>asla</strong> depoya konmaz; onun yerine indirme talimatı yazılır. Şablonu indirip kendi deponuza açın:</p>
+        <p class="not-prose flex flex-wrap gap-3">
+          <a href={href('/proje/proje-sablonu.zip')} class="btn-primary !no-underline" download>Depo şablonunu indir (.zip)</a>
+          <a href="https://github.com/new" target="_blank" rel="noopener" class="btn-ghost !no-underline">GitHub'da yeni depo aç ↗</a>
+        </p>
+        <pre><code>{`proje-sablonu/
+├── README.md              ← klinik soru, veri, yöntem, sonuç, nasıl çalıştırılır
+├── .gitignore             ← veri ve LaTeX ara dosyalarını dışarıda tutar
+├── requirements.txt       ← kütüphane sürümleri
+├── data/README.md         ← verinin nereden, nasıl indirileceği (veri yok!)
+├── notebooks/             ← 01_baslangic.ipynb, 02_model.ipynb, 03_aciklama.ipynb
+├── src/metrikler.py       ← tekrar kullanılan fonksiyonlar
+└── rapor/main.tex         ← LaTeX rapor, kaynaklar.bib, sekiller/, main.pdf`}</code></pre>
+        <p>README'nin iyi olması notun bir parçasıdır. Depoyu açan biri beş dakikada şunları anlamalı: hangi klinik soru, hangi veri, hangi yöntem, ana sonuç ne ve kod nasıl çalıştırılır. Şablondaki başlıklar bu sırayı verir; cümleleri siz yazın.</p>
+        <aside class="callout callout-note"><p class="callout-title">Colab ile çalışma</p><p>Defterleri Colab'de yazıp <em>Dosya → GitHub'a kopya kaydet</em> ile doğrudan deponuza gönderebilirsiniz. Her defterin ilk hücresi veriyi indirmeli; böylece depoyu açan herkes defteri sıfırdan çalıştırabilir. Tohumu sabitleyin: <code>SEED = 42</code>.</p></aside>
+      </section>
+
+      <!-- RAPOR -->
+      <section id="rapor" class="scroll-mt-28 prose-lesson">
+        <h2 class="!mt-0 !border-0 !pt-0">LaTeX rapor</h2>
+        <p>Rapor LaTeX ile yazılır ve derlenmiş PDF'siyle birlikte deponun <code>rapor/</code> klasöründe durur. Şablon, TRIPOD+AI raporlama standardının derse uyarlanmış hâlidir; bölümleri sabit, cümleleri boş. En kolay yol Overleaf: ZIP'i yükleyin, <code>main.tex</code> içindeki künye satırlarını doldurun, derleyin.</p>
+        <p class="not-prose flex flex-wrap gap-3">
+          <a href={href('/proje/rapor-sablonu.zip')} class="btn-primary !no-underline" download>Rapor şablonunu indir (.zip)</a>
+          <a href={href('/proje/main.tex')} class="btn-ghost !no-underline" download>main.tex</a>
+          <a href={href('/proje/kaynaklar.bib')} class="btn-ghost !no-underline" download>kaynaklar.bib</a>
+          <a href="https://www.overleaf.com/" target="_blank" rel="noopener" class="btn-ghost !no-underline">Overleaf ↗</a>
+        </p>
+        <h3>Bölümler ve beklenen uzunluk</h3>
+        <table>
+          <thead><tr><th>Bölüm</th><th>Ne yazılır</th><th>Uzunluk</th></tr></thead>
+          <tbody>
+            <tr><td>Özet</td><td>Soru, veri, yöntem, ana sonuç, sınırlılık</td><td>≤ 200 kelime</td></tr>
+            <tr><td>Giriş ve klinik soru</td><td>Problem bir klinisyene anlatılır gibi; etiketin tanımı; ≥ 3 atıf</td><td>1 sayfa</td></tr>
+            <tr><td>Veri</td><td>Kaynak, erişim, özet tablo, keşifçi analiz (≤ 2 şekil)</td><td>1–1,5 sayfa</td></tr>
+            <tr><td>Yöntem</td><td>Ön işleme kararları ve gerekçeleri, doğrulama tasarımı, modeller, ölçütler</td><td>1,5–2 sayfa</td></tr>
+            <tr><td>Sonuçlar</td><td>Başarım tablosu (ortalama ± s.s.), ROC + kalibrasyon şekli, alt-grup varsa</td><td>1–1,5 sayfa</td></tr>
+            <tr><td>Açıklanabilirlik</td><td>Bir küresel, bir yerel açıklama; klinik anlamı</td><td>1 sayfa</td></tr>
+            <tr><td>Tartışma ve sonuç</td><td>Klinik anlam, literatür, sınırlılık, kliniğe giriş için ne gerekir</td><td>1 sayfa</td></tr>
+          </tbody>
+        </table>
+        <p>Toplam 8–10 sayfa; şekil ve tablolar dâhil, kaynakça hariç. Türkçe yazılır; terimlerin ilk geçtiği yerde İngilizcesi parantez içinde verilebilir.</p>
+        <aside class="callout callout-uyari callout-warn"><p class="callout-title">Yapay zeka araçları</p><p>Kod ve metin yazarken yapay zeka asistanı kullanabilirsiniz; bu derste bunu öğretiyoruz. İki koşul var: raporun sonuna hangi aracı ne için kullandığınızı bir paragrafla yazın ve her sayıyı, her atfı kendiniz doğrulayın. Uydurma referans ya da çalıştırılmamış koddan üretilmiş sonuç, projenin tamamını geçersiz kılar.</p></aside>
+      </section>
+
+      <!-- DEĞERLENDİRME -->
+      <section id="degerlendirme" class="scroll-mt-28 prose-lesson">
+        <h2 class="!mt-0 !border-0 !pt-0">Değerlendirme</h2>
+        <p>Proje 100 puan üzerinden değerlendirilir; dönem notuna katkısı derste duyurulur. Ağırlıklar, dersin vurgusunu yansıtır: en çok puan doğrulama tasarımına ve klinik değerlendirmeye gider, en az puan sunuma.</p>
+        <table>
+          <thead><tr><th>Ölçüt</th><th>Puan</th><th>Neye bakılır</th></tr></thead>
+          <tbody>{rubric.map(([k, p, d]) => <tr><td class="font-medium text-ink">{k}</td><td class="font-mono">{p}</td><td>{d}</td></tr>)}</tbody>
+        </table>
+      </section>
+
+      <!-- KURALLAR -->
+      <section id="kurallar" class="scroll-mt-28 prose-lesson">
+        <h2 class="!mt-0 !border-0 !pt-0">Kurallar ve etik</h2>
+        <ul>
+          <li><strong>Veri paylaşımı yok.</strong> Veri dosyası depoya, Drive bağlantısına ya da rapora konmaz; yalnızca kaynağa bağlantı ve indirme talimatı. Erişim sözleşmesi gerektiren veriler (MIMIC gibi) için sözleşme koşulları aynen geçerlidir.</li>
+          <li><strong>Bireysel çalışma.</strong> Fikir alışverişi serbest, kod ve metin paylaşımı değil. Deponuzdaki her commit sizin olmalı.</li>
+          <li><strong>Dürüst doğrulama.</strong> Test kümesine bir kez bakılır. Sızıntı fark edilirse düzeltilip raporda belirtilir; gizlemek, düşük AUC'den çok daha kötüdür.</li>
+          <li><strong>Veri değişikliği.</strong> Atanan veri setine erişemezseniz ya da tez konunuza daha uygun açık bir veri seti varsa 2. teslimden önce e-posta ile gerekçenizi yazın; uygun görülürse değiştirilir.</li>
+        </ul>
+        <p>Sorular için <a href={`mailto:${course.instructor.email}`}>{course.instructor.email}</a> ya da ofis saati randevusu.</p>
+      </section>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ salt }}>
+    (() => {
+      const form = document.getElementById('bul-form');
+      const input = document.getElementById('ogrno');
+      const out = document.getElementById('bul-sonuc');
+      const cards = Array.from(document.querySelectorAll('.proje-kart'));
+      const reset = () => cards.forEach((c) => { c.removeAttribute('data-secili'); c.removeAttribute('data-gizli'); });
+      async function sha256(text) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+        return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+      }
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const no = input.value.replace(/\D/g, '');
+        reset();
+        if (!no) { out.textContent = 'Lütfen öğrenci numaranızı yazın.'; return; }
+        if (!window.isSecureContext || !crypto.subtle) { out.textContent = 'Bu tarayıcıda özet hesaplanamıyor; listeden kodunuzu bulun.'; return; }
+        const h = await sha256(`${salt}:${no}`);
+        const hit = cards.find((c) => c.dataset.hash === h);
+        if (!hit) { out.textContent = 'Bu numarayla eşleşen proje bulunamadı. Numarayı kontrol edin ya da öğretim üyesine yazın.'; return; }
+        cards.forEach((c) => { if (c !== hit) c.setAttribute('data-gizli', ''); });
+        hit.setAttribute('data-secili', '');
+        hit.querySelector('details')?.setAttribute('open', '');
+        const code = hit.querySelector('.font-mono.font-semibold')?.textContent ?? '';
+        out.textContent = `Projeniz: ${code}. Kart aşağıda vurgulandı; diğerleri soluklaştırıldı.`;
+        hit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      input.addEventListener('input', () => { if (!input.value) { reset(); out.textContent = ''; } });
+    })();
+  </script>
+</BaseLayout>
