@@ -1,179 +1,41 @@
 {
   "salt": "SVY5430-2026",
+  "iter": 300000,
   "projects": [
     {
       "id": "P1",
-      "code": "BVYZ-01",
-      "dataType": "Klinik tablo",
-      "title": "Kalp yetmezliğinde ölüm riski tahmini",
-      "dataset": "Heart Failure Clinical Records (UCI)",
-      "url": "https://archive.ics.uci.edu/dataset/519/heart+failure+clinical+records",
-      "size": "299 hasta · 12 öznitelik · 1 ikili hedef",
-      "access": "Açık; tek CSV, doğrudan indirilir",
-      "task": "İkili sınıflandırma: takip süresi içinde ölüm olayı",
-      "question": "Serum kreatinin, ejeksiyon fraksiyonu ve diğer klinik değişkenlerden kalp yetmezliği hastasının ölüm riski tahmin edilebilir mi, hangi değişkenler kararı belirliyor?",
-      "steps": [
-        "Eksik yok ama 'time' (takip süresi) değişkeni sızıntı tartışması gerektirir: modele verilmeli mi?",
-        "Lojistik regresyon temel model; Random Forest ve XGBoost ile karşılaştırma; iç içe çapraz doğrulama.",
-        "ROC ve kalibrasyon eğrileri, Brier; eşiği klinik maliyetle seçin.",
-        "SHAP özet ve iki hasta için şelale grafiği; serum kreatinin–ejeksiyon fraksiyonu etkileşimi."
-      ],
-      "pitfalls": "Küçük veri: güven aralıklarını (bootstrap) raporlayın. 'time' sızıntısına dikkat.",
-      "refs": [
-        "Chicco D, Jurman G. BMC Med Inform Decis Mak 2020 (bu veri setinin özgün makalesi)"
-      ],
-      "student": "E****** A******",
-      "hash": "93db202ffd2d6d56aeaca965b23b9e23c68c492e8836aca25fb0ba53e1b49d16"
+      "iv": "uLb2F5x4yCNNRtWw",
+      "ct": "2YKTc++914nRU+0X9Hu6D3hCxqFCOzcb4gKWddatxpZ6C3TSVARs/JkNALgM7oXCfooEdRDD6mnH8pHlaOV+2cufNcDrTcKFYwRek3ufHXF2/PFkDKo+d8DNTZGfH4OSIveigOOsRW/N4gwk3PO2zvynHpULWuCssLkluy+myKF11boBmXZJS9196aZGPplHvj2fl5+GZx+3U54XkvGl1Mtr9/74byThN3/a+FV2qumpC8K3LtVhxHUkK+VmeHy3lUwkaOhMHcQ1Yq45m0yYd898KlqORu0NH8TWUw+u24/d4qWEwcIaoR0OHZiD1azfic3Xn3N+MEoG2lHXRoMUOcjWmfM71qBTdJfyB1CAV9rAd797XdBHPpwMcZ1nwQBQv2SLYVeXZRhUs7+nMc7K64CQ6XzFVZf931B22sQFAM8LDou6or3EPsgpe6l+h1zJyhJYHIQDjY5j0g1kuh3pvCc16qlqFYeaMSzZOQyePWjBRRE9a2qwDuxy2E0CW6wPdsvt7657ttI2beea44b5BmcfmYKEp0GccB9Hk2lf7wIosPQtZIpq9T0IpHHO7YVAfIIuCFCuP8JIAwEAVLzePmnUjMenePIgIHozj5qKO8n6oSMrLivhytGLN0ACfatfxkjxf/693PCazodg0GIRYpogxO44d9OzCnvXeRKUbyKxz8AWDi8sW/UpLEX+AqdgafxkzIxi7zKZ8ErcTIDk76T4SM2Y2EEzhZapkSWtCmHqfSwPT89nwWRwRaEE3wOVQeoNTr1WzfWSx+qHZVdGAaFu192ktnMNjbdk06Srh9X4MsddDhmot2NX2NF4jqazdSvSObzSYuhT1ey42H4Gb1CVLEMZ5FpZwxVzPBS6HA0b2C1rTZIMYf0hLrrxANUViFIPwEKKNx2z+f2UX/DgmI7iyS920nR2j0r00jGU3RG4VvdevY1UsFT93BHv+vjkBEzmi40tVbOiIKD1CAA3Vx0DkGDyEDw0E7/nTI8UYl6kEFXMlGrZI7MdbruzK2L8ruA4gLgGHLKpzUK/D6/WK7JD1KWwYYfmuQkh1ZemDmw2nNL8cg9Np4bGbkKUf6ZKovpY+Oy/xON7gspZCgGOT2g19442US3rgl2kLtjs92Kj+eKb4oGpkG9BNAQXXH4+BdXPxRMueuICS90G16F5C+Blh5fx0sPII8S4Y60xnHEIzFmctfVMupwqL7G+yyYU8ny1ynU52kRMcbzjIVbhux02/Y0bDPY9+zBoxOuVknyxqDi7t0kpQjMgVu2y70jLSl0r+xKk5V8xk6Z0+GqzLnvygKqaAlcgsXWwPgsgCNebawfRIxL2Odph8nSoP9EAcwXfLs0QOkITUGkIPnvFVMkOtNoa7WwIUjIQ/zcMdu2OV25uPl/uv6qZ+U4MaxYqbMLbXLYELOSQY3Mk2hV6WGeRNtxGeXwcQu2BeE+3JekO5kzpb3l7bhHx9f+Jn0CYkloAJD5kc6SdEsIJhZMGHtVYmbDRBVRsj2w3Ka2NHqbqxgYBtuBqmBJYPnzUb1fVtWu0M+ax5fZ7tuag+pJZjmbwpM6C/AwwUTP4gs/kSrz7cTlVG231+5v/SLX5ojNodUQNQXhJWFf27wale7AsubsAnijvDiOBg/0A1e0iS8LpcdR5gO6FBTAYFWm0pyw0CYPpfr5/z0lu76fLoZhhvjFbnjYjW0+CJTyc"
     },
     {
       "id": "P2",
-      "code": "BVYZ-02",
-      "dataType": "Elektronik sağlık kaydı",
-      "title": "Diyabet hastalarında 30 gün içinde yeniden yatış",
-      "dataset": "Diabetes 130-US Hospitals 1999–2008 (UCI)",
-      "url": "https://archive.ics.uci.edu/dataset/296/diabetes+130-us+hospitals+for+years+1999-2008",
-      "size": "~100.000 yatış · ~50 öznitelik",
-      "access": "Açık; ZIP içinde CSV",
-      "task": "İkili sınıflandırma: <30 gün yeniden yatış (dengesiz sınıf)",
-      "question": "Yatış özelliklerinden, ilaç değişikliklerinden ve demografiden 30 gün içinde yeniden yatış öngörülebilir mi; model farklı ırk ve cinsiyet gruplarında eşit mi çalışıyor?",
-      "steps": [
-        "Aynı hasta birden çok yatışla görünür: GroupKFold(patient_nbr) zorunlu.",
-        "Yüksek kardinaliteli kategoriler (tanı kodları) için gruplama; dengesiz sınıf için ağırlık ve eşik.",
-        "PR-AUC ve kalibrasyon; alt-grup (ırk, cinsiyet, yaş) başarımı tablosu.",
-        "SHAP ile küresel önem; adalet metrikleri (eşit fırsat farkı)."
-      ],
-      "pitfalls": "Büyük veri: Colab'de bellek için gerekirse örneklem alın ama bunu raporda belirtin.",
-      "refs": [
-        "Strack B ve ark. BioMed Res Int 2014",
-        "Obermeyer Z ve ark. Science 2019 (adalet tartışması için)"
-      ],
-      "student": "Y**** E*** K******",
-      "hash": "ac97dbabf473e609126b9a6798274600b9b125b80c89f273f515909239be66ce"
+      "iv": "PYmeAFGHjPn72bmF",
+      "ct": "dVaFNkYUHiY87WGmKrqvBILMagkwDG8byllmCeV8Ep9qbmROuwpqnw/r1ULSAciVHHnmEKKfHA9aoz+lVol92VIyU87hn9FwffiuN6OZOZKnDvEV4YgcP7PszvPpR6dXkFpOHqKQRcSE3G/VhyYFPq0D0aA7w3iY9wj52AlydeXdIEVmPgfkD1a6KbtohXQ89ujUjaq112X5oomSXSQP/FejYtfv3BdPohlto5NWAAfAviuRGh8X3/fSiQHGHGOd2byStZ5LfJiamQ4OEWpz9qDEJBga4ZSWEksjecWLumHYlkJvMllaJ9zRKVU5KW5b8Rt3inD7aF6BwK4hbNBHEXS5U6DfudYuoAvxe3K7i/nH0vqGzDs6XXC6aIK3u3hlv7ZVqIv4gmd2t7KsKDq0txjv3w5TmDMwDC+VIqi3+GFYRBlQ30fcgOHqD2FWJ7AnIbsw1f1gg27BNrzsFlIBmYnNmRrTBi3yLSKwhXADSqPM0+2zJ3SMj9w1wYq3F8YlJFDWbIX6nyVVQTQ1I4M1jAcC/McOli8cRQd6JvzmEeEz4degakhQWiGB8fPN+Uk7NY2IXhoEYRvNGXA8oa2jlcaVWr3QAbntzvUbLJWn1OW8eAHrcVtbY19nQgOs/ptYaofjTEX5EGBRiyiZfugm6D+SAcoA+xQjGq9FFn+pDCL9K+m+ifdKqySBxgMF2Uc/dZFX39J0wmiJyJPYtjQ0EQEyjt/+GivYPBcsawo/ST8st/HBRqRuyDf3MKuhDFG+VoNTQGV+I64/6kvGnjOfgrQaQsGsXDhWPKlHwrtHAdWYPDAKUsdAwDk2YjfGHgKytpRzBh+2M4axN1Q/a++KRySIrwodpqeBre/iglAZTeqIOzC8V3YtSCIuB0OZAgeeh3ceyvODGL57DpR09PGFk77fTF4zLzLOak8gWHChxjBUiT7ESOC0AYKK3osUuXOhl+cuWRgLE8A0S5bxVPwDNtvs8T31HftC7gCd+DK9vmSt/Odtwlj7alDwgysRZ0YMVNjobwxfOoFEdXlWzFHedfygStftB+soUv9nNr3bpinQ7B5xcrF0rGHuCWKBBY4UWChqDWHaS7wHH3uDae5DsGAnlffiuaciboXtEV0iXKg0qSsCpWAKim/X0aY8+DKZ+LCOKkVoRDSFMDLP0Ne6ZYMfy4bXOf439uf7WhF8TI5U0wV1a4xbnvOoDiBel8aw7uoMXFbq68rbHM+NOxdaznHaK0V4zX35vPUWt+YDQN4lOrKrPOGIuB/BDQ9EShD/MAi8oFibeI52J1+LFwaWhtWP4UgEP/yDFrOz0qs9ZmpfFSgtXFGcXgckTahoYJhFAUdTwhluAKXDjNFKSO8mIj3jMOjYfPMytRDn8UX+Sa5A/D2Msx7IJyHEqCzRmOxaRw1kMNmb5iKIEM4FAcCfV73lIoPmnJCUPW6SCbZYqCINbFEntHO8Qdblvnx/4f20ghpJcwCFpMBFgT9jApOS0lrVOlxK1vNxSKuDYeKRx5k+GugfZ94BIp4DTIMEfcYBuio/mDG/7oSFqneYhhgnNVBTe4+6aCaP51T2YBr6rOoOXQLmxd+nOaOmyC3dqpmjXL2lf6WDlKO/RPtI817Xt1CF3p8ZBXdxRm1nU6NbMQGNE8yY12ElEFzSKFmTwLeC9F2apAzX+hfv93WfqOuejYOBgcJ4UtUg4lXhoCucuZpQmP8/3g=="
     },
     {
       "id": "P3",
-      "code": "BVYZ-03",
-      "dataType": "Biyomedikal sinyal (EKG)",
-      "title": "EKG atımlarından aritmi sınıflandırması",
-      "dataset": "MIT-BIH Arrhythmia Database (PhysioNet)",
-      "url": "https://physionet.org/content/mitdb/1.0.0/",
-      "size": "48 kayıt · ~110.000 etiketli atım",
-      "access": "Açık; `wfdb` kütüphanesiyle doğrudan indirilir",
-      "task": "Çok sınıflı sınıflandırma: normal / SVEB / VEB / füzyon (AAMI sınıfları)",
-      "question": "Tek atım penceresinden (R tepesi etrafı) ve RR aralığı özniteliklerinden ventriküler ve supraventriküler ektopik atımlar güvenilir biçimde ayrılabilir mi; kayıt-bazlı bölmede başarım ne kadar düşüyor?",
-      "steps": [
-        "0.5–40 Hz filtre, R tepe tespiti (anotasyonlar hazır), atım penceresi ve RR öznitelikleri.",
-        "Kayıt-içi rastgele bölme ile kayıt-bazlı (GroupKFold) bölmeyi karşılaştırın; farkı raporun ana bulgusu yapın.",
-        "Random Forest / XGBoost; isteğe bağlı 1D-CNN (9–11. hafta).",
-        "Sınıf başına duyarlılık; karışıklık matrisi; permütasyon önemi ile hangi öznitelikler."
-      ],
-      "pitfalls": "AAMI sınıf dengesizliği çok yüksek; makro-F1 raporlayın. Hastalar arası genelleme asıl soru.",
-      "refs": [
-        "Moody GB, Mark RG. IEEE Eng Med Biol 2001",
-        "de Chazal P ve ark. IEEE TBME 2004"
-      ],
-      "student": "U*** A****",
-      "hash": "58b16b22c823355a27bbf20a251af233520b46c5da1d0f406bd65b09f39edd99"
+      "iv": "kEFFBJDzk6oWvQGo",
+      "ct": "k0WPSiibt4/LBVbY31hl+mZNkR9MXPtB0J49k/2d9J04W2JMgxd8M67ePwSzOrCEE+pSnE4YRekBoOAgSNI367qxT+Y9VChGEIo26V9R7SJvJcqpSsJROkAxFoNdwb/bTwEGqwlHRzZXdpPzSz1ReBtkfkBHHoBpGxQv8zNC8+x5gc4uQWEYMLraJS4aLxIoGX7qlwpsN6klVnixS2g93vlmkXvGwpE+ZMB8ZMH4+JIhkyMxM5EY5mQIp58q5X5yvu6a2V/PlRiGCcDCpxkEu3sHaOE7i8gVEumNLRtTE7mfs/cDnea405ZSuiSvtpYGZH67nsvNRRJA1B48lus7QvcNM95ZFNtCJFNwJg3BrNeORj19h4eDJiilXaY2m6lKEW5Y0U5Wvs2QGJout2rIXG26wDKLquklyajG6A88tNS0mpSp2XdVg00BigafNGqq1tpsVETl7ZC4d0BhqnvRDcIvM1BX1Tony6oB4k2yyewFkbfG4+jhLTaFexfA+YqZrB1SYoZtxufl4kfQ0Fgj+CwU9fhNZlIUO319ZBO8ccPFSfqKjFVIBUNS6zE5a9BH8X7yeUDuXVUdBs40L4ViSuTvAFCcmHgzewlm+BwwJ8UKSkAeDlccHr6NBNjL6mpODzsHdn+c99MSEUtGPNHsZ3k9dGgICDeDaxQnpujTNhiPaJKyyy3tDiIwmTnVK0Hp/zjjkk3Vr7kGaPiRuZmQ47AoB1ECepH0VUoY6+lIRMlGrsdDqVuxG76eIiBFfs1IDTbtr5NI5WfKPWQqRkBFeFtAvbsh1l8BOOInQ7trfH5ZTIdZWWM6lUWKQghB6h8WhiD8BMvO/dBBFuugQVhjX3E3XzJ08Fnz9Ypy926KONW0uuYBEk2GgtG65bXKsnIVL8B2lJ2re1wwQnz5AJpD3wM1Wu9Szx7t7/Fa1Oyfu4TDsRsb9XhcJEM4i4C+P1NtodHHh4v54QpsTKHTcdbtAJR/eme3Z+7BhTEp7vRcaF+GAn4eyXZ1j/BLZMnlvUZkIFlYd/rDRvLa453dRSrFkmZOnFlrJ4xsfBuioAfBkEtPa6N/0KeX70njwfbvhneinQFlG3BzvqrvkEoxD4lGnOGPdV+mgmlZuEq17Sd6MNgy54g3eUnULyUq4thXgPNij3MQreCbAng/WgpHCMipWbfQwbfRoEPPNUt3Jmyxsjw6vAPuXKrSpvVL9i+v2cm85On4ZbzcesoQ3p8J2xPLcse+Lyfq8G1X6KElwksCl5fqWUyW81j+wyNWw54Vhk+Pxj1J/ro4kLZk9tMNNJKebVjWN7/Q1LdFvxvDrDbj2feORwDVTbS/WwvoHIp5sh/4UeeqRJ3JZj0hKCLL58cb0FrCTAG71Rgvg1L6gBg2QbeQPaDLtSq3rj7lohjlRnLJhGsLv1Ny0nRQ+mhWkamMtZA7JygtlvSLorMGboSeZSQovCW+h9qTRI2y8e2+ONST9Aoxb5o2ZdI85DZMYiJ8DyIz5HKx9m6sGNFFKpIBvtmZyHJF90/Dj7xkwD0fN21ibMssIJtI7oSE2AOpgBlJdygLVw/cvIA47T2vXwJaGuxJRoRKWXeBqUMZGwvr/d4kKsElzkrkn3c3bNBa6ygLLbDpfZBvfpyyEZVAxQDikPsrVur24vY4KjDOPqRjRqgxVyg1a9pGpfyqG/leEmDFZaDrxQwqPN3dxXXr56j10zhyM5p6YuVbdl5rv0BC/y4JaP3MSxFg13A2q80GmImX3kbdicrGYXyMlMHLKJ0MSUFom63IUKLJA8w="
     },
     {
       "id": "P4",
-      "code": "BVYZ-04",
-      "dataType": "Biyomedikal sinyal (PPG)",
-      "title": "PPG sinyalinden solunum hızı kestirimi",
-      "dataset": "BIDMC PPG and Respiration Dataset (PhysioNet)",
-      "url": "https://physionet.org/content/bidmc/1.0.0/",
-      "size": "53 kayıt · 8 dk · PPG, EKG, solunum referansı",
-      "access": "Açık; `wfdb` ile indirilir",
-      "task": "Regresyon: dakikadaki solunum sayısı (referans: impedans solunum sinyali)",
-      "question": "Parmaktan alınan PPG sinyalindeki solunum kaynaklı dalgalanmalardan solunum hızı, referans ölçümle klinik olarak kabul edilebilir hata payında kestirilebilir mi?",
-      "steps": [
-        "PPG'den solunum kaynaklı üç bileşen (genlik, frekans, taban çizgisi modülasyonu) çıkarımı; 32 s pencereler.",
-        "Spektral tepe (klasik yöntem) ile öznitelik-temelli regresyon (Random Forest / gradyan artırma) karşılaştırması.",
-        "Kayıt-bazlı çapraz doğrulama; MAE, Bland–Altman grafiği.",
-        "Hangi pencerelerde hata büyük? Sinyal kalitesi indeksiyle ilişkilendirin."
-      ],
-      "pitfalls": "Pencereler aynı kayıttan gelir; GroupKFold(kayıt) olmadan sonuç şişer.",
-      "refs": [
-        "Pimentel MAF ve ark. IEEE TBME 2017",
-        "Charlton PH ve ark. Physiol Meas 2016"
-      ],
-      "student": "Z**** Ö***",
-      "hash": "e45901f23213ced21aa0eb4842b5ddd43dd7124d1661188a457d4f7e42ad2eab"
+      "iv": "R/UG7KTUUft6LP7q",
+      "ct": "/P38oYBNXpAfd/UM/5VedMon+YXZZPw57qANFK63DGgHmdZrjPosPibZwGKmJpOmcjDXB8GivaNztSN/kYbWivHOFw8K+Kc8y1PHGvfp2Yt24N9zBXjL41cC41EuyDCEDBMqBjrIw3PSRqwY03qTif+RW18FqTWaV8CdP5tRWTPbrtL2AQ0Mb437FZ0LzTmoCecsk2er/NjZ6cxl/MKCTWWIG6p5CaqPdkd9d4hb6b+0+tXfSK4whuG2WhVulkMkfzN1CXbonpMwQWBXWN3Qwpsq0JxL31s80FHlw8noGai1ksbW5UtnB7uBJwgNQ8ua1PGJJIxKUdZ9Q9GCHlOweNXfL7eLsMTqQs2uj5Mii86gAEJwHCnWKLrx9N1fNyUzPq678u+nLNMn/9qAheaUod9Yg682vIRKWDuIxC16k5Xg1x3HNnFxtDGDoDGUFc4qvHTo/qF/UOuHZvjf2gHZvleDA3lxozwLqiJ5tkuXzaKtpfW7hUqIaVN14bnzOrTJP9GLyl55/jSEcig9L21yP97MNgwYTktFHIxrIVuNM5jyKX6YuhDjYtDfDLgZV4cAOTw/rRvN3+LeSWwL0h6sE1bPe0HcjrzfI+KOsrfHMhJ9rcVcOI+ChaJLZvTUJQyP8GUWhREbACucsQ0jBn6ZXF6gSqzxHlphkptTNiSk/om4OpLrxhBhjsqJiSi7ySCDiHkUm2s//rCMhf9YxpSMJQqQzBSVR6oabUngy6gfQ+XJpUYKL3UEsSE9fx5A9xBSepqOb0lp7kaN2pUr+dk1nN7a5MV4EqqdYVBr9DL7QyNY5H/uIy2DucxLylqfvSCwBXv8Yd4S/SzxvSh72PP7C09v7TIsQ+02KS7WeJhbexPyat7xPm/2UGzHpw5pYtdx9UpMBSURSEmYpsTNYob0ocFioT5MBg+ZUQyuYgaDHh4cdlECzTqJHzwgen1uUDriYncgPQx5BLVK683M3LKpKfV3wWbODYAsVOLjLDQ5YP73dRxTZc7JrJ5Os+XgUn2PKjDLRPlaRFUzABGNWCQhM+k7qra5P9hXAgixUXO20FnusJJI+Z1+kE5dbqVTJxJ2KTovf2sicSbWJjRH3lfWxhye8cwh+0dxpaSyqVVLxZ88MRme9TPpBwmDkEZ8AD5M7o4TMwGovljH1M0LL12xycSpMCGeK5Cy+7SMvuNpBFNbMLVMh3KaB3tH7glY3dOxalKfwRoDDoD2+BJyq722boKg5zlDml4PbxjU2m9sSC5bn+sKiRrqPVgftT65M9S21Svsi06lXOlaMydYW6chpopM8SEo82k/ZVWPnpbNWan8gjxKzcwW2y31MvF3uEUtmMrPjkXNsajYhGgnZi3cTFLDL5J7TxYvG/E4CvB38ELC4BWvPCCL+vFZueq1RCfjGBQ+nAE8Qy9nMKXbSTEBuPGu+snwxh/0qyr2c4oMNnr93tktTJXQ/offolYOb11xWTWE5ZwZmhvhxJ8N9I2AxosPaEBSYv9MgoJtlVB0drWYUaBkapF7/sHPiW3zmJgo0oM+w0u2Vg8wGj9p9n+lYiAmyddwUSBGLboH5BclfieglGDjdURi83E9s/NoREo8gg1LUr2kfIj2qXXOnkuAlUXwtCdW1EeZ4ZENvXtQWbbO9gNTjHia"
     },
     {
       "id": "P5",
-      "code": "BVYZ-05",
-      "dataType": "Tıbbi görüntü",
-      "title": "Göğüs röntgeninde pnömoni tespiti ve modelin baktığı yer",
-      "dataset": "PneumoniaMNIST (MedMNIST v2)",
-      "url": "https://medmnist.com/",
-      "size": "5.856 görüntü · 28×28 (isteğe bağlı 64/128 px) · 2 sınıf",
-      "access": "Açık; `pip install medmnist` ile indirilir",
-      "task": "İkili görüntü sınıflandırma + Grad-CAM ile görsel açıklama",
-      "question": "Küçük bir CNN ve ImageNet ön-eğitimli bir ağ pnömoniyi ne kadar iyi ayırıyor; Grad-CAM haritaları akciğer alanına mı, yoksa görüntü kenarlarındaki ipuçlarına mı bakıyor?",
-      "steps": [
-        "Sıfırdan küçük CNN ile ResNet-18 transfer öğrenme karşılaştırması; veri artırmanın etkisi.",
-        "Hazır eğitim/doğrulama/test bölmesini kullanın; test kümesine yalnızca bir kez bakın.",
-        "ROC-AUC, duyarlılık/özgüllük, kalibrasyon; sınıf dengesizliğine dikkat.",
-        "Grad-CAM (Captum ya da pytorch-grad-cam); doğru ve yanlış sınıflanan 8 örnek için ısı haritası."
-      ],
-      "pitfalls": "Colab GPU'yu açın. 28×28 çözünürlükte Grad-CAM kaba olur; 64 px sürümünü tercih edin.",
-      "refs": [
-        "Yang J ve ark. Sci Data 2023 (MedMNIST v2)",
-        "Selvaraju RR ve ark. ICCV 2017 (Grad-CAM)"
-      ],
-      "student": "E****** G******",
-      "hash": "90bee3b8e65e38b6ae8601102b952e6d9badfc3af76876d27b9698a7f4268879"
+      "iv": "K6WDJ190uSFzs/zy",
+      "ct": "DuZJwVEGcPQ9/D7lHkpj0ii0+M1hXynLmqvud/jiH/QVKfkIxEk8L6+Fjutww5bDO5VOxtzhBaOho9tHmkd/19QujHuSI/wYN+rLyB85qzcWRTz90AmOHHOIWISH+PRg0kYNBbZ0YeasefUzCTZiE/CbfyZYGrC6mC9FH5P/5g/xmIVgC88GLWkFk7GS7v5K/uBMe3p8wCDj0qLUJ0IkG7f32yLew25rcl0h8lznkH+bEovgnOlRt+YJnvHn8BLiRu8fxLknADtnIvGDT77TiMglqRuonBOyq1dreBg5yJxmCK8WCPYUoHypkUxA9CvsyqKPUhfFkgAg0nmz3dtglZo+WMz2P8eR/mZvtRj83tuca1VrmOoPuQFjyqoCukKNq9zdJbHCaOiuSR568T9hpcp4M2S2L8ReKcInKBcZl9FvETdIGRvCDUdNt/RSC8+ZecTv7bYICdJaVTRmEUndKK7BncoQ0klRUVR4B6NwJEDxe1RLOHMbJCOLHAF2qMcH4PSKc7uAa+8/1R8MMUnaKUJrf7B7oPVjRcMH7iLkw74ynxhFjt1GjyBzCd2pFUVNGLlVikUrSYcnwu1nTtPLy4TONtX/hTFwu4XHlZX4nEQpBsI585kT9W7mLZg8PtgNqDlQ+CsMJA3cN2s2w9kruVPoxPLYZlTKPtv/edD7W7hwdIamk0O6Q4AE9YDwJqN854BaS59KSGDiRix6kjmIgSlxo/7hxP5d2Dxc6ee6yql5gJHq8swWnrdjQnxCY34b29UodlayB/sxtvNx4db0RFryVbYaHP+HrUH97ChgnkXT36BSZVpb8YRZa28IRvIhHM8MG3DZzs8bm2cRJBrvmNEm3sK9WdMCI3YH7uidhfBzl+rXtNdSNH2mh71xS8L4nSBXBfvchrufCTjDUbSvJvya/ikEeKuJeCseb4i6jRG7B6hDXMkiW4RPbnL5dqd7VAkanu9s+qk3Kbs7NscLdb8XmWN4hpVxg/nAVfJs+U5ta07vhBu8bP5QI6fOuM/1FMy/3Ra/ieHcPwrYk9xhNbc36oJ/4y/anVBWVAs9axC3HNtWz09Wm9UUiQB5AVbc2KMmA5REHnSUhRq1OEHyQT8fDllgg4HL+1GWsJ18OZIdjSEiiGqFmR86jZwrVe8+ffsKFpOOTY/Ez+0uEVqDapdrm5VEHpazzJbt1gw10CUQkybY04VV3Lkm+6v2xWG29jKXsDe78P7rgEPxH3idhNuU39TEVasF+BSytCNUYpjW/e58ihNj2/ZqVFkGQWy6jFo3Q0xjicu8SC7qhlpfD/HpAf6LSTLiwouV/F+WSuOLCfiEBWvCaMc7cMkpKIiMVP/mVEbBmixjsn80PXAvil3bgCRdRkXJA63wI6gbD7OmfK3zhVSbnwk2WNDsv8y8BnlvOvA4i4baEeYtu2FrDI+Tj74M8yfqJBi216gKp7CNCciU5jyNo+2b1CBDKC6qfQAy+b7PC8u9oDXFocuNaGbHD24hesJPfRl3AmCRI2nkJOcl+CISse+3SctQeEP5rgzBuNrUdKWYoQj8oDq7ioaWUrcw5/NhjM+RtME34tEm2HLkM+X+yiohP41NitnoiRtULRuS1+NQNSjQTb6G3a9taiZAu2970BB0/nJo66kPxRueNssTB0EVQ/BpstCvJSXp/aHUngOo3ubH2SfUukm7+qnWDMwTmwHXZ1wLGQAlPAYvei+6CjD9/ANPhc+CzmaqmWrF+q8Vs5k="
     },
     {
       "id": "P6",
-      "code": "BVYZ-06",
-      "dataType": "Klinik tablo (yoğun eksik veri)",
-      "title": "Serviks kanseri risk faktörleri ve biyopsi sonucu",
-      "dataset": "Cervical Cancer (Risk Factors) (UCI)",
-      "url": "https://archive.ics.uci.edu/dataset/383/cervical+cancer+risk+factors",
-      "size": "858 hasta · 36 öznitelik · 4 hedef (Hinselmann, Schiller, sitoloji, biyopsi)",
-      "access": "Açık; tek CSV ('?' = eksik)",
-      "task": "İkili sınıflandırma (biyopsi) — eksik veri mekanizması ve kalibrasyon odaklı",
-      "question": "Hastaların cevaplamadığı (eksik) sorular rastgele mi; eksikliğin kendisi riskle ilişkili mi? Bu yapı altında kalibre ve dürüst bir risk modeli kurulabilir mi?",
-      "steps": [
-        "Eksiklik deseni analizi (hangi sütunlar birlikte eksik, hedefle ilişkisi); MCAR/MAR/MNAR tartışması.",
-        "Göstergeli ve göstergesiz imputasyonun Pipeline içinde karşılaştırması.",
-        "Pozitif oranı çok düşük: PR-AUC, kalibrasyon, karar eğrisi analizi.",
-        "SHAP ile eksiklik göstergelerinin katkısı; etik tartışma (hassas sorular)."
-      ],
-      "pitfalls": "Çok nadir pozitif (~%6): bootstrap güven aralığı şart. Dört hedef var; birini seçip gerekçelendirin.",
-      "refs": [
-        "Fernandes K ve ark. 2017 (veri setinin kaynağı)",
-        "Sterne JAC ve ark. BMJ 2009 (çoklu imputasyon)"
-      ],
-      "student": "İ**** Ö*****",
-      "hash": "b7de1ed4c4e64c387bdd1e061e677433b109839ff06e7e496db54f05e69d2e47"
+      "iv": "G1fMw8nQ8BLboHRe",
+      "ct": "pmOpqA757JRIJWOTRDtmIf6rMKP4YW2vDDuKkWjvGQ/PEjUgSw9hwvXwdXrj1D2HqklHff+mJez6FLM9zKTTM1nKGkU18KYnUg/GMxjk6z97SiDjiDch/LyTnXjiUZZMrhc9iN8W2QiAChBysvM4v9pLMoUqqh3qF0Mu+Y+SxS4WkaNF4y7Tp4vo88io77fPY4nGn4peGOh5QhSoKLXuDyfqkdLQI3o9/yXwm/XBBHGuu3O+C1nHnC/HGDGA47kMyKXzvkgYj8VFamDNPHjYsJmgYA3A6PvWP1xABta+G+0w34yGosdr1v37JOW+RLDFPiMti3eZ5EAKmk9Rc+pemPvq1/alBiFrOHN/F6z08/s8sRjyK1weEyVy1849Pk84EAYC5JepqZxKXpfIUHIrBNBu1ePhETK5qxAhmKzQyDrB/ujrwRZFgN1yXip5YqQIOw8xQXpT4oHOFwb2vEDhEPGTjGSBCrvTM6KE6vCKZv8x01f14XzjNCWz5nTmvVmk2WzfUjTpizcXReWLwiaJWt32ToFlnmEJ8nz172D9abn7eDESrK4dLCIVRW/rZwW2qdfRXeNHnKbcNKflfmzZxPoOHMMuSDdDZwTlN1zPenmjXCCngt92sy0MAAsJL7v3ZyzofsLGdwBwRLHRAtMjzL3OGbW4lk5m0CcdOpc88CYEXIIwQVzOMgUIJcAugstrCKBiwJ+q1fxGLXmiESCS0CuiXBpmMB1Wo1qyaptinZXQkBCaA6Fb178oPgS/sUWEOvngLB2A6c48AghF6QaU0M/tZgNfFVRx94ObbjkEQfd8sR4zG7VZf8wfTcNWCkD6jQ2vFvY0Y1PmRobptNVt8V2Riuk3sj+9FJugm/ydCsRtNfN00+dMbf3SN6rJW8AOKukDn6YWQ8e8/hHWnavj6YyMRipjiRhBWuhSob0jd6yqcKiotWTxoVvLZPR6sJ8BGQ7LqBovlkiNqI9obWl2Zj+seQnbGeKvDgjLA3nz0IQw2jeCil183qRF03kxu+RbqY3DOErZDeyNI4yUa/EcvNpBXiY4EAYS+Y8ZD4mpu5wNtWdd+dFNPgwJNhn7y+WvFF4MZGsYTp8eg7BSBxcUVJ6Z9n1jbcheM9X8Kq+otv/+EcNDMTf6o/Q7ePJhluqeynqWzGoAMRm0bM4kudY/OQxrV4vUsXrAS67dgEH8KKAOQnzEW52xRbdQAzB7RM3gP48fsOWkCiQ/Ftjo1TfjKsOHXmEvmhONsSKzpTpz881eTuGeX/IB8/ssoEpumPFTMhKysEB4d8xqtmacRFTDJhwlzlNFch8yk9KA/gqvpy4MvuNa1uifbyWkxgezEMoqHbKESE5RHGKOwFO/SJJ9FkYRfPc3rqDFMkY9KUXFLYukCHvZcUr281cTvl2ZrhzvEVUGx9rcEK7AlFBuU7/H549MTtctgX/OVLZewdaxXUkTD7IQWx8m5ExjrxO5VGDDy7bScqHt91Gw/jQPR4tg99qQ/Vg13yZS5W2GzZsPxLaV+9XbJP3+IGb6b24Ww/3XUeX6NPSx67QMBK91GNfa8M00lh13MeBelXlMjB+AVVV+AyxXI+kY25eUlmAhaCF8bCzeZKSpyI9dVfBYyL80oUNvn/5AuWnD4+dTKo9D5nILrFI1cNIsLa8UAY5oCLSCsKCEtXrGKsHTeqIt8hcIopIJWre1Yh1VtYWu11oSLy9g81Huxe06nwhK34IlYsVuFkboRj5NMma6PqyU6zahXR3Xj/rk4m7SZjn4vrR9gC5xNzhysA=="
     },
     {
       "id": "P7",
-      "code": "BVYZ-07",
-      "dataType": "Omik (RNA-Seq)",
-      "title": "Gen ifadesinden kanser tipi sınıflandırması: p ≫ n",
-      "dataset": "Gene Expression Cancer RNA-Seq / TCGA PANCAN (UCI)",
-      "url": "https://archive.ics.uci.edu/dataset/401/gene+expression+cancer+rna+seq",
-      "size": "801 örnek · 20.531 gen · 5 kanser tipi",
-      "access": "Açık; ZIP içinde CSV (~200 MB)",
-      "task": "Çok sınıflı sınıflandırma + boyut indirgeme ve özellik seçimi",
-      "question": "Yirmi bin genden beş kanser tipi ayrılabilir mi ve bunu kaç genle yapabiliriz; özellik seçimi çapraz doğrulamanın dışında yapıldığında sonuç ne kadar şişiyor?",
-      "steps": [
-        "PCA açıklanan varyans ve UMAP haritası; kümeler kanser tipiyle örtüşüyor mu?",
-        "Özellik seçimi (varyans filtresi + SelectKBest / L1-lojistik) Pipeline içinde; dışında yapıldığında farkı gösterin (2. hafta deneyi).",
-        "Lojistik regresyon (L1), Random Forest; makro-F1 ve karışıklık matrisi.",
-        "Seçilen genlerin biyolojik anlamı: literatürde bilinen belirteçler mi?"
-      ],
-      "pitfalls": "Bellek: CSV'yi float32 olarak okuyun. 801 örnekte 20 bin gen; sızıntı en büyük risk.",
-      "refs": [
-        "Weinstein JN ve ark. Nat Genet 2013 (TCGA PANCAN)",
-        "Guyon I, Elisseeff A. JMLR 2003 (özellik seçimi)"
-      ],
-      "student": "S**** S***",
-      "hash": "a80b7bcb93b0774bc1e8df5435ddce7cad85882652c451229c2df79444132e49"
+      "iv": "21Vb9uhIG3F5Eg73",
+      "ct": "Nf6v4sDDpt9SxQsSUzlaTCGTEOd/cqSQusI4ACwODFwOEFRsLCWmX1p6fedfypeC2f2QPuufy5eqtuNfxTCj+9ne7tYEMIfRYana55SqOSHUewHUV+E7chalWewW6I1F4zy/vTJizyaUcX5djhg0eDR0tkpTyRif9f15TZHKHrxN27nOECS05w2ezFifS9BhRUJxf0MhGItWdeHiAC21XCIpVCsl5JL0EX8vqp/U/w1OwTbG52Kc+EMgPLj/wJ2v7x/kfOp9TrKGBAd/Z9nn4h4OMHMqc+mtnXOpbed9PWlxpNgeZ0oTZnhaDd/Y5jgS9zhUXK2NDkK7j5m/n13/DfGXZHiBZKA6/fVcOfwSr1tH2agf/IDgRRLHcOMmTUNjAt8uy11rQNHE9MJqdut+ec/GtR3TSqFuLmFyeHqklCnWaB6jTX4nruFNqcldJ4McEXljt6AWesNCTc/FA3sVe3vEzREceem5HmUis+ibhUWW4Dga4ifRfc8Q6b3BbEFcgQ+dQl3B+ejyugHGhI3TQItUETPG6/+nDr3XqhQ7wDQXV7wPAgX3Ehz4ZJT/kQ+agSnVMOIkldI45jdbUAhU2OvT0R8DioOquye1nN7e8ZxgbAOwYZ4Ei7Hm0wQbsGmaQAaf6fpfTK6DVU5djWbyykyPPNj7msTWu5xNO1s+ZpqobaFmUw9EQ/vlw67N4C4rDVZrf3VygIouoHUF4URC8YeGE6VTt5rz7rl5NB7bbSkBZz5lpoV/pdX7dK7h8XDyx5MlukH1+L/De8vBt5QTGNKqj0htZl1gGitYZ9M3SNlHa0bSAgsoYDqm1EkYyrGSdQCN3yoouvXDgMGEZrfJWOAyrfFAWTw/Yg3gHaCusx1o9r82ERTQsCEwOM/2z0T2eN0jPXbH4TYhaaFe/zOzmRIXAqMMVivjjPywhJgIgBl82jh6E+b3A0+4NE0LlEVAlEUk9QUBnvcucMmvxby3L+gJTyqrllNA7YqXq9iBvmX72+FKsOuUJeuY+P5y1Irt21gyILhdPbJ9neQj6Ft2y8ojw2JXJPsIdtvIBiDHWP05q4epkerNiywUECXqPGO2qzRwRHzJOuhacRgIgVOucafSi9oP9sKAy5oJoYNHSxvOpT2ZqeTlWm0krEFh0ES0II+kejnsi+Y6pkSiWiwACR0Ceg4ag4xYlobsF7KTy4kMQBlsYLoTCZCSrTFkjpP81b12/wgsQZ3io/E+qZCMZFtXGrrPEF6KkyiuQNBgJ+utgGBS3jiu/mMdJjml2bRlS+Y480mj3mQiiZAdzjU8fZDtxL0FqNeGuOc1ZLOwff9oYq4SnaqapNnrCxnhMAYPkQ1sfg2u3x/jUx58hvYSYT7vvJ2LGIipwcNJtpck/dwmfIxJBQKpfQaVM5C/xK0WO7fwg60fA77kz5ijjzwh3eOwONFAlLtWNm9CVshNec+aQsm3GwnBLCNULDAS8TlhG+rGnOOg3duSInfS3wrWWbIB7MhfbxNoWa1YuS5oUe8sWk+uEUYibwVqg+Lhnu3aF6tXADFNzBUqXuEIe8KT+JgLNK/yCIO/Ctpu3cNvWxqUEUogWcwANhY3X9HkV+KQhH5PnbTbeINURlJYJH6MMynkSYiAAV7UdqaMJhFWiph/9NL4HcryFYKIbq2+ZlOnSEAU23KLOX6+q6pztxOcoTi2xbFHW7kRX6BB/H/Vd8aFrlnGofSr3p1X3BUf2Kle/eXlHKw/6rRF3Bb3ONBjhlx2WkqGm2k="
     }
   ]
 }

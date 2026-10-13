@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 """Yoklama listesindeki öğrencilere dönem projelerini atar ve content/data/projects.json üretir.
 
-Gizlilik: Siteye ne isim ne numara yazılır. İsimler "E****** A******" biçiminde maskelenir;
-öğrenci numarası yalnızca tuzlu SHA-256 özeti olarak saklanır. Öğrenci sitedeki "Projemi bul"
-kutusuna numarasını yazar, tarayıcı aynı özeti hesaplar ve eşleşen kartı açar.
+Gizlilik: Siteye ne isim ne numara ne de açık proje bilgisi yazılır. Her kartın içeriği
+(maskeli isim, başlık, veri seti, adımlar...) öğrenci numarasından PBKDF2 ile türetilen anahtarla
+AES-256-GCM kullanılarak şifrelenir; sayfada yalnızca şifreli metin bulunur. Öğrenci "Projemi bul"
+kutusuna numarasını yazar, tarayıcı aynı anahtarı türetir ve yalnızca kendi kartını çözebilir.
+Kaynak görüntüleme ("incele") ile diğer kartlar okunamaz.
+
+Yerel kayıt: Yoklama/projeler-atama.json (açık liste, depoya girmez) öğretim üyesi içindir.
 
 Atama deterministiktir: öğrenciler numaraya göre sıralanır, havuzdaki projeler sırayla verilir.
 Belirli bir öğrenciye belirli projeyi vermek için OVERRIDES sözlüğünü kullanın.
@@ -11,17 +15,21 @@ Belirli bir öğrenciye belirli projeyi vermek için OVERRIDES sözlüğünü ku
 Kullanım:
   /opt/miniconda3/envs/ferhat_ml/bin/python scripts/assign_projects.py "Yoklama/DersKatilim_SON.xlsx"
 """
+import base64
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
 import pandas as pd
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "content" / "data" / "projects.json"
 SALT = "SVY5430-2026"          # src/pages/proje.astro içindeki değerle aynı olmalı
+KDF_ITER = 300_000             # PBKDF2 tur sayısı; proje.astro ile aynı olmalı
 OVERRIDES: dict[str, str] = {}  # {"261137101": "P3"} gibi
 
 POOL = [
@@ -110,8 +118,15 @@ def mask_name(name: str) -> str:
     return " ".join(p[0] + "*" * max(len(p) - 1, 1) for p in parts if p)
 
 
-def digest(number: str) -> str:
-    return hashlib.sha256(f"{SALT}:{number}".encode()).hexdigest()
+def key_for(number: str) -> bytes:
+    """Tarayıcıdaki Web Crypto ile birebir aynı türetme: PBKDF2-HMAC-SHA256(parola=numara, tuz=SALT)."""
+    return hashlib.pbkdf2_hmac("sha256", number.encode(), SALT.encode(), KDF_ITER, dklen=32)
+
+
+def encrypt(payload: dict, number: str) -> dict:
+    iv = os.urandom(12)
+    ct = AESGCM(key_for(number)).encrypt(iv, json.dumps(payload, ensure_ascii=False).encode(), None)
+    return {"iv": base64.b64encode(iv).decode(), "ct": base64.b64encode(ct).decode()}
 
 
 def read_students(xlsx: Path) -> list[tuple[str, str]]:
@@ -138,16 +153,18 @@ def main():
     pool_by_id = {p["id"]: p for p in POOL}
     used = set(OVERRIDES.values())
     free = [p["id"] for p in POOL if p["id"] not in used]
-    out = []
+    out, local = [], []
     for num, name in students:
         pid = OVERRIDES.get(num) or free.pop(0)
         p = dict(pool_by_id[pid])
         p["student"] = mask_name(name)
-        p["hash"] = digest(num)
-        out.append(p)
+        out.append({"id": pid, **encrypt(p, num)})
+        local.append({"ogrenci_no": num, "ad": name, **p})
         print(f"{pid}  {mask_name(name):22s}  {p['title']}")
-    OUT.write_text(json.dumps({"salt": SALT, "projects": out}, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n✓ {OUT.relative_to(ROOT)} ({len(out)} proje)")
+    OUT.write_text(json.dumps({"salt": SALT, "iter": KDF_ITER, "projects": out}, ensure_ascii=False, indent=2), encoding="utf-8")
+    loc = xlsx.parent / "projeler-atama.json"
+    loc.write_text(json.dumps(local, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\n✓ {OUT.relative_to(ROOT)} ({len(out)} şifreli kart)\n✓ {loc} (açık liste, yalnızca yerel)")
 
 
 if __name__ == "__main__":
