@@ -138,3 +138,7 @@ body {
   --pagefind-ui-background: #fff; --pagefind-ui-border: var(--color-line-2); --pagefind-ui-tag: var(--color-paper-2);
   --pagefind-ui-border-width: 1px; --pagefind-ui-border-radius: 10px; --pagefind-ui-font: var(--font-sans); }
 .pagefind-ui mark { @apply bg-accent-soft text-ink rounded px-0.5; }
+
+/* Makale gövdesi içindeki düğmeler: prose bağlantı rengini ezme */
+.prose-lesson a.btn-primary, .prose-lesson a.btn-accent { color: var(--color-paper) !important; text-decoration: none !important; }
+.prose-lesson a.btn-ghost { color: var(--color-ink) !important; text-decoration: none !important; }
