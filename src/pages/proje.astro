@@ -23,7 +23,7 @@ const rubric = [
 ];
 const toc = [
   { slug: 'projemi-bul', text: 'Projemi bul' },
-  { slug: 'projeler', text: 'Projeler' },
+  { slug: 'projeler', text: 'Projeniz' },
   { slug: 'teslimler', text: 'Teslimler ve takvim' },
   { slug: 'depo', text: 'GitHub deposu' },
   { slug: 'rapor', text: 'LaTeX rapor' },
@@ -46,8 +46,8 @@ const toc = [
         <p class="eyebrow !text-paper/60">Projemi bul</p>
         <h2 class="display mt-2 text-2xl md:text-3xl">Öğrenci numaranızı yazın</h2>
         <p class="mt-3 text-sm leading-relaxed text-paper/75">
-          Numaranız hiçbir yere gönderilmez. Tarayıcınız numaranın parmak izini (SHA-256) hesaplar ve aşağıdaki listede eşleşen kartı açar.
-          Sitede ne isim ne numara açık olarak yer alır.
+          Numaranız hiçbir yere gönderilmez. Tarayıcınız numaranın parmak izini (SHA-256) hesaplar ve yalnızca size ait proje kartını aşağıda gösterir.
+          Başka kimsenin projesi görünmez; sitede ne isim ne numara açık olarak yer alır.
         </p>
         <form id="bul-form" class="mt-5 flex flex-col gap-3 sm:flex-row" autocomplete="off">
           <label class="sr-only" for="ogrno">Öğrenci numarası</label>
@@ -60,11 +60,12 @@ const toc = [
 
       <!-- PROJELER -->
       <section id="projeler" class="scroll-mt-28">
-        <h2 class="display text-2xl md:text-3xl">Projeler</h2>
-        <p class="mt-2 text-ink-2">Yedi proje, beş veri türü. İsimler gizlidir; kendi kartınızı yukarıdaki kutudan bulun. Her kart veri setini, klinik soruyu, önerilen adımları ve sık yapılan hataları içerir.</p>
+        <h2 class="display text-2xl md:text-3xl">Projeniz</h2>
+        <p class="mt-2 text-ink-2">Sınıfta yedi proje ve beş veri türü var. Kartınız veri setini, klinik soruyu, önerilen adımları ve sık yapılan hataları içerir.</p>
+        <p id="proje-bos" class="mt-6 rounded-xl border border-dashed border-line-2 p-6 text-center text-sm text-ink-3">Henüz bir proje gösterilmiyor. Yukarıdaki kutuya öğrenci numaranızı yazın.</p>
         <ol class="mt-8 space-y-5">
           {projects.map((p) => (
-            <li id={`proje-${p.id}`} data-hash={p.hash} class="proje-kart rounded-2xl border border-line bg-white p-6 shadow-soft transition-all data-[secili]:border-accent data-[secili]:ring-4 data-[secili]:ring-accent/15 data-[gizli]:opacity-40">
+            <li id={`proje-${p.id}`} data-hash={p.hash} class="proje-kart hidden rounded-2xl border border-accent bg-white p-6 shadow-soft ring-4 ring-accent/15">
               <div class="flex flex-wrap items-center gap-2 text-xs">
                 <span class="font-mono font-semibold text-brand">{p.code}</span>
                 <span class="chip-mono">{p.dataType}</span>
@@ -180,7 +181,8 @@ const toc = [
       const input = document.getElementById('ogrno');
       const out = document.getElementById('bul-sonuc');
       const cards = Array.from(document.querySelectorAll('.proje-kart'));
-      const reset = () => cards.forEach((c) => { c.removeAttribute('data-secili'); c.removeAttribute('data-gizli'); });
+      const bos = document.getElementById('proje-bos');
+      const reset = () => { cards.forEach((c) => c.classList.add('hidden')); bos.classList.remove('hidden'); };
       async function sha256(text) {
         const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
         return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -194,11 +196,11 @@ const toc = [
         const h = await sha256(`${salt}:${no}`);
         const hit = cards.find((c) => c.dataset.hash === h);
         if (!hit) { out.textContent = 'Bu numarayla eşleşen proje bulunamadı. Numarayı kontrol edin ya da öğretim üyesine yazın.'; return; }
-        cards.forEach((c) => { if (c !== hit) c.setAttribute('data-gizli', ''); });
-        hit.setAttribute('data-secili', '');
+        bos.classList.add('hidden');
+        hit.classList.remove('hidden');
         hit.querySelector('details')?.setAttribute('open', '');
         const code = hit.querySelector('.font-mono.font-semibold')?.textContent ?? '';
-        out.textContent = `Projeniz: ${code}. Kart aşağıda vurgulandı; diğerleri soluklaştırıldı.`;
+        out.textContent = `Projeniz: ${code}. Kartınız aşağıda açıldı.`;
         hit.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
       input.addEventListener('input', () => { if (!input.value) { reset(); out.textContent = ''; } });
