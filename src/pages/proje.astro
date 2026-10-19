@@ -34,7 +34,7 @@ const toc = [
 <BaseLayout title="Dönem Projesi" description="SVY 5430 dönem projeleri: kişiye özel biyomedikal veri seti, GitHub deposu, LaTeX rapor; teslim takvimi, şablonlar ve değerlendirme ölçütleri.">
   <div class="wrap py-14 md:py-20">
     <SectionHeading eyebrow="Dönem Projesi" title="Kendi veri setiniz, kendi deponuz, kendi raporunuz"
-      lede="Her öğrenciye farklı bir biyomedikal veri seti ve klinik soru verildi. Beş veri türünün her biri sınıfta temsil ediliyor: klinik tablo, elektronik sağlık kaydı, sinyal, görüntü ve omik. Kod GitHub'da, rapor LaTeX'te, veri ise yalnızca indirme talimatıyla paylaşılır." />
+      lede="Her öğrenciye, konuk katılımcılar dâhil, farklı bir biyomedikal veri seti ve klinik soru verildi. Beş veri türünün her biri sınıfta temsil ediliyor: klinik tablo, elektronik sağlık kaydı, sinyal, görüntü ve omik. Kod GitHub'da, rapor LaTeX'te, veri ise yalnızca indirme talimatıyla paylaşılır." />
   </div>
 
   <div class="wrap grid gap-12 pb-24 lg:grid-cols-[220px_1fr]">
@@ -61,7 +61,7 @@ const toc = [
       <!-- PROJELER -->
       <section id="projeler" class="scroll-mt-28">
         <h2 class="display text-2xl md:text-3xl">Projeniz</h2>
-        <p class="mt-2 text-ink-2">Sınıfta yedi proje ve beş veri türü var. Kartınız veri setini, klinik soruyu, önerilen adımları ve sık yapılan hataları içerir.</p>
+        <p class="mt-2 text-ink-2">Sınıfta sekiz proje ve beş veri türü var. Kartınız veri setini, klinik soruyu, önerilen adımları ve sık yapılan hataları içerir.</p>
         <p id="proje-bos" class="mt-6 rounded-xl border border-dashed border-line-2 p-6 text-center text-sm text-ink-3">Henüz bir proje gösterilmiyor. Yukarıdaki kutuya öğrenci numaranızı yazın.</p>
         <ol class="mt-8 space-y-5">
           {projects.map((p) => <li id={`proje-${p.id}`} class="proje-kart hidden" data-iv={p.iv} data-ct={p.ct}></li>)}

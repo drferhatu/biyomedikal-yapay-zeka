@@ -31,6 +31,10 @@ OUT = ROOT / "content" / "data" / "projects.json"
 SALT = "SVY5430-2026"          # src/pages/proje.astro içindeki değerle aynı olmalı
 KDF_ITER = 300_000             # PBKDF2 tur sayısı; proje.astro ile aynı olmalı
 OVERRIDES: dict[str, str] = {}  # {"261137101": "P3"} gibi
+# Yoklama listesinde olmayan (konuk / özel öğrenci) katılımcılar; listenin SONUNA eklenir,
+# böylece yoklamadaki öğrencilerin ataması değişmez.
+EXTRA_STUDENTS: list[tuple[str, str]] = [
+]
 
 POOL = [
   dict(id="P1", code="BVYZ-01", dataType="Klinik tablo", title="Kalp yetmezliğinde ölüm riski tahmini",
@@ -110,6 +114,18 @@ POOL = [
               "Seçilen genlerin biyolojik anlamı: literatürde bilinen belirteçler mi?"],
        pitfalls="Bellek: CSV'yi float32 olarak okuyun. 801 örnekte 20 bin gen; sızıntı en büyük risk.",
        refs=["Weinstein JN ve ark. Nat Genet 2013 (TCGA PANCAN)", "Guyon I, Elisseeff A. JMLR 2003 (özellik seçimi)"]),
+  dict(id="P8", code="BVYZ-08", dataType="Biyomedikal sinyal (EEG)", title="Gece EEG'sinden uyku evresi sınıflandırması",
+       dataset="Sleep-EDF Expanded (PhysioNet, MNE üzerinden)", url="https://physionet.org/content/sleep-edfx/1.0.0/",
+       size="Önerilen: 10–20 denek · tüm gece EEG (Fpz-Cz, Pz-Oz) · 30 s epoklar · 5 uyku evresi", access="Açık; `mne.datasets.sleep_physionet.age.fetch_data()` ile seçilen denekler indirilir",
+       task="Çok sınıflı sınıflandırma: W, N1, N2, N3, REM (denek-bazlı doğrulama)",
+       question="Tek bir EEG kanalından çıkarılan bant güçleri ve zaman alanı öznitelikleri uyku evrelerini uzman skorlamasıyla ne kadar örtüşüyor; model yeni bir deneğe geçince başarım ne kadar düşüyor ve en çok hangi evre karışıyor?",
+       steps=["MNE ile 10–20 deneği indirin; 30 s epoklara bölün, uzman anotasyonlarını hedef yapın (N3 = evre 3+4).",
+              "Her epok için öznitelik: delta/teta/alfa/sigma/beta bant güçleri (Welch), Hjorth parametreleri, örnek entropi.",
+              "Rastgele epok bölmesi ile denek-bazlı GroupKFold karşılaştırması: fark raporun ana bulgusu.",
+              "Random Forest / XGBoost; makro-F1, Cohen kappa, sınıf başına karışıklık matrisi; N1'in neden zor olduğunu tartışın.",
+              "Permütasyon önemi ve SHAP: hangi bantlar hangi evreyi ayırıyor, uyku fizyolojisiyle uyumlu mu?"],
+       pitfalls="Epoklar aynı geceden gelir; denek-bazlı bölme olmadan sonuç şişer. Sınıflar dengesiz (N2 çok, N1 az): doğruluk yerine kappa ve makro-F1.",
+       refs=["Kemp B ve ark. IEEE TBME 2000 (Sleep-EDF)", "Gramfort A ve ark. Front Neurosci 2013 (MNE)", "MNE örneği: 'Sleep stage classification from polysomnography'"]),
 ]
 
 
@@ -148,6 +164,8 @@ def main():
     students = read_students(xlsx)
     if not students:
         sys.exit("Öğrenci bulunamadı")
+    known = {n for n, _ in students}
+    students += [(n, ad) for n, ad in EXTRA_STUDENTS if n not in known]
     if len(students) > len(POOL):
         sys.exit(f"{len(students)} öğrenci için {len(POOL)} proje var; POOL'u genişletin")
     pool_by_id = {p["id"]: p for p in POOL}
