@@ -1,0 +1,144 @@
+---
+week: 5
+title: "Klasik Makine Öğrenmesi II: Topluluk Yöntemleri, SVM ve Öznitelik Önemi"
+topic: "Klasik makine öğrenmesi II: topluluk yöntemleri (Random Forest, XGBoost), destek vektör makineleri ve öznitelik önemi"
+description: "Daha güçlü modellere geçiyoruz: Random Forest, XGBoost ve SVM. Hepsini geçen haftanın dört sorusuyla sınıyor, sonra \"model neye bakıyor?\" diye sorup üç farklı cevabın neden farklı olduğunu görüyoruz."
+module: m2
+exam: false
+status: hazir
+changeNote: ""
+tags:
+  - "Random Forest"
+  - "XGBoost"
+  - "gradyan artırma"
+  - "SVM"
+  - "çekirdek"
+  - "öznitelik önemi"
+  - "hiperparametre"
+objectives:
+  - "Torbalama (bagging) ile artırmanın (boosting) varyans–yanlılık açısından farkını açıklar."
+  - "Random Forest ve XGBoost'u iç içe (nested) çapraz doğrulamayla ayarlar; erken durdurma ve düzenlileştirme parametrelerini kullanır."
+  - "SVM'de marj, çekirdek ve C parametresinin rolünü açıklar; ölçeklemenin zorunluluğunu gerekçelendirir."
+  - "Safsızlık-temelli, permütasyon-temelli ve SHAP-temelli öznitelik önemini karşılaştırır; ilişkili özniteliklerde tuzakları tanır."
+methods:
+  - "Karar ağacı"
+  - "Random Forest"
+  - "XGBoost"
+  - "SVM (RBF)"
+  - "Hiperparametre arama"
+  - "Öznitelik önemi"
+tools:
+  - "scikit-learn"
+  - "xgboost"
+datasets:
+  - name: "UCI Heart Failure Clinical Records"
+    url: "https://archive.ics.uci.edu/dataset/519/heart+failure+clinical+records"
+    note: "299 kalp yetmezliği hastası; BVYZ-01 projesinin de verisi."
+  - name: "Fenerbahçe ve taraftar morali (sentetik, şaka)"
+    note: "Defterde üretilir; gerçek olaylarla benzerlik tesadüftür. 🙂"
+notebook:
+  file: notebooks/hafta-05.ipynb
+  title: "Hafta 5 · Ağaç Toplulukları, SVM ve Öznitelik Önemi"
+  embed: true
+  placement: inline
+resources:
+  - title: "Chen T, Guestrin C. XGBoost: A Scalable Tree Boosting System. KDD 2016."
+    url: "https://arxiv.org/abs/1603.02754"
+    kind: makale
+  - title: "Grinsztajn L ve ark. Why do tree-based models still outperform deep learning on tabular data? NeurIPS 2022."
+    url: "https://arxiv.org/abs/2207.08815"
+    kind: makale
+  - title: "Strobl C ve ark. Bias in random forest variable importance measures. BMC Bioinformatics 2007."
+    url: "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-8-25"
+    kind: makale
+---
+
+import NotebookEmbed from '@/components/NotebookEmbed.astro';
+
+## Ön Okuma ve Hazırlık
+
+Hafif bir hazırlık yeter. Geçen haftaki defterin dört grafiğini bir kez daha açıp bakın; bugün aynı grafikleri dört farklı model için çizeceğiz. Bir de şunu düşünün: bir konuda beş uzmana danışıp çoğunluğun dediğini yapmak, tek bir uzmana güvenmekten ne zaman daha iyidir, ne zaman değildir?
+
+> [!not] Dersin akışı
+> İlk saat karar ağacından Random Forest ve XGBoost'a, ikinci saat SVM, ayar düğmeleri ve "model neye bakıyor?", son saat defter. Defterin sonunda moral için küçük bir sürpriz var.
+
+## Ders Notları
+
+### Basit modelden güçlü modele
+
+Geçen hafta tek bir basit model kurduk, lojistik regresyon, ve onu dört soruyla sınadık. Bu hafta daha güçlü modeller geliyor. Ama bir şeyi baştan söyleyelim: güçlü model, otomatik olarak daha iyi model demek değil. Her yeni modeli yine aynı dört soruyla sınayacağız ve basit modeli geçemiyorsa karmaşıklığın bir anlamı olmadığını söyleyeceğiz. Küçük klinik veri setlerinde bu sık olur.
+
+### Karar ağacı: sorularla ilerlemek
+
+Bugünkü modellerin yapı taşı karar ağacı. Bir karar ağacı, hastaya sırayla sorular soran bir akış şemasıdır. Serum kreatinin 1.4'ün üstünde mi? Evetse ejeksiyon fraksiyonu 30'un altında mı? Her cevap sizi bir dala götürür ve en sonda bir tahmin bekler. Hekimlerin kafasındaki klinik algoritmalara çok benzer, o yüzden anlaması kolaydır.
+
+Tek bir ağacın derdi kararsızlığıdır. Veriyi biraz değiştirin, birkaç hastayı çıkarın, ağaç bambaşka sorular sormaya başlar. Küçük bir veride bu, ağacın gürültüyü ezberlediği anlamına gelir.
+
+### Random Forest: kalabalığın bilgeliği
+
+Çözüm, tek ağaç yerine yüzlerce ağaç yetiştirmek. Her ağaca verinin rastgele bir parçasını ve sütunların rastgele bir alt kümesini gösterirsiniz; böylece her ağaç biraz farklı bir şey öğrenir. Sonra hepsine oy kullandırırsınız. Tek ağacın kaprisleri ortalamada kaybolur. Buna Random Forest deniyor ve adı tam olarak yaptığı şeyi anlatıyor: rastgele yetiştirilmiş bir orman.
+
+Konsültasyon örneği iyi oturur. Zor bir vakada beş uzmanın görüşünü alırsınız; her biri hastanın farklı bir yönüne bakmıştır, biri yanılsa bile çoğunluk genellikle doğru yere gelir. Random Forest'ın tıp verisinde bu kadar yaygın olmasının nedeni budur: az ayar ister, zor bozulur, küçük veride bile makul çalışır.
+
+### XGBoost: hatadan öğrenen sıra
+
+İkinci topluluk yöntemi farklı bir fikre dayanır. Ağaçlar yan yana değil, arka arkaya gelir. İlk ağaç kaba bir tahmin yapar. İkinci ağaç, ilkinin yanlış bildiği hastalara odaklanır ve onları düzeltmeye çalışır. Üçüncü, ikisinin hâlâ yanlış bildiklerine. Her yeni ağaç küçük bir adım atar; öğrenme oranı denen bir düğme bu adımın büyüklüğünü belirler. Buna gradyan artırma deniyor; XGBoost bunun en bilinen uygulaması.
+
+Bir öğrencinin sınav kâğıdını alıp yalnızca yanlış yaptığı soruların benzerlerini çözdürmek gibi düşünün. Çok etkilidir, ama abartılırsa öğrenci o soruların kalıbını ezberler. O yüzden XGBoost'un düğmeleri Random Forest'tan daha çok ve ayarı daha önemlidir.
+
+> [!ornek] Tablo verisinde XGBoost neden derin öğrenmeyi geçer?
+> Laboratuvar sonuçları, vital bulgular, demografi gibi tablo hâlindeki klinik veride ağaç toplulukları çoğu zaman sinir ağlarını geçer. Nedeni basit: tablo verisinde ilişkiler genellikle eşiklerle anlatılır, "kreatinin 1.4'ün üstündeyse risk artar" gibi, ve ağaçlar tam olarak eşik sorar. Sinir ağları görüntü ve sinyal gibi sürekli yapılarda parlar; 9. haftada oraya geçeceğiz.
+
+### SVM: en geniş yolu çizmek
+
+Üçüncü model farklı bir aileden. Destek vektör makinesi iki grubu ayıran bir çizgi çizer, ama herhangi bir çizgi değil: iki tarafa da en çok mesafe bırakan çizgiyi arar. İki mahalle arasına yol açıyorsanız, yolu evlere en uzak yerden geçirirsiniz; SVM aynı şeyi yapar.
+
+Veri düz bir çizgiyle ayrılmıyorsa ne olur? Burada çekirdek hilesi devreye girer. Fikri bir cümleyle söylemek mümkün: iki boyutta iç içe duran iki grup, veriyi bir üst boyuta kaldırınca bir düzlemle ayrılabilir hâle gelir. SVM bu kaldırma işlemini açıkça yapmadan sonucunu hesaplar. Pratikte bilmeniz gereken iki şey var: SVM'den önce veriyi mutlaka ölçeklemek gerekir, çünkü mesafeye dayanır; ve SVM olasılık üretmek için tasarlanmamıştır, kalibrasyonu sonradan düzeltilir.
+
+### Ayar düğmeleri
+
+Bu modellerin hepsinin düğmeleri var: ağaç sayısı, derinlik, öğrenme oranı, SVM'de C ve gamma. Bunlara hiperparametre deniyor ve doğru ayar sonucu değiştirir. Tuzak şurada: düğmeleri test verisine bakarak çevirirseniz, test verisi artık test verisi değildir; onu da modelin ayarında kullanmış olursunuz. Bu da bir sızıntıdır, 2. haftadan tanıdık.
+
+Doğru yol, aramayı da çapraz doğrulamanın içinde yapmak. Defterde rastgele arama kullanıyoruz: yirmi beş farklı ayar denenir, her biri çapraz doğrulamayla puanlanır, en iyisi seçilir. Bir adım daha dürüst olan yöntem, aramayı dış bir çapraz doğrulamanın her katlamasında ayrı ayrı yapmaktır; buna iç içe çapraz doğrulama deniyor ve raporunuzda "model nasıl ayarlandı" sorusunun cevabı budur.
+
+### Model neye bakıyor?
+
+Günün son ve belki en önemli sorusu. Random Forest yüzlerce ağaçtan oluşuyor; hangi sütunlara önem verdiğini nasıl anlarız? Üç farklı cevap var ve üçü farklı liste verir.
+
+Birincisi ağacın kendi hesabı: her sütun dallanmalarda ne kadar işe yaradı? Hızlıdır ama yanlıdır; çok farklı değer alan sütunları, trombosit sayısı gibi, gereğinden fazla sever. İkincisi permütasyon: bir sütunu karıştırıp modelin ne kadar bozulduğuna bakmak. Daha dürüsttür ve önceki haftalardan tanıyorsunuz. Üçüncüsü basit modelin katsayıları: lojistik regresyon aynı soruya kendi gözünden cevap verir.
+
+Üç liste aynı çıkmayınca öğrenciler genellikle "hangisi doğru?" diye sorar. Cevap: hepsi, çünkü farklı sorulara cevap veriyorlar. Asıl öğrenilmesi gereken şey, bu listelerin tek bir gerçeği değil modelin davranışını anlattığıdır.
+
+> [!uyari] Birbirine benzeyen iki sütun önemi paylaşır
+> Klinikte aynı bilgiyi taşıyan sütun çiftleri çok yaygındır: kreatinin ve eGFR, kilo ve VKİ, hemoglobin ve hematokrit. İkisi de modelde olduğunda önem aralarında bölünür ve ikisi de "orta" görünür. Birini çıkarırsanız öbürünün önemi aniden yükselir. Yani bir modelin "bu sütun önemsiz" demesi, o sütunun bilgisiz olduğu anlamına gelmez; bilgisi başka bir sütunda da olabilir. Defterde bunu kreatininin bir kopyasını ekleyerek gösteriyoruz; bonus bölümde ise taraftar umudu ile son beş maç formu arasında aynı şey oluyor.
+
+Bu, açıklanabilirliğin ilk kapısı. 12. ve 13. haftalarda SHAP ile aynı soruya çok daha ince cevaplar alacağız.
+
+## Temel Kavramlar
+
+- **Karar ağacı** — Hastaya sırayla eşik soruları soran akış şeması; anlaşılır ama tek başına kararsız.
+- **Random Forest** — Rastgele yetiştirilmiş yüzlerce ağacın oylaması; kaprisler ortalamada kaybolur, az ayar ister.
+- **XGBoost (gradyan artırma)** — Her yeni ağacın bir öncekinin hatalarına odaklandığı sıralı topluluk; güçlü ama ayarı önemli.
+- **SVM ve çekirdek** — İki grubu en geniş boşlukla ayıran sınır; çekirdek hilesiyle eğri sınırlar; ölçekleme şart.
+- **Hiperparametre** — Modelin ayar düğmeleri; test verisine bakarak çevrilmez, arama çapraz doğrulamanın içinde yapılır.
+- **Öznitelik önemi** — "Model neye bakıyor?" sorusunun üç farklı cevabı; benzeyen sütunlar önemi paylaşır.
+
+## Uygulama / Laboratuvar
+
+Defter Heart Failure verisiyle başlıyor ve önce bu veri setinin ünlü tuzağını gösteriyor: takip süresi sütunu gelecekten bilgi taşır, modele verilirse başarım şişer. Sonra dört model aynı boru hattında, geçen haftanın ölçütleriyle karşılaştırılıyor; XGBoost için rastgele hiperparametre araması yapılıyor; üç öznitelik önemi yöntemi yan yana çiziliyor; kreatininin kopyası eklenerek önem paylaşımı gösteriliyor.
+
+Sonda bir bonus var: tamamen uydurma bir Fenerbahçe veri seti. Dört yüz sentetik maç, rakip gücü, deplasman, hakem kararları ve ertesi gün taraftar morali. Veriyi biz ürettiğimiz için "gerçek" nedenleri biliyoruz ve modelin bunları bulup bulamadığına bakıyoruz. Taraftar umudu ile son beş maç formu birbirine çok benziyor; önemi paylaşıyorlar. Konu aynı, kostüm farklı.
+
+<NotebookEmbed file="notebooks/hafta-05.ipynb" title="Hafta 5 · Ağaç Toplulukları, SVM ve Öznitelik Önemi" />
+
+**Ders içi çalışma:** Kendi proje verinizde "tahmin anında bilinemeyecek" bir sütun var mı? Takip süresi, taburcu tarihi, sonradan konulan tanı kodu gibi. Varsa adını ve neden sızıntı olduğunu iki cümleyle yazın; bu cümleler raporunuzun Yöntem bölümüne girecek. BVYZ-01 projesi bu haftaki veriyle çalışıyor; o defter doğrudan proje için başlangıç olabilir.
+
+## Tartışma Soruları
+
+1. Karmaşık model basit modeli yüzde bir geçiyor. Bu fark için yorumlanabilirlikten vazgeçmek klinik olarak ne zaman kabul edilir?
+2. Birbirine benzeyen iki sütundan birini çıkardığınızda öbürünün önemi neden aniden artar? Bu, "önemsiz" sütunları atmak için iyi bir yöntem midir?
+3. Bonus veride maç saatine küçük bir önem çıktı; oysa veriyi üretirken moralle hiç ilişkilendirmedik. Gerçek klinik veride böyle küçük "önemleri" nasıl ayıklarsınız?
+
+## Haftanın Özeti
+
+Karar ağacından başlayıp Random Forest ve XGBoost'a, oradan SVM'e geçtik; hepsini geçen haftanın dört sorusuyla sınadık ve küçük veride farkların küçük kaldığını gördük. Ayar düğmelerini test verisine bakmadan çevirmeyi öğrendik. Son olarak "model neye bakıyor?" sorusunun üç farklı cevabı olduğunu ve benzeyen sütunların önemi paylaştığını gördük; bu, açıklanabilirliğin ilk kapısıydı. Gelecek hafta etiketi bir kenara bırakıp veride kendi kendine beliren yapılara bakıyoruz: kümeleme, hasta alt-tipleri ve anomali tespiti. Modül 2 orada tamamlanacak.

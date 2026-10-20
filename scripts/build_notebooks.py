@@ -703,10 +703,214 @@ Bölüm 4'te `method="sigmoid"` (Platt) ile izotonik kalibrasyonu karşılaştı
 """),
 ]
 
+# --------------------------------------------------------------------------
+# HAFTA 5 — Topluluk yöntemleri, SVM ve öznitelik önemi
+# --------------------------------------------------------------------------
+WEEK05 = [
+md("""# Hafta 5 · Daha Güçlü Modeller: Ağaç Toplulukları, SVM ve "Model Neye Bakıyor?"
+
+**SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka** · Fırat Üniversitesi Yazılım ve Bilişim Araştırma Enstitüsü
+
+Geçen hafta tek bir basit model kurduk ve onu dört soruyla sınadık. Bugün daha güçlü modeller geliyor: Random Forest, XGBoost ve SVM.
+Hepsini aynı dört soruyla sınayacağız; sonra da "model neye bakıyor?" sorusuna üç farklı cevap alıp birbirine benzeyip benzemediğine bakacağız.
+
+Veri: **Heart Failure Clinical Records** (UCI). 299 kalp yetmezliği hastası, 12 klinik ölçüm, hedef: takip süresinde ölüm.
+Defterin sonunda bir de bonus var: tamamen uydurma bir Fenerbahçe veri seti. 🙂"""),
+code('''import warnings; warnings.filterwarnings("ignore")
+import io, zipfile, urllib.request
+import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+
+URL = "https://archive.ics.uci.edu/static/public/519/heart+failure+clinical+records.zip"
+try:
+    z = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(URL, timeout=30).read()))
+    df = pd.read_csv(z.open([n for n in z.namelist() if n.endswith(".csv")][0]))
+    print("Veri indirildi:", df.shape)
+except Exception as e:
+    print("İndirme başarısız, sentetik veri üretiliyor:", e)
+    rng = np.random.default_rng(0); n = 299
+    df = pd.DataFrame({"age": rng.normal(61, 12, n).clip(40, 95), "anaemia": rng.integers(0, 2, n), "creatinine_phosphokinase": rng.lognormal(5.5, 1, n),
+        "diabetes": rng.integers(0, 2, n), "ejection_fraction": rng.normal(38, 12, n).clip(14, 80), "high_blood_pressure": rng.integers(0, 2, n),
+        "platelets": rng.normal(263000, 97000, n), "serum_creatinine": rng.lognormal(0.2, 0.5, n), "serum_sodium": rng.normal(137, 4, n),
+        "sex": rng.integers(0, 2, n), "smoking": rng.integers(0, 2, n), "time": rng.integers(4, 285, n)})
+    df["DEATH_EVENT"] = (rng.random(n) < 1 / (1 + np.exp(-(0.04 * (df.age - 60) - 0.06 * (df.ejection_fraction - 38) + 0.8 * (df.serum_creatinine - 1.4) - 0.012 * (df.time - 130))))).astype(int)
+
+TR = {"age": "yas", "anaemia": "anemi", "creatinine_phosphokinase": "cpk", "diabetes": "diyabet", "ejection_fraction": "ejeksiyon_fraksiyonu",
+      "high_blood_pressure": "hipertansiyon", "platelets": "trombosit", "serum_creatinine": "serum_kreatinin", "serum_sodium": "serum_sodyum",
+      "sex": "cinsiyet", "smoking": "sigara", "time": "takip_gun", "DEATH_EVENT": "olum"}
+df = df.rename(columns=TR)
+print(df["olum"].value_counts().rename({0: "sağ", 1: "öldü"}))
+df.head()'''),
+md("""## 1 · Bir tuzak: `takip_gun` sütunu
+
+Her hastanın "takip süresi" var: kaç gün izlendiği. Ölen hastalar genellikle erken ölür, yani takip süresi kısadır. Bu sütunu modele
+verirseniz model çok başarılı görünür. Ama bir hasta ilk geldiğinde takip süresini bilmiyorsunuz; o bilgi **gelecekten** geliyor.
+Bu, 2. haftada konuştuğumuz zamansal sızıntının ders kitabı örneği. Aşağıda etkisini gösterip sonra sütunu çıkarıyoruz."""),
+code('''from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+cv = StratifiedKFold(5, shuffle=True, random_state=42)
+y = df["olum"]
+lr = lambda: Pipeline([("olcek", StandardScaler()), ("lr", LogisticRegression(max_iter=2000))])
+ile  = cross_val_score(lr(), df.drop(columns="olum"), y, cv=cv, scoring="roc_auc").mean()
+siz  = cross_val_score(lr(), df.drop(columns=["olum", "takip_gun"]), y, cv=cv, scoring="roc_auc").mean()
+print(f"takip_gun İLE  : ROC-AUC = {ile:.3f}   <- gelecekten gelen bilgi")
+print(f"takip_gun OLMADAN: ROC-AUC = {siz:.3f}   <- gerçekçi")
+X = df.drop(columns=["olum", "takip_gun"])'''),
+md("""## 2 · Dört model, aynı dört soru
+
+Lojistik regresyon (geçen haftanın temel modeli), Random Forest, XGBoost ve RBF çekirdekli SVM. Hepsi aynı çapraz doğrulamada,
+hepsi geçen haftanın ölçütleriyle: ROC-AUC, PR-AUC, Brier. Ağaç modelleri ölçekleme istemez; SVM ve lojistik ister. Hepsini
+`Pipeline` içine koyuyoruz, böylece karşılaştırma adil."""),
+code('''from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from xgboost import XGBClassifier
+from sklearn.model_selection import cross_validate
+
+modeller = {
+    "Lojistik regresyon": Pipeline([("olcek", StandardScaler()), ("m", LogisticRegression(max_iter=2000))]),
+    "Random Forest":      RandomForestClassifier(n_estimators=500, min_samples_leaf=3, random_state=0),
+    "XGBoost":            XGBClassifier(n_estimators=300, learning_rate=0.05, max_depth=3, subsample=0.8, colsample_bytree=0.8,
+                                        random_state=0, eval_metric="logloss"),
+    "SVM (RBF)":          Pipeline([("olcek", StandardScaler()), ("m", SVC(C=1.0, gamma="scale", probability=True, random_state=0))]),
+}
+skor = {"roc_auc": "roc_auc", "pr_auc": "average_precision", "brier": "neg_brier_score"}
+satirlar = []
+for ad, m in modeller.items():
+    r = cross_validate(m, X, y, cv=cv, scoring=skor)
+    satirlar.append({"model": ad, "ROC-AUC": r["test_roc_auc"].mean(), "±": r["test_roc_auc"].std(),
+                     "PR-AUC": r["test_pr_auc"].mean(), "Brier": -r["test_brier"].mean()})
+pd.DataFrame(satirlar).set_index("model").round(3)'''),
+md("""**Okuyun:** Dört model birbirine yakın mı? 299 hastalık küçük veride genellikle öyledir; karmaşık modelin avantajı veri büyüdükçe ortaya çıkar.
+Standart sapmalara bakın: fark, katlamalar arası dalgalanmadan büyük mü? Değilse "X modeli daha iyi" demek için kanıt yok.
+
+> **Deneyin:** Random Forest'ta `min_samples_leaf=1` yapın (ağaçlar her hastayı ezberleyebilsin). ROC-AUC değişti mi, Brier ne oldu?"""),
+md("""## 3 · Ayar düğmeleri: hiperparametre arama
+
+XGBoost'un düğmeleri var: ağaç sayısı, derinlik, öğrenme oranı. Bunları **test verisine bakarak** ayarlamak sızıntıdır. Doğru yol:
+arama da çapraz doğrulamanın içinde. Aşağıda rastgele arama yapıyoruz; iç içe (nested) sürümü derste tartışacağız."""),
+code('''from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import randint, uniform
+
+arama = RandomizedSearchCV(
+    XGBClassifier(random_state=0, eval_metric="logloss"),
+    {"n_estimators": randint(100, 600), "max_depth": randint(2, 6), "learning_rate": uniform(0.01, 0.2),
+     "subsample": uniform(0.6, 0.4), "colsample_bytree": uniform(0.5, 0.5), "min_child_weight": randint(1, 8)},
+    n_iter=25, cv=cv, scoring="roc_auc", random_state=0, n_jobs=-1).fit(X, y)
+print("En iyi ayar:", {k: round(v, 3) if isinstance(v, float) else v for k, v in arama.best_params_.items()})
+print(f"En iyi ROC-AUC (iç CV): {arama.best_score_:.3f}  — bu sayı iyimserdir; dış CV ile doğrulanmalı")'''),
+md("""## 4 · Model neye bakıyor? Üç öznitelik önemi, üç liste
+
+Aynı Random Forest'a üç farklı soru soruyoruz:
+1. **Safsızlık temelli** (ağacın kendi hesabı): hangi sütun dallanmalarda en çok işe yaradı? Hızlı ama sürekli ve çok değerli sütunlara yanlı.
+2. **Permütasyon** (geçen haftalardan tanıdık): bir sütunu karıştırınca AUC ne kadar düşüyor?
+3. **Lojistik regresyonun katsayıları** (standartlaştırılmış): basit modelin gözünden aynı soru.
+
+Üç liste aynı çıkmaz. Hangisi doğru? Hepsi, farklı sorulara cevap veriyorlar."""),
+code('''from sklearn.inspection import permutation_importance
+
+rf = RandomForestClassifier(n_estimators=500, min_samples_leaf=3, random_state=0).fit(X, y)
+safsizlik = pd.Series(rf.feature_importances_, index=X.columns)
+perm = permutation_importance(rf, X, y, n_repeats=30, random_state=0, scoring="roc_auc")
+permutasyon = pd.Series(perm.importances_mean, index=X.columns)
+lrm = Pipeline([("olcek", StandardScaler()), ("lr", LogisticRegression(max_iter=2000))]).fit(X, y)
+katsayi = pd.Series(np.abs(lrm.named_steps["lr"].coef_[0]), index=X.columns)
+
+fig, ax = plt.subplots(1, 3, figsize=(14, 4.2))
+for a, (s, baslik, c) in zip(ax, [(safsizlik, "RF safsızlık önemi", "#bcc6d9"), (permutasyon, "RF permütasyon önemi (AUC kaybı)", "#2f3fa3"), (katsayi, "Lojistik |katsayı|", "#0f9b8e")]):
+    s.sort_values().plot.barh(ax=a, color=c); a.set_title(baslik)
+plt.tight_layout()'''),
+md("""**Okuyun:** Serum kreatinin ve ejeksiyon fraksiyonu üç listede de üstte mi? Trombosit ve CPK safsızlık listesinde yukarıda ama
+permütasyonda aşağıdaysa, bu safsızlık yönteminin "çok farklı değer alan sütunları sever" yanlılığıdır.
+
+## 5 · Tuzak: birbirine benzeyen iki sütun önemi paylaşır
+
+Şimdi küçük bir deney. Serum kreatininin neredeyse kopyası olan yeni bir sütun ekleyelim: `kreatinin_kopya` (küçük gürültüyle).
+Klinikte bu çok olur: kreatinin ve eGFR, kilo ve VKİ, hemoglobin ve hematokrit. Ne olacak?"""),
+code('''rng = np.random.default_rng(1)
+X2 = X.copy(); X2["kreatinin_kopya"] = X2["serum_kreatinin"] * (1 + rng.normal(0, 0.05, len(X2)))
+rf2 = RandomForestClassifier(n_estimators=500, min_samples_leaf=3, random_state=0).fit(X2, y)
+p2 = permutation_importance(rf2, X2, y, n_repeats=30, random_state=0, scoring="roc_auc")
+karsilastir = pd.DataFrame({"tek başına (önce)": permutasyon, "kopya eklenince": pd.Series(p2.importances_mean, index=X2.columns)}).round(4)
+karsilastir.loc[["serum_kreatinin", "kreatinin_kopya", "ejeksiyon_fraksiyonu", "yas"]]'''),
+md("""Serum kreatininin önemi "aniden" düştü; kaybolmadı, kopyasıyla paylaşıldı. Bir modelin "X sütunu önemsiz" demesi, X'in bilgisinin başka
+bir sütunda da bulunmadığı anlamına gelmez. Bu, 12. haftada SHAP ile geri döneceğimiz bir konu.
+
+> **Deneyin:** `kreatinin_kopya`yı çıkarıp `ejeksiyon_fraksiyonu`nun kopyasını ekleyin. Aynı paylaşım orada da oluyor mu?"""),
+md("""## 6 · Bonus: Fenerbahçe ve taraftar morali (tamamen uydurma veri) 🟡🔵
+
+Bugün moraller biraz düşük olabilir; o yüzden konuyu bir de uydurma bir veri setinde görelim. Aşağıdaki 400 maç **tamamen sentetik**:
+hiçbir gerçek maç, hakem ya da futbolcuyla ilgisi yoktur. Gerçek olaylarla benzerlik tamamen tesadüftür (ya da değildir 🙂).
+
+Sütunlar: rakip gücü, deplasman mı, maç saati, son 5 maç formu, sakat sayısı, hakemin "ilginç" karar sayısı, maç öncesi taraftar umudu
+ve son olarak **ertesi gün taraftar moral skoru** (0–100). Hedefimiz ikili: moral 50'nin altına düştü mü?
+
+Dikkat ederseniz "taraftar umudu" ile "son 5 maç formu" birbirine çok benziyor. Bölüm 5'teki tuzağı burada yeniden göreceğiz."""),
+code('''rng = np.random.default_rng(1907)
+n = 400
+fb = pd.DataFrame({
+    "rakip_gucu":        rng.uniform(1, 10, n).round(1),           # 10 = en güçlü
+    "deplasman":         rng.integers(0, 2, n),
+    "mac_saati":         rng.choice([19, 20, 21, 22], n),
+    "son5_form":         rng.integers(0, 16, n),                    # son 5 maçtan alınan puan
+    "sakat_sayisi":      rng.poisson(2, n),
+    "ilginc_hakem_karar": rng.poisson(1.2, n),
+    "sampiyonlar_ligi":  rng.integers(0, 2, n),
+})
+fb["taraftar_umudu"] = (fb["son5_form"] * 5 + rng.normal(0, 6, n) + 20).clip(0, 100).round()   # forma çok benzer
+# Gizli "gerçek": moral neye bağlı? (modelin bunu bulup bulamayacağını göreceğiz)
+gol_farki = (-0.45 * (fb["rakip_gucu"] - 5.5) - 0.6 * fb["deplasman"] + 0.08 * (fb["son5_form"] - 7.5) - 0.25 * (fb["sakat_sayisi"] - 2)
+             - 0.4 * (fb["ilginc_hakem_karar"] - 1.2) - 0.8 * fb["sampiyonlar_ligi"] + rng.normal(0, 1.2, n))   # mac_saati kasıtlı olarak yok
+fb["moral_ertesi_gun"] = (50 + 12 * gol_farki + 0.15 * fb["taraftar_umudu"] + rng.normal(0, 8, n)).clip(0, 100).round()
+fb["moral_dustu"] = (fb["moral_ertesi_gun"] < 50).astype(int)
+print(f"{n} uydurma maç · moral düşüşü oranı: %{100*fb.moral_dustu.mean():.0f}")
+fb.head()'''),
+code('''fig, ax = plt.subplots(1, 3, figsize=(14, 3.8))
+fb.groupby("sampiyonlar_ligi")["moral_dustu"].mean().rename({0: "Lig", 1: "Şampiyonlar Ligi"}).plot.bar(ax=ax[0], color=["#0f9b8e", "#2f3fa3"]); ax[0].set_title("Moral düşüşü oranı"); ax[0].tick_params(axis="x", rotation=0)
+ax[1].scatter(fb["rakip_gucu"], fb["moral_ertesi_gun"], s=12, c=np.where(fb.deplasman == 1, "#be3a5a", "#0f9b8e"), alpha=.6); ax[1].set(xlabel="rakip gücü", ylabel="ertesi gün moral", title="Rakip gücü vs moral (kırmızı: deplasman)")
+ax[2].scatter(fb["son5_form"], fb["taraftar_umudu"], s=12, c="#b7791f", alpha=.6); ax[2].set(xlabel="son 5 maç formu", ylabel="taraftar umudu", title="Birbirine çok benzeyen iki sütun")
+plt.tight_layout()'''),
+md("""Şimdi bugünün üç modelini bu veride çalıştıralım ve "model neye bakıyor?" sorusunu soralım. Doğru cevabı biliyoruz, çünkü veriyi biz ürettik:
+moral en çok rakip gücüne, Şampiyonlar Ligi'ne, deplasmana ve hakem kararlarına bağlı. Taraftar umudu ise formun kopyası."""),
+code('''Xf = fb.drop(columns=["moral_ertesi_gun", "moral_dustu"]); yf = fb["moral_dustu"]
+for ad, m in modeller.items():
+    s = cross_val_score(m, Xf, yf, cv=cv, scoring="roc_auc")
+    print(f"{ad:20s} ROC-AUC = {s.mean():.3f} ± {s.std():.3f}")
+
+rff = RandomForestClassifier(n_estimators=500, min_samples_leaf=3, random_state=0).fit(Xf, yf)
+pf = permutation_importance(rff, Xf, yf, n_repeats=30, random_state=0, scoring="roc_auc")
+onem = pd.Series(pf.importances_mean, index=Xf.columns).sort_values()
+plt.figure(figsize=(6.5, 4)); onem.plot.barh(color=np.where(onem.index.isin(["son5_form", "taraftar_umudu"]), "#b7791f", "#2f3fa3"))
+plt.title("Taraftar morali: Random Forest permütasyon önemi"); plt.xlabel("AUC kaybı"); plt.tight_layout()'''),
+md("""**Okuyun:** Model gizli gerçeği buldu mu? Rakip gücü ve Şampiyonlar Ligi üstte mi? Sarı çubuklara bakın: `son5_form` ile
+`taraftar_umudu` önemi paylaşıyor; ikisi de "orta" görünüyor ama birini çıkarsanız öbürü yükselir. Bölüm 5'teki tuzak, bir başka kostümle.
+
+Son söz: `mac_saati`nin önemi sıfıra yakın olmalı, çünkü veriyi üretirken moralle hiç ilişkilendirmedik. Model buna rağmen ona küçük bir
+önem verdiyse, bu gürültüdür; gerçek veride de öyle küçük "önemler" çoğu zaman gürültüdür. Moral bozukluğuna gelince: veri diyor ki
+rakip güçlüyse ve deplasmandaysanız düşüş normaldir; form gelince geçer. 🙂
+
+## 7 · Bugün ne gördük?
+
+| Konu | Kanıt | Alışkanlık |
+|---|---|---|
+| Zamansal sızıntı | `takip_gun` ile AUC şişti | "Bu bilgi tahmin anında var mıydı?" diye sor |
+| Dört model | Küçük veride farklar küçük | Standart sapmaya bak; temel modeli geçemeyeni savunma |
+| Hiperparametre | Rastgele arama CV içinde | Test verisine bakarak ayar yapma |
+| Üç öznitelik önemi | Üç farklı liste | Hangi soruya cevap verdiğini bil; safsızlık yanlıdır |
+| Benzeyen sütunlar | Kreatinin kopyasıyla önem bölüşüldü | "Önemsiz" ≠ "bilgisiz" |
+
+**Ders sonrası (isteğe bağlı):** BVYZ-01 projesi bu veriyle çalışıyor; bu defter doğrudan `02_model.ipynb` için başlangıç olabilir.
+Herkes için: kendi proje verinizde "gelecekten gelen" bir sütun var mı? Varsa raporun Yöntem bölümüne yazın.
+"""),
+]
+
 NOTEBOOKS = {"hafta-01": ("Hafta 1 · Uçtan Uca İlk Tur", WEEK01),
              "hafta-02": ("Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme", WEEK02),
              "hafta-03": ("Hafta 3 · Veriyi Tanımak: Keşif, Öznitelik, PCA ve UMAP", WEEK03),
-             "hafta-04": ("Hafta 4 · İlk Model ve Klinik Metrikler", WEEK04)}
+             "hafta-04": ("Hafta 4 · İlk Model ve Klinik Metrikler", WEEK04),
+             "hafta-05": ("Hafta 5 · Ağaç Toplulukları, SVM ve Öznitelik Önemi", WEEK05)}
 
 
 def build(name, title, cells, force=False):
