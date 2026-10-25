@@ -6,7 +6,7 @@ description: "Örnekleme ve Nyquist, sayısal filtreler, artefakt giderme, zaman
 module: m3
 exam: false
 status: taslak
-changeNote: ""
+changeNote: "28 Ekim dersi Cumhuriyet Bayramı nedeniyle yapılmadığı için bu derste iki haftanın konusu birlikte işlenecek: önce kümeleme ve anomali tespiti (6. hafta), ardından biyomedikal sinyal analizi. Her iki haftanın sayfası ayrı kalır; notlar kendi sayfasında yayımlanır."
 tags:
   - "EEG"
   - "EKG"

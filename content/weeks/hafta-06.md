@@ -6,7 +6,7 @@ description: "k-means, hiyerarşik ve GMM kümeleme; küme sayısı seçimi ve k
 module: m2
 exam: false
 status: taslak
-changeNote: ""
+changeNote: "28 Ekim Çarşamba öğleden sonrası Cumhuriyet Bayramı arifesi tatilidir; bu hafta ders yapılmayacak. Bu haftanın konusu (kümeleme, hasta alt-tiplendirme ve anomali tespiti) 4 Kasım dersinde 7. hafta konusuyla birlikte, sıkıştırılmış biçimde işlenecek."
 tags:
   - "kümeleme"
   - "k-means"
