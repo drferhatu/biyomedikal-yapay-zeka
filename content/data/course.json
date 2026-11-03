@@ -125,11 +125,11 @@
   "assessment": {
     "components": [
       {
-        "name": "Ara sınav",
-        "method": "Yüz yüze",
+        "name": "Dönem projesi (ara sınav yerine)",
+        "method": "GitHub deposu + LaTeX rapor + sunum",
         "count": 1,
         "weight": 50,
-        "note": "8. hafta; 1–7. haftaların içeriğini kapsar."
+        "note": "Ara sınav yapılmaz. Teslimler: 4 Kasım (depo), 2 Aralık (ara rapor), 23 Aralık (son rapor ve sunum). 8. hafta proje atölyesidir."
       },
       {
         "name": "Genel sınav (final)",
@@ -144,7 +144,7 @@
       "Ödev",
       "Proje"
     ],
-    "optionalNote": "Ders izlence formunda kısa sınav, ödev ve proje bileşenleri için ağırlık tanımlanmamıştır. Dönem içinde isteğe bağlı uygulama ödevleri verilebilir; nota yansıması dönem başında duyurulur.",
+    "optionalNote": "İzlencedeki ara sınav, öğretim üyesinin kararıyla dönem projesine dönüştürülmüştür; proje dönem notunun %50'sini oluşturur. Ayrıca kısa sınav ya da ödev verilmez.",
     "workloadNote": "6 AKTS ≈ 180 saatlik toplam öğrenci iş yükü: 42 saat ders, kalan süre ön okuma, uygulama ve sınav hazırlığı."
   },
   "textbooks": [

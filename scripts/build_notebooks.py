@@ -906,11 +906,234 @@ Herkes için: kendi proje verinizde "gelecekten gelen" bir sütun var mı? Varsa
 """),
 ]
 
+# --------------------------------------------------------------------------
+# HAFTA 6 — Denetimsiz öğrenme (sıkıştırılmış; 4 Kasım'da 7. haftayla birlikte)
+# --------------------------------------------------------------------------
+WEEK06 = [
+md("""# Hafta 6 · Etiketsiz Veride Yapı Aramak: Kümeleme ve Anomali
+
+**SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka** · Fırat Üniversitesi Yazılım ve Bilişim Araştırma Enstitüsü
+
+Bu defter kısa; ders 7. haftayla birlikte işleniyor. Üç bölüm: k-means ile hasta kümeleri, "kaç küme?" sorusu ve kümelerin gerçek olup
+olmadığını sınamak, son olarak Isolation Forest ile anomali. Veri: Breast Cancer (569 hasta). Etiketi **saklıyoruz**; sonunda açıp bakacağız."""),
+code('''import warnings; warnings.filterwarnings("ignore")
+import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+ds = load_breast_cancer(as_frame=True)
+X = ds.frame[ds.feature_names]; y_gizli = ds.frame["target"]     # 0 = malign, 1 = benign — şimdilik bakmıyoruz
+Xs = StandardScaler().fit_transform(X)
+Z = PCA(2).fit_transform(Xs)                                       # yalnızca çizim için
+print(X.shape, "— etiketi kullanmıyoruz")'''),
+md("""## 1 · k-means: k merkez seç, herkesi en yakına ata, merkezleri taşı, tekrarla
+
+k-means'e kaç küme istediğinizi söylersiniz; o kadar küme bulur. Her zaman. Veride küme olmasa bile. Bu yüzden asıl iş, bulunan kümelerin
+gerçek olup olmadığını sınamaktır."""),
+code('''from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+fig, ax = plt.subplots(1, 3, figsize=(13, 3.8))
+for a, k in zip(ax, [2, 3, 4]):
+    etiket = KMeans(k, n_init=10, random_state=0).fit_predict(Xs)
+    a.scatter(Z[:, 0], Z[:, 1], c=etiket, cmap="viridis", s=12, alpha=.7)
+    a.set_title(f"k = {k} · silhouette = {silhouette_score(Xs, etiket):.2f}"); a.set_xticks([]); a.set_yticks([])
+plt.suptitle("Aynı veri, üç farklı k: hepsi 'küme' buldu", y=1.03); plt.tight_layout()'''),
+md("""## 2 · Kaç küme? Silhouette ve kararlılık
+
+**Silhouette** her hastanın kendi kümesine, komşu kümeye göre ne kadar yakın olduğunu ölçer (−1 ile 1; yüksek iyi).
+**Kararlılık** ise şu soru: veriden rastgele bir yarısını alıp tekrar kümelesem aynı hastalar yine birlikte mi düşüyor?"""),
+code('''from sklearn.metrics import adjusted_rand_score
+rng = np.random.default_rng(0)
+print("k   silhouette   kararlılık (ARI, 20 alt-örneklem)")
+for k in range(2, 7):
+    sil = silhouette_score(Xs, KMeans(k, n_init=10, random_state=0).fit_predict(Xs))
+    ref = KMeans(k, n_init=10, random_state=0).fit(Xs)
+    aris = []
+    for _ in range(20):
+        idx = rng.choice(len(Xs), len(Xs) // 2, replace=False)
+        alt = KMeans(k, n_init=10, random_state=int(rng.integers(1e6))).fit(Xs[idx])
+        aris.append(adjusted_rand_score(ref.predict(Xs[idx]), alt.labels_))
+    print(f"{k}   {sil:.3f}        {np.mean(aris):.3f}")'''),
+md("""**Okuyun:** k = 2 hem silhouette hem kararlılıkta öne çıkıyor mu? Çıkıyorsa veri gerçekten iki parçalı olabilir.
+Ama bu hâlâ iç kanıt. Dış kanıt, kümelemede kullanmadığımız bir bilgiyle örtüşme. Şimdi sakladığımız etiketi açıyoruz."""),
+code('''etiket2 = KMeans(2, n_init=10, random_state=0).fit_predict(Xs)
+tablo = pd.crosstab(pd.Series(etiket2, name="küme"), y_gizli.map({0: "malign", 1: "benign"}))
+print(tablo, "\\n")
+print(f"Küme ile tanı uyumu (ARI): {adjusted_rand_score(y_gizli, etiket2):.3f}")'''),
+md("""Kümeler tanıyla büyük ölçüde örtüşüyor; model tanıyı hiç görmeden, yalnızca hücre morfolojisinden iki grubu ayırdı. Gerçek alt-tiplendirme
+çalışmasında "dış kanıt" bu tabloya benzer: sağkalım, tedavi yanıtı ya da kümelemede kullanılmamış bir klinik değişken.
+
+> **Deneyin:** `KMeans` yerine `AgglomerativeClustering(2)` ve `GaussianMixture(2)` deneyin. Üç yöntem aynı hastaları mı ayırıyor?"""),
+md("""## 3 · Anomali: ağaçla kolayca izole edilen nokta tuhaftır
+
+Isolation Forest rastgele sorularla veriyi böler. Sıradan bir hasta çok soru sonra tek kalır; tuhaf bir hasta birkaç soruda. Skor, kaç soruda
+tek kaldığıdır. Tuhaf = hatalı giriş mi, nadir ama gerçek vaka mı? Bunu yöntem değil, alan bilgisi söyler."""),
+code('''from sklearn.ensemble import IsolationForest
+iso = IsolationForest(n_estimators=300, contamination=0.03, random_state=0).fit(Xs)
+skor = -iso.score_samples(Xs); anom = iso.predict(Xs) == -1
+plt.figure(figsize=(6, 4.2))
+plt.scatter(Z[~anom, 0], Z[~anom, 1], s=12, c="#bcc6d9", label="sıradan")
+plt.scatter(Z[anom, 0], Z[anom, 1], s=40, c="#be3a5a", label=f"anomali ({anom.sum()})")
+plt.legend(); plt.xticks([]); plt.yticks([]); plt.title("Isolation Forest: en tuhaf %3"); plt.tight_layout()
+X.loc[anom, ["mean radius", "mean area", "worst area", "mean concave points"]].describe().loc[["min", "50%", "max"]].round(1)'''),
+md("""**Okuyun:** Anomali olarak işaretlenen hastaların tümör alanı sıradan hastalardan ne kadar farklı? Bunlar hata mı, ileri evre vaka mı?
+
+## 4 · Bugün ne gördük?
+
+| Soru | Araç | Alışkanlık |
+|---|---|---|
+| Benzer hastalar kimler? | k-means | k'yi siz seçersiniz; her zaman k küme bulur |
+| Kaç küme gerçek? | silhouette + kararlılık | İç kanıt yetmez |
+| Kümeler anlamlı mı? | kümelemede kullanılmayan değişkenle çapraz tablo | Dış kanıt şart |
+| Tuhaf hasta kim? | Isolation Forest | Hata mı nadir vaka mı: alan bilgisi karar verir |
+"""),
+]
+
+# --------------------------------------------------------------------------
+# HAFTA 7 — Biyomedikal sinyal analizi (EKG)
+# --------------------------------------------------------------------------
+WEEK07 = [
+md("""# Hafta 7 · Sinyal: Zaman Taşıyan Veri — EKG ile Filtreleme, Spektrum, Öznitelik ve Dürüst Doğrulama
+
+**SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka** · Fırat Üniversitesi Yazılım ve Bilişim Araştırma Enstitüsü
+
+Veri: PhysioNet **MIT-BIH Arrhythmia** veri tabanından gerçek EKG kayıtları (`wfdb` ile doğrudan indirilir; her atım kardiyolog tarafından etiketli).
+Beş bölüm: sinyale bakmak ve Nyquist, filtreleme, spektrum, R tepeleri ve HRV öznitelikleri, atım sınıflandırmasında kayıt-bazlı doğrulama.
+BVYZ-03 ve BVYZ-04 projeleri bu kodu doğrudan kullanabilir."""),
+code('''import warnings; warnings.filterwarnings("ignore")
+import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+from scipy import signal
+
+KAYITLAR = ["100", "101", "103", "106", "119", "200", "208", "223"]   # normal ağırlıklı + ektopik atımı bol kayıtlar
+try:
+    import wfdb
+    kayit = {}
+    for r in KAYITLAR:
+        rec = wfdb.rdrecord(r, pn_dir="mitdb"); ann = wfdb.rdann(r, "atr", pn_dir="mitdb")
+        kayit[r] = dict(x=rec.p_signal[:, 0], fs=rec.fs, r_idx=ann.sample, sembol=np.array(ann.symbol))
+    fs = kayit["100"]["fs"]; print(f"{len(kayit)} kayıt indirildi · örnekleme hızı {fs} Hz · 30 dk/kayıt")
+except Exception as e:
+    print("İndirme başarısız, sentetik EKG üretiliyor:", e)
+    fs = 360; rng = np.random.default_rng(0); kayit = {}
+    for i, r in enumerate(KAYITLAR):
+        t = np.arange(0, 600, 1 / fs); x = np.zeros_like(t); hr = 60 + 10 * i
+        rr = np.cumsum(rng.normal(60 / hr, 0.03, int(600 * hr / 60)))
+        r_idx = (rr[rr < 600] * fs).astype(int)
+        for k in r_idx: x += np.exp(-((t - k / fs) / 0.012) ** 2) + 0.25 * np.exp(-((t - k / fs - 0.3) / 0.06) ** 2)
+        sembol = rng.choice(["N", "V"], len(r_idx), p=[0.9, 0.1])
+        kayit[r] = dict(x=x + 0.05 * rng.standard_normal(t.size) + 0.3 * np.sin(2 * np.pi * 50 * t), fs=fs, r_idx=r_idx, sembol=sembol)'''),
+md("""## 1 · Sinyale bakmak
+
+Saniyede 360 ölçüm. Beş saniyelik pencerede yaklaşık altı atım görmeliyiz. Örnekleme hızı neden önemli? Saniyede 360 fotoğraf çekiyorsanız
+saniyede en fazla 180 kez titreyen bir şeyi yakalayabilirsiniz; bunun üstü yanlış frekansa "katlanır" (Nyquist). EKG için 360 fazlasıyla yeter."""),
+code('''x = kayit["100"]["x"]; t = np.arange(len(x)) / fs
+plt.figure(figsize=(12, 3)); plt.plot(t[:5*fs], x[:5*fs], lw=.9, c="#0b1526"); plt.xlabel("saniye"); plt.ylabel("mV"); plt.title("Kayıt 100 · ilk 5 saniye (ham)"); plt.tight_layout()'''),
+md("""## 2 · Filtreleme: gürültüyü süzmek
+
+EKG'de iki tipik gürültü var: solunum ve hareketten gelen yavaş taban çizgisi kayması (< 0.5 Hz) ve şebeke uğultusu (50 Hz).
+Bant geçiren filtre 0.5–40 Hz arasını bırakır, gerisini süzer. `filtfilt` ileri-geri uygulandığı için sinyali kaydırmaz."""),
+code('''def bant_gecir(x, fs, lo=0.5, hi=40, n=4):
+    b, a = signal.butter(n, [lo, hi], btype="band", fs=fs)
+    return signal.filtfilt(b, a, x)
+
+# kasıtlı olarak gürültü ekleyip süzüyoruz, ki fark görünsün
+rng = np.random.default_rng(1)
+kirli = x + 0.3 * np.sin(2 * np.pi * 50 * t) + 0.4 * np.sin(2 * np.pi * 0.2 * t)
+temiz = bant_gecir(kirli, fs)
+fig, ax = plt.subplots(2, 1, figsize=(12, 5), sharex=True)
+ax[0].plot(t[:5*fs], kirli[:5*fs], lw=.8, c="#6b7a92"); ax[0].set_title("Şebeke (50 Hz) + taban çizgisi kayması eklenmiş")
+ax[1].plot(t[:5*fs], temiz[:5*fs], lw=.9, c="#0f9b8e"); ax[1].set_title("0.5–40 Hz bant geçiren filtre sonrası"); ax[1].set_xlabel("saniye")
+plt.tight_layout()'''),
+md("""## 3 · Spektrum: sinyali notalarına ayırmak
+
+Welch yöntemi, sinyalde hangi frekansın ne kadar güç taşıdığını gösterir. 50 Hz'deki sivri çizgi şebekedir; filtre sonrası kaybolmalı.
+EEG'de aynı grafik delta/teta/alfa/beta bantlarını, HRV'de LF/HF oranını verir."""),
+code('''f1, P1 = signal.welch(kirli, fs=fs, nperseg=4096); f2, P2 = signal.welch(temiz, fs=fs, nperseg=4096)
+plt.figure(figsize=(9, 3.6)); plt.semilogy(f1, P1, c="#6b7a92", label="kirli"); plt.semilogy(f2, P2, c="#0f9b8e", label="filtreli")
+plt.axvline(50, ls="--", c="#be3a5a", lw=1, label="50 Hz"); plt.xlim(0, 80); plt.xlabel("Hz"); plt.ylabel("güç"); plt.legend(); plt.title("Güç spektral yoğunluğu (Welch)"); plt.tight_layout()'''),
+md("""## 4 · R tepeleri, RR aralıkları ve HRV
+
+Atımı bulmak için R tepesini ararız. Burada iki yol var: kendimiz tepe bulmak (`find_peaks`) ya da kardiyologun anotasyonunu kullanmak.
+İkisini karşılaştırıyoruz. Ardışık R tepeleri arasındaki süre (RR) kalp hızı değişkenliğini (HRV) verir: RMSSD, pNN50 gibi sayılar."""),
+code('''temiz100 = bant_gecir(x, fs)
+tepe, _ = signal.find_peaks(temiz100, distance=int(0.4 * fs), height=np.percentile(temiz100, 98) * 0.5)
+r_ann = kayit["100"]["r_idx"]; r_ann = r_ann[(r_ann > 0) & (r_ann < len(x))]
+print(f"find_peaks: {len(tepe)} tepe · anotasyon: {len(r_ann)} atım  (30 dakika)")
+
+plt.figure(figsize=(12, 3)); seg = slice(0, 5 * fs)
+plt.plot(t[seg], temiz100[seg], lw=.9, c="#0b1526")
+plt.plot(t[tepe[tepe < 5*fs]], temiz100[tepe[tepe < 5*fs]], "v", c="#be3a5a", label="find_peaks")
+plt.plot(t[r_ann[r_ann < 5*fs]], temiz100[r_ann[r_ann < 5*fs]] + 0.15, "^", c="#0f9b8e", label="kardiyolog anotasyonu")
+plt.legend(); plt.xlabel("saniye"); plt.title("R tepeleri"); plt.tight_layout()
+
+rr = np.diff(r_ann) / fs * 1000                      # ms
+hrv = {"ortalama RR (ms)": rr.mean(), "kalp hızı (bpm)": 60000 / rr.mean(), "SDNN (ms)": rr.std(),
+       "RMSSD (ms)": np.sqrt(np.mean(np.diff(rr) ** 2)), "pNN50 (%)": 100 * np.mean(np.abs(np.diff(rr)) > 50)}
+pd.Series(hrv).round(1)'''),
+md("""## 5 · Atım sınıflandırması ve dürüst doğrulama
+
+Her atım için bir pencere (R tepesinin 90 ms öncesi, 160 ms sonrası) ve birkaç RR özniteliği çıkarıyoruz. Hedef: normal (N) mi, ventriküler
+ektopik (V) mi? Sonra 2. haftanın sorusunu soruyoruz: pencereleri rastgele bölersek aynı kaydın atımları iki kümeye düşer. **Kayıt-bazlı**
+bölünce ne oluyor?"""),
+code('''def atim_oznitelik(kayit, r, once=0.09, sonra=0.16):
+    x = bant_gecir(kayit["x"], kayit["fs"]); fs_ = kayit["fs"]; n1, n2 = int(once * fs_), int(sonra * fs_)
+    r_idx, sem = kayit["r_idx"], kayit["sembol"]
+    rows, ys, gr = [], [], []
+    for i in range(2, len(r_idx) - 2):
+        if sem[i] not in ("N", "V"): continue
+        k = r_idx[i]
+        if k - n1 < 0 or k + n2 >= len(x): continue
+        pencere = x[k - n1 : k + n2]
+        rr_on, rr_son = (r_idx[i] - r_idx[i-1]) / fs_, (r_idx[i+1] - r_idx[i]) / fs_
+        rr_yerel = np.mean(np.diff(r_idx[i-2:i+3])) / fs_
+        rows.append(np.concatenate([pencere[::3], [rr_on, rr_son, rr_on / rr_yerel, pencere.max() - pencere.min(), np.abs(np.diff(pencere)).mean()]]))
+        ys.append(1 if sem[i] == "V" else 0); gr.append(r)
+    return np.array(rows), np.array(ys), np.array(gr)
+
+parcalar = [atim_oznitelik(kayit[r], r) for r in kayit]
+Xb = np.vstack([p[0] for p in parcalar]); yb = np.concatenate([p[1] for p in parcalar]); gb = np.concatenate([p[2] for p in parcalar])
+print(f"{len(yb)} atım · V oranı %{100*yb.mean():.1f} · kayıt sayısı {len(set(gb))}")
+pd.Series(yb).groupby(gb).agg(["count", "mean"]).rename(columns={"count": "atım", "mean": "V oranı"}).round(3).T'''),
+code('''from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold, GroupKFold, cross_val_score
+
+rf = RandomForestClassifier(n_estimators=300, class_weight="balanced", random_state=0, n_jobs=-1)
+rastgele = cross_val_score(rf, Xb, yb, cv=StratifiedKFold(4, shuffle=True, random_state=0), scoring="f1").mean()
+grup     = cross_val_score(rf, Xb, yb, cv=GroupKFold(4), groups=gb, scoring="f1").mean()
+print(f"Rastgele bölme (aynı kayıt iki kümede): F1 = {rastgele:.3f}")
+print(f"Kayıt-bazlı bölme (GroupKFold):         F1 = {grup:.3f}   <- yeni hastaya genelleme")'''),
+md("""**Okuyun:** Fark ne kadar? Rastgele bölmede model her hastanın "normal" atımının şeklini ezberleyip V'yi ona göre ayırıyor. Yeni bir hastaya
+geçince o şablon yok; başarım düşüyor. Makalelerde "atım-içi" (intra-patient) ile "hasta-arası" (inter-patient) sonuçlar bu yüzden ayrı raporlanır.
+
+> **Deneyin:** `KAYITLAR` listesine "207" ve "233" ekleyin (zor kayıtlar). Kayıt-bazlı F1 ne oldu? Öznitelik olarak yalnızca RR oranlarını bırakıp
+> pencereyi çıkarın; hangi öznitelikler yeni hastaya daha iyi genelliyor?
+
+## 6 · Bugün ne gördük?
+
+| Adım | Araç | Alışkanlık |
+|---|---|---|
+| Örnekleme ve Nyquist | `fs`, sinyalin yarısı | Hangi frekansı görebildiğinizi bilin |
+| Filtreleme | Butterworth bant geçiren, `filtfilt` | Önce/sonra spektrumunu çizin |
+| Spektrum | Welch PSD | 50 Hz çizgisi gitti mi? EEG bantları, HRV LF/HF |
+| Öznitelik | R tepe, RR, HRV, pencere | Pencere + RR oranları birlikte |
+| Doğrulama | GroupKFold(kayıt) | Hasta-arası sonuç raporlanır |
+
+**Projeler:** BVYZ-03 bu defterin Bölüm 5'ini doğrudan genişletebilir (AAMI sınıfları, makro-F1). BVYZ-04 Bölüm 2–3'ü PPG'ye uyarlar.
+BVYZ-08 Bölüm 3'ü EEG bantlarına taşır.
+"""),
+]
+
 NOTEBOOKS = {"hafta-01": ("Hafta 1 · Uçtan Uca İlk Tur", WEEK01),
              "hafta-02": ("Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme", WEEK02),
              "hafta-03": ("Hafta 3 · Veriyi Tanımak: Keşif, Öznitelik, PCA ve UMAP", WEEK03),
              "hafta-04": ("Hafta 4 · İlk Model ve Klinik Metrikler", WEEK04),
-             "hafta-05": ("Hafta 5 · Ağaç Toplulukları, SVM ve Öznitelik Önemi", WEEK05)}
+             "hafta-05": ("Hafta 5 · Ağaç Toplulukları, SVM ve Öznitelik Önemi", WEEK05),
+             "hafta-06": ("Hafta 6 · Kümeleme ve Anomali", WEEK06),
+             "hafta-07": ("Hafta 7 · EKG: Filtreleme, Spektrum, HRV ve Kayıt-Bazlı Doğrulama", WEEK07)}
 
 
 def build(name, title, cells, force=False):

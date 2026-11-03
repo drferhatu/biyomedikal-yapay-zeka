@@ -1,54 +1,59 @@
 ---
 week: 8
-title: "Ara Sınav"
-topic: "Ara sınav"
-description: "1–7. haftaların içeriğini kapsayan yüz yüze ara sınav; dönem notunun %50'si."
+title: "Proje Atölyesi: Veriden İlk Modele"
+topic: "Ara sınav (izlencede) — öğretim üyesi kararıyla dönem projesi atölyesi olarak işlenir"
+description: "Ara sınav yerine uygulamalı proje atölyesi: herkes kendi veri setiyle çalışır; ön işleme kararları, doğrulama tasarımı ve ilk model birlikte gözden geçirilir."
 module: m3
-exam: true
-status: taslak
-changeNote: ""
+exam: false
+status: hazir
+changeNote: "İzlencedeki ara sınav yapılmayacak; dönem notunun %50'si proje ile belirlenir. Bu derste herkes kendi proje verisiyle çalışır."
 tags:
-  - "ara sınav"
-  - "değerlendirme"
+  - "proje"
+  - "atölye"
+  - "doğrulama tasarımı"
 objectives:
-  - "Biyomedikal veri türleri, ön işleme ve sızıntı kaynaklarını kavramsal düzeyde açıklar."
-  - "Klinik değerlendirme metriklerini (ROC-AUC, duyarlılık/özgüllük, kalibrasyon) hesaplar ve yorumlar."
-  - "Klasik denetimli/denetimsiz yöntemleri ve sinyal işleme temellerini uygun probleme eşler."
-methods: []
-tools: []
-datasets: []
-resources: []
+  - "Kendi proje verisinde eksik veri, sızıntı ve bölme stratejisi kararlarını gerekçelendirir."
+  - "Temel modeli (lojistik regresyon) kurup dört klinik grafiği (ROC, PR, kalibrasyon, karar eğrisi) üretir."
+  - "Ara rapor için Yöntem ve Sonuçlar bölümlerinin iskeletini çıkarır."
+methods:
+  - "Pipeline"
+  - "GroupKFold"
+  - "Klinik metrikler"
+tools:
+  - "Google Colab"
+  - "scikit-learn"
+  - "GitHub"
+datasets:
+  - name: "Herkesin kendi proje veri seti"
+    note: "Proje sayfasındaki kartınız."
+resources:
+  - title: "Proje sayfası: teslimler, şablonlar, değerlendirme"
+    url: "https://drferhatu.github.io/biyomedikal-yapay-zeka/proje/"
+    kind: dokuman
 ---
 
 ## Ön Okuma ve Hazırlık
 
-Sınav 1–7. haftaların içeriğini kapsar. Hesap makinesi getirebilirsiniz; formül kâğıdı sınav kâğıdıyla birlikte verilir.
+Bilgisayarınızla ve ilk teslimde gönderdiğiniz depo ile gelin. Verinizin indirilmiş ve defterin ilk hücresinin çalışır durumda olması yeterli. Şu üç soruya bir cümlelik cevabınız hazır olsun: pozitif sınıf oranı kaç, bir hastanın kaç satırı var, "tahmin anında bilinemeyecek" bir sütun var mı?
 
 ## Ders Notları
 
-> [!not] Bu bölüm ders notlarının genişletileceği alandır. İzlencedeki özgün başlık: **Ara sınav**
+Bu hafta anlatım yok; çalışma var. İzlencede ara sınav olarak görünen hafta, dönem projesine ayrıldı. Ders boyunca herkes kendi verisinde ilerler, ben masalara uğrarım. Hedef, dersin sonunda her deponun şu üç şeyi içermesi: sızıntısız bir boru hattı, hasta-bazlı ya da gerekçeli bir bölme stratejisi ve dört klinik grafiğiyle temel bir model. Bunlar ara raporun (2 Aralık) Yöntem ve Sonuçlar bölümlerinin iskeletidir.
 
-Ayrıntılı notlar ve türetimler ders yaklaştıkça buraya eklenecektir.
+Ders şu sırayla ilerler. İlk yarım saat herkes 2. haftanın kontrol listesini kendi verisine uygular: eksikler, sızıntı adayları, grup sütunu. Sonraki saat temel model ve dört grafik; şablondaki başlangıç defteri bunun için yeterli. Son saatte her öğrenci üç dakikada kendi dört grafiğini gösterir ve bir soru sorar.
 
-## Temel Kavramlar
-
-- **Kapsam** — Hafta 1–7: veri türleri ve problem tipleri; eksik veri, sızıntı, hasta-bazlı bölme; EDA, öznitelik mühendisliği, PCA/UMAP; lojistik regresyon ve klinik metrikler; topluluk yöntemleri, SVM, öznitelik önemi; kümeleme ve anomali; sinyal filtreleme ve zaman–frekans.
-- **Biçim** — Yüz yüze, yazılı. Kavramsal sorular, kısa hesaplamalar (karışıklık matrisi, PPV, PSD yorumu) ve bir vaka çözümü (veri → yöntem → metrik seçimi ve gerekçesi).
-- **Ağırlık** — Dönem notunun %50'si.
-
-## Biyomedikal Uygulama Örnekleri
-
-- Örnek soru tipi: 'Yoğun bakımda sepsis tahmini için verilen veri şemasında sızıntı kaynaklarını bulun ve doğru bölme stratejisini önerin.'
-- Örnek soru tipi: 'ROC-AUC 0.90, kalibrasyon eğrisi diyagonalin üstünde: model klinikte nasıl davranır; nasıl düzeltirsiniz?'
+> [!not] Hangi haftaya bakmalıyım?
+> Eksik veri ve bölme için 2. hafta, keşif ve öznitelik için 3. hafta, dört grafik için 4. hafta, modeller ve öznitelik önemi için 5. hafta. Sinyal projeleri (BVYZ-03, 04, 08) için 7. hafta, görüntü projesi (BVYZ-05) için 10. haftayı bekleyin; o güne kadar tablo biçimindeki özniteliklerle ilerleyin.
 
 ## Uygulama / Laboratuvar
 
-Her haftanın 'Temel Kavramlar' ve 'Tartışma Soruları' bölümlerini gözden geçirin; uygulama defterlerinde metrik hesaplamalarını elle tekrar edin. Ders saatinde sınav öncesi 30 dakikalık soru–cevap yapılır.
+Kendi deponuzdaki başlangıç defterini açın ve sırayla ilerleyin: veri indirme hücresi çalışıyor mu, hedef ve grup sütunu tanımlı mı, boru hattı kuruldu mu, dört grafik üretildi mi, grafikler `rapor/sekiller/` altına kaydedildi mi? Takıldığınız yerde elinizi kaldırın.
 
 ## Tartışma Soruları
 
-1. Modül 1–3'te öğrendiklerinizi tek bir biyomedikal probleme (kendi tez konunuz olabilir) uçtan uca uygulasanız hangi adımda en çok zorlanırsınız?
+1. Verinizde grup sütunu yoksa bunun nedeni gerçekten her hastanın tek satırı olması mı, yoksa hasta kimliğinin veride bulunmaması mı? İkincisiyse bu, raporun sınırlılıklar bölümüne girer.
+2. Temel modelinizin kalibrasyon eğrisi köşegenden sapıyorsa bunun bir sonraki adımdaki anlamı ne?
 
 ## Haftanın Özeti
 
-Dönemin ilk yarısı ara sınavla kapandı. İkinci yarı derin öğrenme ve açıklanabilir yapay zeka ile devam eder.
+Dönemin ilk yarısını sınavla değil, herkesin kendi verisinde kurduğu ilk modelle kapattık. İkinci yarı derin öğrenme ile başlıyor; sinyal ve görüntü projeleri orada hız kazanacak.

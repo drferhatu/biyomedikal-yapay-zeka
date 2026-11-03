@@ -12,3 +12,5 @@ shap
 imbalanced-learn
 umap-learn
 xgboost
+wfdb
+neurokit2

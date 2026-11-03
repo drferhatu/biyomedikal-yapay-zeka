@@ -9,6 +9,7 @@ const { salt, iter, projects } = projectsData;
 const timeline = [
   { when: '14 Ekim (Hafta 4)', what: 'Projeler dağıtılır. Veri setinin bağlantısını açın, indirin, bir göz atın.' },
   { when: '4 Kasım (Hafta 7)', what: 'Teslim 1 · Depo bağlantısı: README taslağı, data/README.md (indirme talimatı), veriyi yükleyip tanıyan ilk defter.' },
+  { when: '11 Kasım (Hafta 8)', what: 'Proje atölyesi (ara sınav yerine): herkes kendi verisiyle gelir; boru hattı, bölme stratejisi ve temel modelin dört grafiği derste kurulur.' },
   { when: '2 Aralık (Hafta 11)', what: 'Teslim 2 · Ara rapor: keşifçi analiz, ön işleme kararları, temel model ve klinik metrikler (rapor/main.pdf taslağı).' },
   { when: '23 Aralık (Hafta 14)', what: 'Teslim 3 · Son rapor (PDF) ve tamamlanmış depo; son derste 5 dakikalık sunum.' },
 ];
@@ -155,7 +156,7 @@ const toc = [
       <!-- DEĞERLENDİRME -->
       <section id="degerlendirme" class="scroll-mt-28 prose-lesson">
         <h2 class="!mt-0 !border-0 !pt-0">Değerlendirme</h2>
-        <p>Proje 100 puan üzerinden değerlendirilir; dönem notuna katkısı derste duyurulur. Ağırlıklar, dersin vurgusunu yansıtır: en çok puan doğrulama tasarımına ve klinik değerlendirmeye gider, en az puan sunuma.</p>
+        <p>Proje <strong>dönem notunun %50'sini</strong> oluşturur; izlencedeki ara sınavın yerini alır (kalan %50 genel sınav). 100 puan üzerinden değerlendirilir ve ağırlıklar dersin vurgusunu yansıtır: en çok puan doğrulama tasarımına ve klinik değerlendirmeye gider, en az puan sunuma.</p>
         <table>
           <thead><tr><th>Ölçüt</th><th>Puan</th><th>Neye bakılır</th></tr></thead>
           <tbody>{rubric.map(([k, p, d]) => <tr><td class="font-medium text-ink">{k}</td><td class="font-mono">{p}</td><td>{d}</td></tr>)}</tbody>

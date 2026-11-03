@@ -1,0 +1,134 @@
+---
+week: 7
+title: "Biyomedikal Sinyal ve Zaman Serisi Analizi: EEG, EKG, EMG"
+topic: "Biyomedikal sinyal ve zaman serisi analizi (EEG/ECG/EMG): filtreleme, öznitelik çıkarımı ve zaman-frekans yöntemleri"
+description: "Sinyal zaman taşır. Gerçek EKG kayıtlarında örnekleme hızı, gürültüyü süzmek, sinyali notalarına ayırmak, kalp atımlarından öznitelik çıkarmak ve yeni hastaya genellemeyi dürüstçe ölçmek."
+module: m3
+exam: false
+status: hazir
+changeNote: "28 Ekim dersi Cumhuriyet Bayramı nedeniyle yapılmadığı için bu derste iki haftanın konusu birlikte işlenecek: önce kümeleme ve anomali tespiti (6. hafta), ardından biyomedikal sinyal analizi. Her iki haftanın sayfası ayrı kalır; notlar kendi sayfasında yayımlanır."
+tags:
+  - "EEG"
+  - "EKG"
+  - "EMG"
+  - "filtreleme"
+  - "FFT"
+  - "STFT"
+  - "dalgacık"
+  - "HRV"
+  - "zaman-frekans"
+  - "MNE"
+objectives:
+  - "Örnekleme frekansı, Nyquist sınırı ve örtüşmenin (aliasing) sinyal kalitesine etkisini açıklar."
+  - "Bant geçiren ve çentik filtreleri tasarlar; EEG'de göz/kas artefaktını, EKG'de taban çizgisi kaymasını giderir."
+  - "Zaman alanı (RR, HRV), frekans alanı (bant güçleri) ve doğrusal olmayan (entropi) öznitelikler çıkarır."
+  - "STFT ve sürekli dalgacık dönüşümüyle zaman–frekans temsili üretir; kayıt-bazlı çapraz doğrulama ile sınıflandırıcı eğitir."
+methods:
+  - "Nyquist"
+  - "Bant geçiren filtre"
+  - "Welch spektrumu"
+  - "R tepe & HRV"
+  - "GroupKFold(kayıt)"
+tools:
+  - "scipy.signal"
+  - "wfdb"
+  - "scikit-learn"
+datasets:
+  - name: "PhysioNet MIT-BIH Arrhythmia"
+    url: "https://physionet.org/content/mitdb/"
+    note: "EKG; etiketli atımlar."
+  - name: "Bonn EEG / CHB-MIT Scalp EEG"
+    url: "https://physionet.org/content/chbmit/"
+    note: "Nöbet tespiti."
+  - name: "PhysioNet AF Classification Challenge 2017"
+    url: "https://physionet.org/content/challenge-2017/"
+    note: "Tek derivasyon EKG."
+notebook:
+  file: notebooks/hafta-07.ipynb
+  title: "Hafta 7 · EKG: Filtreleme, Spektrum, HRV ve Kayıt-Bazlı Doğrulama"
+  embed: true
+  placement: inline
+resources:
+  - title: "Rajpurkar P ve ark. Cardiologist-level arrhythmia detection with convolutional neural networks. Nat Med 2019."
+    url: "https://www.nature.com/articles/s41591-018-0268-3"
+    kind: makale
+    note: "Uçtan uca öğrenme karşıtı olarak öznitelik-temelli yaklaşımı tartışın."
+  - title: "Gramfort A ve ark. MEG and EEG data analysis with MNE-Python. Front Neurosci 2013."
+    url: "https://www.frontiersin.org/articles/10.3389/fnins.2013.00267/full"
+    kind: makale
+  - title: "Shaffer F, Ginsberg JP. An overview of heart rate variability metrics and norms. Front Public Health 2017."
+    url: "https://www.frontiersin.org/articles/10.3389/fpubh.2017.00258/full"
+    kind: makale
+---
+
+import NotebookEmbed from '@/components/NotebookEmbed.astro';
+
+## Ön Okuma ve Hazırlık
+
+Bu ders iki haftanın konusunu taşıyor; önce 6. haftanın kümeleme konusu kısaca, sonra bu haftanın asıl konusu sinyal. Ön okuma: PhysioNet'teki MIT-BIH Arrhythmia Database sayfasının açıklamasına göz atın; 48 kayıt, her atım kardiyolog etiketli. Bilgisayarınızla gelin; defter PhysioNet'ten gerçek kayıt indiriyor. İlk proje teslimi de bugün: depo bağlantınızı hazır tutun.
+
+> [!not] Dersin akışı (4 Kasım)
+> 15 dakika proje teslimi ve sorular. Bir saat 6. hafta: kümeleme ve anomali. Ara. Bir saat on beş dakika sinyal: EKG üzerinden filtreleme, spektrum, HRV ve kayıt-bazlı doğrulama. Son 15 dakika: ara sınav yerine proje; 11 Kasım atölyesinin planı.
+
+## Ders Notları
+
+### Zaman taşıyan veri
+
+Şimdiye kadar baktığımız verilerde her hasta bir satırdı ve satırın sırası önemsizdi. Sinyal öyle değil. Bir EKG kaydı, saniyede yüzlerce ölçümden oluşan uzun bir sayı dizisidir ve bu sayıların sırası her şeydir; karıştırırsanız kalp atımı kaybolur. EEG, EMG, nabız dalgası, solunum, hepsi böyle. Bu hafta sinyalle çalışmanın dört temel adımını gerçek EKG kayıtları üzerinde göreceğiz.
+
+### Saniyede kaç fotoğraf?
+
+İlk kavram örnekleme hızı. Cihaz saniyede kaç ölçüm alıyor? MIT-BIH kayıtlarında 360. Bunun neden önemli olduğunu bir benzetmeyle anlatayım. Dönen bir tekerleğin fotoğrafını saniyede on kez çekerseniz, saniyede on turdan hızlı dönen tekerlek size duruyormuş ya da geri dönüyormuş gibi görünür. Sinyalde de aynı şey olur: örnekleme hızının yarısından hızlı titreşen her şey yanlış bir frekansa "katlanır". Bu yarıya Nyquist frekansı deniyor. EKG'nin ilgilendiğimiz bileşenleri 40 Hz'in altında olduğu için 360 fazlasıyla yeter; ama EMG için yetmeyebilir. Hangi frekansı görebildiğinizi bilmeden sinyale yorum yapmayın.
+
+### Gürültüyü süzmek
+
+Ham EKG'de iki sıradan gürültü var. Biri hastanın nefes almasından ve kıpırdamasından gelen yavaş bir dalgalanma; taban çizgisi aşağı yukarı kayar. Diğeri prizden gelen 50 Hz uğultusu. İkisi de kalple ilgili değil. Filtre, sinyalin yalnızca istediğimiz frekans aralığını, EKG için yaklaşık 0.5 ile 40 Hz arasını, bırakıp gerisini süzer. Buna bant geçiren filtre deniyor.
+
+Defterde kasıtlı olarak kirlettiğimiz bir kayda filtre uygulayıp öncesi ve sonrasını yan yana çiziyoruz. Bir alışkanlık edinin: filtre uyguladığınızda yalnızca dalga biçimine değil, bir sonraki bölümde göreceğimiz spektruma da bakın. Filtrenin ne süzdüğünü asıl orada görürsünüz.
+
+### Sinyali notalarına ayırmak
+
+Bir akorun içindeki notaları ayırt etmek gibi, bir sinyalin içindeki frekansları da ayırabiliriz. Bunu yapan araca spektrum deniyor; defterde Welch yöntemini kullanıyoruz. Grafik basit: yatayda frekans, dikeyde o frekansın sinyalde ne kadar güç taşıdığı. Kirli kayıtta 50 Hz'de sivri bir çizgi görürsünüz; filtre sonrası kaybolur. Bu, filtrenin işini yaptığının kanıtıdır.
+
+Aynı grafik başka sinyallerde başka şeyler anlatır. EEG'de delta, teta, alfa, beta bantlarının gücünü okursunuz; uyku evresi ya da nöbet buradan görünür. Kalp hızı değişkenliğinde düşük ve yüksek frekans bantlarının oranı otonom sinir sistemi hakkında bir şey söyler. BVYZ-08 projesi tam olarak bu grafiği EEG bantlarına taşıyacak.
+
+> [!ornek] Zaman–frekans: ne zaman hangi nota?
+> Spektrum "hangi frekanslar var" der ama "ne zaman" demez. Bir nöbetin kaçıncı saniyede başladığını görmek için sinyali kısa pencerelere bölüp her pencerenin spektrumunu yan yana koyarsınız; buna spektrogram deniyor. Dalgacık dönüşümü aynı işi değişken pencereyle yapar. Bugün bunlara girmiyoruz; defterin "deneyin" notunda ve 11. haftada yeniden karşılaşacağız.
+
+### Atımdan sayıya
+
+Sinyal uzun bir dizi; model ise sayı ister. Aradaki köprü öznitelik çıkarımı. EKG'de ilk adım R tepelerini, yani her atımın en belirgin sivri noktasını bulmak. Defterde iki yolu karşılaştırıyoruz: basit bir tepe bulucu ve kardiyoloğun elle koyduğu anotasyon. İkisi otuz dakikalık kayıtta neredeyse aynı sayıyı veriyor.
+
+R tepelerini bulunca ardışık iki tepe arasındaki süre çıkar: RR aralığı. Bu aralıkların ne kadar değiştiği kalp hızı değişkenliğidir; RMSSD, pNN50 gibi adlarla anılan birkaç sayıya iner. Sonra her atımın etrafından küçük bir pencere kesip onu da sayıya çeviririz. Böylece 30 dakikalık bir kayıt, her satırı bir atım olan bir tabloya dönüşür. Oradan sonrası 4. ve 5. haftadan tanıdık.
+
+### Yeni hastaya genelleme
+
+Burada 2. haftanın en önemli dersi geri geliyor. Tablodaki her satır bir atım ama bir kayıttan iki bin atım var. Satırları rastgele eğitim ve teste bölerseniz aynı hastanın atımları iki tarafa da düşer. Model o hastanın "normal" atım şeklini ezberler ve testte onu tanır. Sonuç parlak görünür; yeni bir hastada çöker.
+
+Defterde normal atım ile ventriküler ektopik atımı ayıran bir model kuruyor ve iki bölmeyi karşılaştırıyoruz: rastgele ve kayıt-bazlı. Seçtiğimiz sekiz kolay kayıtta fark küçük görünür, ama rastgele bölmedeki neredeyse kusursuz sayı yanıltıcıdır; defterdeki denemede zor kayıtları eklediğinizde aradaki uçurum açılır. Aritmi literatüründe bu yüzden iki ayrı sonuç raporlanır: hasta-içi ve hasta-arası. Sizin projelerinizde de rapora girecek sayı ikincisi. BVYZ-03 bu bölümü doğrudan genişletiyor; BVYZ-04 aynı mantığı nabız dalgasına taşıyor.
+
+## Temel Kavramlar
+
+- **Örnekleme hızı ve Nyquist** — Saniyedeki ölçüm sayısı; görebildiğiniz en yüksek frekans bunun yarısıdır.
+- **Bant geçiren filtre** — İstenen frekans aralığını bırakıp taban çizgisi kayması ve şebeke uğultusunu süzer.
+- **Spektrum (Welch)** — Sinyalde hangi frekansın ne kadar güç taşıdığı; filtrenin kanıtı, EEG bantları ve HRV bunun üzerinden okunur.
+- **R tepesi, RR aralığı, HRV** — Atımı bulmak, atımlar arası süreyi ölçmek, değişkenliğini özetlemek.
+- **Hasta-arası doğrulama** — Aynı kaydın pencereleri tek kümede kalır; raporlanan sayı budur.
+
+## Uygulama / Laboratuvar
+
+Defter PhysioNet'ten sekiz MIT-BIH kaydını indiriyor. Önce beş saniyelik ham sinyal, sonra kasıtlı kirletilmiş kaydın filtrelenmesi ve spektrumda 50 Hz çizgisinin kaybolması, R tepe tespiti ve kardiyolog anotasyonuyla karşılaştırma, HRV sayıları, son olarak atım sınıflandırmasında rastgele bölme ile kayıt-bazlı bölmenin farkı.
+
+<NotebookEmbed file="notebooks/hafta-07.ipynb" title="Hafta 7 · EKG: Filtreleme, Spektrum, HRV ve Kayıt-Bazlı Doğrulama" />
+
+**Ders içi çalışma:** Sinyal projesi olanlar (BVYZ-03, 04, 08) defterin hangi bölümünü doğrudan kendi verilerine taşıyabileceklerini söylesin. Diğerleri: kendi verinizde "aynı hastadan birden çok satır" durumu var mı; bugünkü rastgele/kayıt-bazlı farkı sizin projenizde de ortaya çıkar mı?
+
+## Tartışma Soruları
+
+1. Aynı hastanın atımları hem eğitimde hem testte olunca model tam olarak neyi öğreniyor? Bu yanlış bir model mi, yoksa yanlış bir soru mu?
+2. Öznitelik çıkarıp klasik model kurmak yerine ham sinyali doğrudan bir sinir ağına vermek (11. hafta) ne zaman daha mantıklı?
+3. Filtre uygulamadan önce ve sonra spektruma bakmanın, yalnızca dalga biçimine bakmaya göre ne avantajı var?
+
+## Haftanın Özeti
+
+Sinyali dört adımda tabloya çevirdik: örnekleme hızını bilmek, gürültüyü süzmek, spektruma bakmak, atımdan öznitelik çıkarmak. Sonra 2. haftanın dersini sinyalde yeniden gördük: yeni hastaya genellemeyi ancak kayıt-bazlı bölme ölçer. Gelecek hafta ara sınav yok; proje atölyesi var. Herkes kendi verisiyle gelecek ve dersin sonunda her deponun temel modeli ve dört grafiği olacak.
