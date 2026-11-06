@@ -7,7 +7,8 @@ AES-256-GCM kullanılarak şifrelenir; sayfada yalnızca şifreli metin bulunur.
 kutusuna numarasını yazar, tarayıcı aynı anahtarı türetir ve yalnızca kendi kartını çözebilir.
 Kaynak görüntüleme ("incele") ile diğer kartlar okunamaz.
 
-Yerel kayıt: Yoklama/projeler-atama.json (açık liste, depoya girmez) öğretim üyesi içindir.
+Yerel kayıtlar (depoya girmez): Yoklama/ekstra_ogrenciler.json (yoklama dışı katılımcılar) ve
+Yoklama/projeler-atama.json (açık atama listesi, öğretim üyesi içindir).
 
 Atama deterministiktir: öğrenciler numaraya göre sıralanır, havuzdaki projeler sırayla verilir.
 Belirli bir öğrenciye belirli projeyi vermek için OVERRIDES sözlüğünü kullanın.
@@ -33,8 +34,11 @@ KDF_ITER = 300_000             # PBKDF2 tur sayısı; proje.astro ile aynı olma
 OVERRIDES: dict[str, str] = {}  # {"261137101": "P3"} gibi
 # Yoklama listesinde olmayan (konuk / özel öğrenci) katılımcılar; listenin SONUNA eklenir,
 # böylece yoklamadaki öğrencilerin ataması değişmez.
-EXTRA_STUDENTS: list[tuple[str, str]] = [
-]
+# Yoklama listesinde olmayan (konuk / sonradan kayıt) katılımcılar YEREL dosyadan okunur:
+#   Yoklama/ekstra_ogrenciler.json  →  [{"ogrenci_no": "...", "ad": "..."}]
+# Bu klasör .gitignore'dadır; isim ve numara asla depoya girmez. Listenin SONUNA eklenirler,
+# böylece yoklamadaki öğrencilerin ataması değişmez.
+EXTRA_FILE = ROOT / "Yoklama" / "ekstra_ogrenciler.json"
 
 POOL = [
   dict(id="P1", code="BVYZ-01", dataType="Klinik tablo", title="Kalp yetmezliğinde ölüm riski tahmini",
@@ -126,6 +130,25 @@ POOL = [
               "Permütasyon önemi ve SHAP: hangi bantlar hangi evreyi ayırıyor, uyku fizyolojisiyle uyumlu mu?"],
        pitfalls="Epoklar aynı geceden gelir; denek-bazlı bölme olmadan sonuç şişer. Sınıflar dengesiz (N2 çok, N1 az): doğruluk yerine kappa ve makro-F1.",
        refs=["Kemp B ve ark. IEEE TBME 2000 (Sleep-EDF)", "Gramfort A ve ark. Front Neurosci 2013 (MNE)", "MNE örneği: 'Sleep stage classification from polysomnography'"]),
+  dict(id="P9", code="BVYZ-09", dataType="Tıbbi görüntü + metadata (kapsamlı)", title="Dermatoskopik görüntüden deri lezyonu sınıflandırması ve Docker ile tahmin servisi",
+       dataset="HAM10000 — Human Against Machine with 10000 training images (ISIC / Harvard Dataverse)", url="https://doi.org/10.7910/DVN/DBW86T",
+       size="10.015 dermatoskopik görüntü · 7 lezyon sınıfı · metadata (yaş, cinsiyet, lokalizasyon, lesion_id) · ~3 GB", access="Açık (CC BY-NC); Harvard Dataverse ya da Kaggle'dan indirilir; Colab GPU ile çalışır",
+       task="Çok sınıflı görüntü sınıflandırma + kalibrasyon + Grad-CAM; sonunda Docker'da çalışan bir tahmin servisi (FastAPI)",
+       question="Dermatoskopik görüntü ve basit metadata ile yedi lezyon sınıfı (özellikle melanom) ne kadar güvenilir ayrılabilir; aynı lezyonun birden çok görüntüsü iki kümeye düştüğünde başarım ne kadar şişer; ve bu model, bir görüntü alıp olasılık ve ısı haritası döndüren küçük bir servise nasıl dönüşür?",
+       steps=["Metadata keşfi: sınıf dağılımı (nv ~%67), yaş/lokalizasyon ile sınıf ilişkisi; aynı lezyondan birden çok görüntü var (lesion_id) → bölme lezyon-bazlı (GroupShuffleSplit) olmak zorunda. Rastgele bölme ile farkı raporun bir bulgusu yapın.",
+              "Temel model: ImageNet ön-eğitimli ResNet-18/EfficientNet-B0 transfer öğrenme (224 px), veri artırma, sınıf ağırlığı; makro-F1, sınıf başına duyarlılık, melanom için ayrıca ROC-AUC ve kalibrasyon.",
+              "Metadata birleştirme: görüntü gömmesi + yaş/cinsiyet/lokalizasyon ile ikinci model; katkısı var mı?",
+              "Açıklama: Grad-CAM ile doğru ve yanlış sınıflanan 8–10 örnek; modelin lezyona mı, cetvel/kıl/vinyet gibi kısayollara mı baktığı (literatürde bilinen tuzak).",
+              "Servis: FastAPI ile `POST /predict` (görüntü alır; sınıf olasılıkları, en olası sınıf ve Grad-CAM PNG döndürür) ve `GET /health`; Dockerfile + docker-compose.yml; tek komutla ayağa kalkmalı: `docker compose up`.",
+              "Model kartı ve kullanım sınırı: servis yanıtında 'tanı aracı değildir' uyarısı; alt-grup (cinsiyet, yaş grubu) başarım tablosu model kartında.",
+              "GitHub Actions: her push'ta Docker imajı build edilir ve `/health` testi geçer (küçük bir pytest)."],
+       pitfalls="Veri 3 GB: Colab'da Drive'a bir kez indirip 224 px'e küçültülmüş kopyayla çalışın. lesion_id'yi görmezden gelirseniz sızıntı garanti. nv sınıfı baskın; doğruluk anlamsız, makro-F1 raporlayın. Docker kısmında model ağırlıklarını depoya değil GitHub Release'e ya da indirme scriptine koyun (dosya boyutu).",
+       refs=["Tschandl P, Rosendahl C, Kittler H. The HAM10000 dataset. Sci Data 2018", "Esteva A ve ark. Dermatologist-level classification of skin cancer. Nature 2017", "Winkler JK ve ark. Association between surgical skin markings and deep learning CNN melanoma recognition. JAMA Dermatol 2019 (kısayol öğrenme)", "FastAPI belgeleri · Docker 'Getting started'"],
+       extra=["Depo yapısı: standart şablona ek olarak `api/` (FastAPI uygulaması, Dockerfile), `docker-compose.yml`, `tests/test_api.py`, `.github/workflows/docker.yml`, `model/` (indirme scripti; ağırlık dosyası depoda değil).",
+              "README'de 'Nasıl çalıştırılır' bölümü iki yol içermeli: (1) Colab defterleri, (2) `docker compose up` sonrası `curl -F file=@ornek.jpg localhost:8000/predict` örneği ve örnek JSON yanıt.",
+              "Depoyu oluşturur oluşturmaz GitHub hesabı **drferhatu**'yu collaborator olarak ekleyin (Settings → Collaborators → Add people); teslimler ve geri bildirim depo üzerinden yürüyecek, her teslimde bir GitHub Issue açıp öğretim üyesini etiketleyin.",
+              "Teslim takvimi herkesle aynı; ilk teslimde yalnızca metadata keşfi ve lezyon-bazlı bölme planı yeterli. Docker/servis kısmı 2. teslimden sonra; son raporda bir bölüm olarak 'Dağıtım' başlığı eklenir.",
+              "Rapor şablonuna ek bir bölüm: 'Dağıtım ve Servis' (mimari şema, API sözleşmesi, gecikme ölçümü, bilinen sınırlar)."]),
 ]
 
 
@@ -165,7 +188,9 @@ def main():
     if not students:
         sys.exit("Öğrenci bulunamadı")
     known = {n for n, _ in students}
-    students += [(n, ad) for n, ad in EXTRA_STUDENTS if n not in known]
+    if EXTRA_FILE.exists():
+        extra = json.loads(EXTRA_FILE.read_text(encoding="utf-8"))
+        students += [(e["ogrenci_no"], e["ad"]) for e in extra if e["ogrenci_no"] not in known]
     if len(students) > len(POOL):
         sys.exit(f"{len(students)} öğrenci için {len(POOL)} proje var; POOL'u genişletin")
     pool_by_id = {p["id"]: p for p in POOL}
