@@ -219,8 +219,8 @@ Ara sınav 12 Kasım Perşembe 10.00'da Seminer Salonu'nda ...
 gh repo create drferhatu/biyomedikal-yapay-zeka --public --source=. --remote=origin --push
 ```
 
-2. Depo ayarları → Pages → Source: **GitHub Actions**.
-3. `main` dalına push edildiğinde `.github/workflows/deploy.yml` çalışır: Python bağımlılıkları, defterlerin çalıştırılıp HTML'e çevrilmesi, `npm ci`, `npm run build`, içerik doğrulaması ve `dist/` yayını.
+2. Depo ayarları → Pages → Source: **Deploy from a branch**, dal `gh-pages`, klasör `/ (root)`.
+3. `main` dalına push edildiğinde `.github/workflows/deploy.yml` çalışır: Python bağımlılıkları, defterlerin çalıştırılıp HTML'e çevrilmesi, `npm ci`, `npm run build`, içerik doğrulaması ve `dist/` içeriğinin `gh-pages` dalına yazılması. `gh-pages` dalı elle düzenlenmez; her çalışmada baştan üretilir.
 4. Base yolu `astro.config.mjs` içinde `/biyomedikal-yapay-zeka` olarak ayarlıdır. Depo adı değişirse bu değeri, `public/robots.txt`, `src/lib/site.ts` içindeki `REPO` sabitini, `scripts/build_notebooks.py` içindeki `REPO` ve `scripts/validate_content.py` içindeki `BASE` değerini güncelleyin. Özel alan adına geçilirse `SITE_URL` ve `BASE_PATH=/` ortam değişkenleriyle derleyin.
 
 İçeriği doğrudan GitHub web arayüzünden de düzenleyebilirsiniz; kaydettiğinizde site birkaç dakika içinde yenilenir.

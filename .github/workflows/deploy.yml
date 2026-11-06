@@ -1,16 +1,15 @@
 name: GitHub Pages'e dağıt
 
 # Her push'ta (Colab'dan "GitHub'a kopya kaydet" dahil) defterler çalıştırılır,
-# gömülü HTML görünümleri üretilir ve site derlenip yayımlanır.
+# gömülü HTML görünümleri üretilir, site derlenir ve dist/ gh-pages dalına yazılır.
+# Pages kaynağı: gh-pages dalı, kök dizin (Actions tabanlı deploy-pages 2026-11-06'da sorun çıkardığı için değiştirildi).
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
@@ -45,16 +44,11 @@ jobs:
       - name: İçerik doğrulaması
         run: python scripts/validate_content.py
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: gh-pages dalına yayımla
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "Site: ${{ github.sha }}"
