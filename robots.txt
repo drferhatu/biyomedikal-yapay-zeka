@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://drferhatu.github.io/biyomedikal-yapay-zeka/sitemap-index.xml
