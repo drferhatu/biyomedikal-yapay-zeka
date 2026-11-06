@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "content" / "data" / "projects.json"
 SALT = "SVY5430-2026"          # src/pages/proje.astro içindeki değerle aynı olmalı
 KDF_ITER = 300_000             # PBKDF2 tur sayısı; proje.astro ile aynı olmalı
-OVERRIDES: dict[str, str] = {}  # {"261137101": "P3"} gibi
+OVERRIDES: dict[str, str] = {}  # {"2611xxxxx": "P3"} gibi; gerçek numara yazmayın, bu dosya depoya girer
 # Yoklama listesinde olmayan (konuk / özel öğrenci) katılımcılar; listenin SONUNA eklenir,
 # böylece yoklamadaki öğrencilerin ataması değişmez.
 # Yoklama listesinde olmayan (konuk / sonradan kayıt) katılımcılar YEREL dosyadan okunur:
