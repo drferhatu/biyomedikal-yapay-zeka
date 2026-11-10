@@ -28,14 +28,13 @@
   {
     "id": "m3",
     "slug": "sinyal-ve-zaman-serisi",
-    "title": "Biyomedikal Sinyaller ve Proje Atölyesi",
+    "title": "Biyomedikal Sinyaller",
     "short": "Sinyal Analizi",
     "weeks": [
-      7,
-      8
+      7
     ],
     "color": "violet",
-    "summary": "EEG/EKG/EMG sinyallerinde filtreleme, öznitelik çıkarımı ve zaman–frekans yöntemlerini uygular; 8. haftada ara sınav yerine dönem projeleri için uygulamalı atölye yapılır."
+    "summary": "EEG/EKG/EMG sinyallerinde filtreleme, öznitelik çıkarımı ve spektrum yöntemlerini uygular; yeni hastaya genellemeyi kayıt-bazlı doğrulamayla ölçersiniz."
   },
   {
     "id": "m4",
@@ -43,12 +42,13 @@
     "title": "Derin Öğrenme",
     "short": "Derin Öğrenme",
     "weeks": [
+      8,
       9,
       10,
       11
     ],
     "color": "rose",
-    "summary": "Yapay sinir ağlarını geri yayılım ve eğitim pratiğiyle kurar; U-Net ve transfer öğrenme ile tıbbi görüntü sınıflandırma/segmentasyon yapar; RNN/LSTM ve Transformer'ları biyomedikal dizilere ve klinik metne uygularsınız."
+    "summary": "Bir ağın nasıl öğrendiğini ve eğitim eğrisinin nasıl okunacağını canlı vakalarla görür (8. hafta); 9. haftada vize notu için proje ara sunumları yapılır; ardından transfer öğrenme ve U-Net ile tıbbi görüntüye, RNN/LSTM ve Transformer ile biyomedikal dizilere ve klinik metne geçersiniz."
   },
   {
     "id": "m5",

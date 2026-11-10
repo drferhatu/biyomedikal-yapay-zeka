@@ -2,7 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
 import WeekCard from '@/components/WeekCard.astro';
-import { getWeeksSorted, modules, course } from '@/lib/site';
+import { getWeeksSorted, modules, course, weekRange } from '@/lib/site';
 const weeks = await getWeeksSorted();
 ---
 <BaseLayout title="Haftalar" description={`${course.title} dersinin 14 haftalık ders listesi; her hafta için hedefler, yöntemler ve uygulamalar.`}>
@@ -15,7 +15,7 @@ const weeks = await getWeeksSorted();
         <div class="mb-5 flex flex-wrap items-baseline gap-3">
           <span class="size-2.5 rounded-sm" style={`background:var(--mod-${m.color})`} aria-hidden="true"></span>
           <h2 id={`mod-${m.id}`} class="font-display text-xl font-semibold text-ink">{i + 1}. {m.title}</h2>
-          <span class="font-mono text-xs text-ink-3">Hafta {m.weeks[0]}–{m.weeks.at(-1)}</span>
+          <span class="font-mono text-xs text-ink-3">Hafta {weekRange(m)}</span>
         </div>
         <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {weeks.filter((w) => w.data.module === m.id).map((w) => <li><WeekCard week={w} /></li>)}

@@ -7,7 +7,7 @@
   Çalıştırılan defter diske yazılmaz (--save verilmedikçe); kaynak defter Colab'dan gelen hâliyle kalır.
 
 Kullanım:
-  /opt/miniconda3/envs/ferhat_ml/bin/python scripts/build_notebooks.py [--execute] [--save] [--force]
+  /opt/miniconda3/envs/ferhat_ml/bin/python scripts/build_notebooks.py [--execute] [--save] [--force] [--only hafta-08]
 GitHub Actions bu scripti her push'ta --execute ile çalıştırır (bkz. .github/workflows/deploy.yml).
 """
 import sys
@@ -1011,9 +1011,19 @@ from scipy import signal
 KAYITLAR = ["100", "101", "103", "106", "119", "200", "208", "223"]   # normal ağırlıklı + ektopik atımı bol kayıtlar
 try:
     import wfdb
+except ImportError:                                   # Colab'de wfdb kurulu gelmez
+    import subprocess, sys
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "wfdb"], check=False)
+try:
+    import os, io, contextlib, wfdb
+    os.makedirs("mitdb", exist_ok=True)               # kayıtlar bir kez indirilir, sonra yerelden okunur
+    eksik = [r for r in KAYITLAR if not os.path.exists(f"mitdb/{r}.dat")]
+    if eksik:
+        with contextlib.redirect_stdout(io.StringIO()):
+            wfdb.dl_database("mitdb", dl_dir="mitdb", records=eksik)
     kayit = {}
     for r in KAYITLAR:
-        rec = wfdb.rdrecord(r, pn_dir="mitdb"); ann = wfdb.rdann(r, "atr", pn_dir="mitdb")
+        rec = wfdb.rdrecord(f"mitdb/{r}"); ann = wfdb.rdann(f"mitdb/{r}", "atr")
         kayit[r] = dict(x=rec.p_signal[:, 0], fs=rec.fs, r_idx=ann.sample, sembol=np.array(ann.symbol))
     fs = kayit["100"]["fs"]; print(f"{len(kayit)} kayıt indirildi · örnekleme hızı {fs} Hz · 30 dk/kayıt")
 except Exception as e:
@@ -1127,13 +1137,381 @@ BVYZ-08 Bölüm 3'ü EEG bantlarına taşır.
 """),
 ]
 
+# --------------------------------------------------------------------------
+# HAFTA 8 — Derin öğrenmeye giriş: ağın EKG'sini okumak (vaka konferansı)
+# --------------------------------------------------------------------------
+WEEK08 = [
+md("""# Hafta 8 · Ağın EKG'sini Okumak: Öğrenen Ağ, Hasta Ağ
+
+**SVY 5430 Biyomedikal Verilerin Analizi ve Yapay Zeka** · Fırat Üniversitesi Yazılım ve Bilişim Araştırma Enstitüsü
+
+Derste sitedeki canlı ağda dört hasta ağa tanı koyduk. Bu defter aynı vakaların PyTorch ve gerçek veriyle karşılığı; projenizde
+kullanacağınız eğitim döngüsü de burada.
+
+1. Kör nokta: tek nöron U biçimli riski göremez
+2. İki gizli nöron: ağ kendi özniteliğini türetir
+3. Geri yayılım: elle hesap ile PyTorch aynı sayıyı verir mi?
+4. Gerçek veri: Heart Disease'te eğitim döngüsü ve dürüst karşılaştırma
+5. Emekleyen ve savrulan ağ: öğrenme oranı
+6. Ezberci ağ ve tedavisi
+7. Öznitelik çıkarmadan: ham EKG atımından öğrenmek
+8. Fragman: aynı öğrenme, görüntüde"""),
+code('''import warnings; warnings.filterwarnings("ignore")
+import copy
+import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+import torch, torch.nn as nn
+from torch.utils.data import TensorDataset, DataLoader
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score, f1_score
+
+SEED = 0
+torch.manual_seed(SEED); np.random.seed(SEED)
+T = lambda a: torch.tensor(np.asarray(a), dtype=torch.float32)     # numpy → PyTorch tensörü
+print("PyTorch", torch.__version__)'''),
+md("""## 1 · Kör nokta: tek nöron U biçimli riski göremez
+
+Canlı ağdaki veri: potasyum düzeyi ve tehlikeli ritim riski. Risk iki uçta yüksek, ortada düşük. Tek nöron dediğimiz şey 4. haftanın
+lojistik regresyonudur: girdiyi bir ağırlıkla çarpar, bir eşik ekler, sonucu 0 ile 1 arasına sıkıştırır. Yani tek bir eğilim çizebilir:
+ya "potasyum arttıkça risk artar" ya da tersi. İkisini birden söyleyemez."""),
+code('''rng = np.random.default_rng(0); n = 800
+K = rng.uniform(2.5, 6.0, n)                                         # potasyum (mmol/L), sentetik
+gercek_risk = lambda k: 1 / (1 + np.exp(-4 * (np.abs(k - 4.25) - 0.75)))
+y = (rng.random(n) < gercek_risk(K)).astype(int)
+
+tek_noron = LogisticRegression().fit(K.reshape(-1, 1), y)
+print(f"Tek nöron ROC-AUC: {roc_auc_score(y, tek_noron.predict_proba(K.reshape(-1, 1))[:, 1]):.3f}   (0.5 = yazı tura)")
+
+izgara = np.linspace(2.5, 6.0, 200)
+plt.figure(figsize=(7, 3.6))
+plt.axvspan(3.5, 5.0, color="#0f9b8e", alpha=0.08, label="normal aralık")
+plt.plot(izgara, gercek_risk(izgara), "--", c="gray", label="gerçek risk")
+plt.plot(izgara, tek_noron.predict_proba(izgara.reshape(-1, 1))[:, 1], c="#be3a5a", lw=2.5, label="tek nöronun tahmini")
+plt.xlabel("potasyum (mmol/L)"); plt.ylabel("risk"); plt.ylim(-0.03, 1.03); plt.legend(fontsize=8)
+plt.title("Vaka 1 · Kör nokta"); plt.tight_layout()'''),
+md("""## 2 · İki gizli nöron: ağ kendi özniteliğini türetir
+
+Araya iki nöronluk bir gizli katman koyuyoruz. Kimse onlara ne yapacaklarını söylemiyor; eğitim sonunda sağdaki grafikte ne öğrendiklerine
+bakacağız. 3. haftada bu tür ara değişkenleri (yaş grubu, nabız oranı) biz elle türetmiştik."""),
+code('''torch.manual_seed(0)
+Xt, yt = T((K - 4.25).reshape(-1, 1)), T(y)                          # potasyumu merkezliyoruz
+ag = nn.Sequential(nn.Linear(1, 2), nn.Tanh(), nn.Linear(2, 1))      # 1 giriş → 2 gizli nöron → 1 çıkış
+opt = torch.optim.Adam(ag.parameters(), lr=0.05)
+for adim in range(600):
+    opt.zero_grad()                                                  # önceki adımın paylarını sil
+    kayip = nn.functional.binary_cross_entropy_with_logits(ag(Xt).squeeze(1), yt)
+    kayip.backward()                                                 # geri yayılım: her ağırlığın payı
+    opt.step()                                                       # ağırlıkları payı kadar düzelt
+p_ag = torch.sigmoid(ag(Xt)).detach().numpy().ravel()
+print(f"İki gizli nöronlu ağ ROC-AUC: {roc_auc_score(y, p_ag):.3f}")
+
+G = T((izgara - 4.25).reshape(-1, 1))
+gizli = torch.tanh(ag[0](G)).detach().numpy()
+fig, ax = plt.subplots(1, 2, figsize=(12, 3.6))
+ax[0].axvspan(3.5, 5.0, color="#0f9b8e", alpha=0.08)
+ax[0].plot(izgara, gercek_risk(izgara), "--", c="gray", label="gerçek risk")
+ax[0].plot(izgara, torch.sigmoid(ag(G)).detach().numpy().ravel(), c="#2f3fa3", lw=2.5, label="ağın tahmini")
+ax[0].set(xlabel="potasyum (mmol/L)", ylabel="risk", title="Ağ U biçimini öğrendi"); ax[0].legend(fontsize=8)
+ax[1].plot(izgara, gizli[:, 0], c="#b7791f", lw=2.5, label="gizli nöron 1")
+ax[1].plot(izgara, gizli[:, 1], c="#6d4bb5", lw=2.5, label="gizli nöron 2")
+ax[1].axvspan(3.5, 5.0, color="#0f9b8e", alpha=0.08)
+ax[1].set(xlabel="potasyum (mmol/L)", ylabel="nöronun çıktısı", title="Gizli nöronlar ne öğrendi?"); ax[1].legend(fontsize=8)
+plt.tight_layout()'''),
+md("""**Okuyun:** Sağdaki grafikte nöronlardan biri normal aralığın alt sınırında, diğeri üst sınırında yön değiştiriyor. Biri "potasyum düşük mü?",
+diğeri "potasyum yüksek mü?" sorusunu soran birer dedektöre dönüşmüş. Bu iki soruyu biz yazmadık; ağ, hatasını azaltmanın yolu olarak kendisi buldu.
+Derin öğrenmenin bütün iddiası bu grafikte: **öznitelikler de öğrenilir.**"""),
+md("""## 3 · Geri yayılım: elle hesap ile PyTorch aynı sayıyı verir mi?
+
+Canlı ağın "Adım adım" sekmesindeki başlangıç ağırlıklarını ve Hasta A'yı (potasyum 2.8, gerçekte riskli) alıyoruz. Önce "Geri" düğmesinin yaptığı
+hesabı zincir kuralıyla elle yapıyor, sonra aynı işi PyTorch'a yaptırıyoruz."""),
+code('''w1 = np.array([1.2, -0.8]); b1 = np.array([-0.3, -0.2]); w2 = np.array([0.6, 0.4]); b2 = -0.2
+x, hedef = 2.8 - 4.25, 1.0
+
+# ileri
+h = np.tanh(w1 * x + b1)
+p = 1 / (1 + np.exp(-(w2 @ h + b2)))
+
+# geri: hata çıkıştan girişe doğru paylaştırılır
+d = p - hedef                      # çıkıştaki hata payı (tahmin − gerçek)
+pay_w2, pay_b2 = d * h, d          # gizli → çıkış bağlantılarının payı
+dj = d * w2 * (1 - h ** 2)         # gizli nöronlara düşen pay
+pay_w1, pay_b1 = dj * x, dj        # giriş → gizli bağlantılarının payı
+
+# aynı hesap, PyTorch autograd ile
+tw1, tb1, tw2 = [torch.tensor(v, dtype=torch.float64, requires_grad=True) for v in (w1, b1, w2)]
+tb2 = torch.tensor(b2, dtype=torch.float64, requires_grad=True)
+z = (tw2 * torch.tanh(tw1 * x + tb1)).sum() + tb2
+nn.functional.binary_cross_entropy_with_logits(z, torch.tensor(hedef, dtype=torch.float64)).backward()
+
+print(f"Ağın tahmini: %{100*p:.0f} risk (gerçek: riskli) · kayıp: {-np.log(p):.3f}")
+pd.DataFrame({"elle (zincir kuralı)": [*pay_w1, *pay_b1, *pay_w2, pay_b2],
+              "PyTorch": [*tw1.grad.numpy(), *tb1.grad.numpy(), *tw2.grad.numpy(), float(tb2.grad)]},
+             index=["giriş → gizli 1", "giriş → gizli 2", "eşik gizli 1", "eşik gizli 2", "gizli 1 → çıkış", "gizli 2 → çıkış", "eşik çıkış"]).round(4)'''),
+md("""İki sütun aynı. `loss.backward()` bir sihir değil; az önce elle yaptığımız paylaştırmanın milyonlarca ağırlık için otomatik yapılmış hâli.
+Bundan sonra elle hesaplamayacağız; ama eğri tuhaflaştığında arkada ne döndüğünü biliyor olacağız."""),
+md("""## 4 · Gerçek veri: Heart Disease'te eğitim döngüsü ve dürüst karşılaştırma
+
+3. ve 4. haftanın verisi: 303 hasta, 13 ölçüm. Aşağıdaki `egit` fonksiyonu projenizde kullanacağınız eğitim döngüsünün tamamı:
+küçük yığınlar hâlinde ileri git, kaybı hesapla, geri yay, düzelt; her epok sonunda doğrulama kaybına bak; en iyi noktayı sakla."""),
+code('''from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.ensemble import GradientBoostingClassifier
+
+URL = "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+COLS = ["yas", "cinsiyet", "gogus_agrisi", "tansiyon", "kolesterol", "aclik_sekeri", "ekg", "max_nabiz",
+        "efor_anjina", "st_depresyon", "st_egim", "damar_sayisi", "talasemi", "hedef"]
+try:
+    df = pd.read_csv(URL, header=None, names=COLS, na_values="?"); print("Veri indirildi:", df.shape)
+except Exception as e:
+    print("İndirme başarısız, sentetik veri üretiliyor:", e)
+    r = np.random.default_rng(0); m = 303
+    df = pd.DataFrame({"yas": r.integers(29, 78, m), "cinsiyet": r.integers(0, 2, m), "gogus_agrisi": r.integers(1, 5, m),
+        "tansiyon": r.normal(131, 17, m), "kolesterol": r.normal(246, 50, m), "aclik_sekeri": r.integers(0, 2, m),
+        "ekg": r.integers(0, 3, m), "max_nabiz": r.normal(150, 23, m), "efor_anjina": r.integers(0, 2, m),
+        "st_depresyon": r.exponential(1, m), "st_egim": r.integers(1, 4, m), "damar_sayisi": r.integers(0, 4, m),
+        "talasemi": r.choice([3, 6, 7], m)})
+    df["hedef"] = (r.random(m) < 1 / (1 + np.exp(-(0.05 * (df.yas - 55) + 0.8 * (df.gogus_agrisi == 4) + 0.6 * df.damar_sayisi - 0.02 * (df.max_nabiz - 150) - 1)))).astype(int)
+df["hedef"] = (df["hedef"] > 0).astype(int)
+X = df.drop(columns="hedef").values.astype(float); yy = df["hedef"].values
+
+def mlp(girdi, gizli=(32, 16), dropout=0.2):
+    """Çok katmanlı ağ: her gizli katman = doğrusal toplam + ReLU bükümü + dropout."""
+    torch.manual_seed(SEED)
+    katmanlar, onceki = [], girdi
+    for g in gizli:
+        katmanlar += [nn.Linear(onceki, g), nn.ReLU(), nn.Dropout(dropout)]; onceki = g
+    return nn.Sequential(*katmanlar, nn.Linear(onceki, 1))
+
+def egit(model, Xtr, ytr, Xva, yva, epok=200, lr=1e-2, ceza=1e-3, yigin=32, sabir=20, optimizer="adam"):
+    """Eğitim döngüsü. sabir > 0 ise doğrulama kaybı 'sabir' epok iyileşmeyince durur ve en iyi ağırlıklara döner."""
+    torch.manual_seed(SEED)
+    opt = (torch.optim.Adam(model.parameters(), lr=lr, weight_decay=ceza) if optimizer == "adam"
+           else torch.optim.SGD(model.parameters(), lr=lr))
+    kayip_fn = nn.BCEWithLogitsLoss()
+    yukleyici = DataLoader(TensorDataset(Xtr, ytr), batch_size=yigin, shuffle=True)
+    gecmis = {"egitim": [], "dogrulama": []}; en_iyi = (np.inf, None, 0)
+    for e in range(epok):
+        model.train()
+        for xb, yb in yukleyici:                 # bir epok = tüm eğitim verisinin bir kez görülmesi
+            opt.zero_grad()
+            kayip = kayip_fn(model(xb).squeeze(1), yb)
+            kayip.backward()
+            opt.step()
+        model.eval()                             # ölçüm yaparken dropout kapalı
+        with torch.no_grad():
+            gecmis["egitim"].append(kayip_fn(model(Xtr).squeeze(1), ytr).item())
+            gecmis["dogrulama"].append(kayip_fn(model(Xva).squeeze(1), yva).item())
+        if gecmis["dogrulama"][-1] < en_iyi[0] - 1e-4:
+            en_iyi = (gecmis["dogrulama"][-1], copy.deepcopy(model.state_dict()), e)
+        elif sabir and e - en_iyi[2] >= sabir:
+            break
+    if sabir:
+        model.load_state_dict(en_iyi[1])
+    return gecmis, en_iyi[2]
+
+sonuc = {"Lojistik regresyon": [], "Sinir ağı (13→32→16→1)": [], "Gradyan artırma": []}
+for kat, (tr, te) in enumerate(StratifiedKFold(5, shuffle=True, random_state=42).split(X, yy)):
+    tr2, va = train_test_split(tr, test_size=0.2, stratify=yy[tr], random_state=0)       # erken durdurma için doğrulama payı
+    on = Pipeline([("imp", SimpleImputer(strategy="median")), ("olcek", StandardScaler())]).fit(X[tr2])
+    Xtr, Xva, Xte = on.transform(X[tr2]), on.transform(X[va]), on.transform(X[te])
+    Xtv, ytv = np.vstack([Xtr, Xva]), np.r_[yy[tr2], yy[va]]
+    sonuc["Lojistik regresyon"].append(roc_auc_score(yy[te], LogisticRegression(max_iter=2000).fit(Xtv, ytv).predict_proba(Xte)[:, 1]))
+    m = mlp(X.shape[1]); egit(m, T(Xtr), T(yy[tr2]), T(Xva), T(yy[va])); m.eval()
+    sonuc["Sinir ağı (13→32→16→1)"].append(roc_auc_score(yy[te], torch.sigmoid(m(T(Xte))).detach().numpy().ravel()))
+    gb = GradientBoostingClassifier(n_estimators=200, learning_rate=0.05, max_depth=3, subsample=0.8, random_state=0).fit(Xtv, ytv)
+    sonuc["Gradyan artırma"].append(roc_auc_score(yy[te], gb.predict_proba(Xte)[:, 1]))
+pd.DataFrame({k: {"ROC-AUC": np.mean(v), "±": np.std(v)} for k, v in sonuc.items()}).T.round(3)'''),
+md("""**Okuyun:** Sinir ağı lojistik regresyonu geçemedi. 303 hastalık bir tabloda bu beklenen sonuçtur ve 5. haftada söylediğimiz şeyin tekrarıdır:
+karmaşık model basitini geçemiyorsa karmaşıklığın anlamı yok. Ağın gücü küçük tablolarda değil, sinyal, görüntü ve metin gibi ham ve büyük veride
+ortaya çıkar; 7. bölümde göreceğiz."""),
+md("""## 5 · Emekleyen ve savrulan ağ: öğrenme oranı
+
+Aynı ağ, aynı veri, üç farklı adım büyüklüğü. Canlı ağdaki Vaka 2 ve Vaka 3'ün gerçek verideki hâli."""),
+code('''tr, va = train_test_split(np.arange(len(yy)), test_size=0.25, stratify=yy, random_state=0)
+on = Pipeline([("imp", SimpleImputer(strategy="median")), ("olcek", StandardScaler())]).fit(X[tr])
+Xtr, Xva, ytr, yva = T(on.transform(X[tr])), T(on.transform(X[va])), T(yy[tr]), T(yy[va])
+
+plt.figure(figsize=(8, 3.8))
+for lr, renk, ad in [(0.001, "#b7791f", "0.001 · emekliyor"), (0.1, "#0f9b8e", "0.1 · sağlıklı"), (8.0, "#be3a5a", "8 · savruluyor")]:
+    gecmis, _ = egit(mlp(13, dropout=0.0), Xtr, ytr, Xva, yva, epok=60, lr=lr, ceza=0, sabir=0, optimizer="sgd")
+    plt.plot(gecmis["egitim"], c=renk, lw=2, label=f"öğrenme oranı {ad}")
+    print(f"öğrenme oranı {lr:<5}: eğitim kaybı {gecmis['egitim'][0]:.2f} → {gecmis['egitim'][-1]:.2f}")
+plt.xlabel("epok"); plt.ylabel("eğitim kaybı"); plt.ylim(0, 3); plt.legend(fontsize=8); plt.title("Aynı ağ, üç adım büyüklüğü"); plt.tight_layout()'''),
+md("""> **Deneyin:** Öğrenme oranını 0.01, 0.5 ve 2 yapın. "Sağlıklı" aralık ne kadar geniş? Projenizde ilk bakacağınız ayar budur."""),
+md("""## 6 · Ezberci ağ ve tedavisi
+
+Şimdi ağı bilerek büyütüyoruz: 227 eğitim hastasına karşı 256'şar nöronlu iki katman, hiçbir fren yok. Sonra aynı ağı üç frenle eğitiyoruz:
+dropout, ağırlık cezası ve erken durdurma."""),
+code('''ezberci, _ = egit(mlp(13, gizli=(256, 256), dropout=0.0), Xtr, ytr, Xva, yva, epok=300, lr=1e-2, ceza=0, sabir=0)
+frenli, en_iyi = egit(mlp(13, gizli=(256, 256), dropout=0.5), Xtr, ytr, Xva, yva, epok=300, lr=1e-2, ceza=1e-2, sabir=25)
+print(f"Ezberci : eğitim kaybı {ezberci['egitim'][-1]:.4f} · doğrulama kaybı en iyi {min(ezberci['dogrulama']):.2f} → son {ezberci['dogrulama'][-1]:.2f}")
+print(f"Frenli  : {len(frenli['egitim'])}. epokta durdu, en iyi epok {en_iyi} · doğrulama kaybı {min(frenli['dogrulama']):.2f}")
+
+fig, ax = plt.subplots(1, 2, figsize=(12, 3.8))
+ax[0].plot(ezberci["egitim"], c="#2f3fa3", lw=2, label="eğitim"); ax[0].plot(ezberci["dogrulama"], c="#be3a5a", lw=2, label="doğrulama (yeni hastalar)")
+ax[0].axvline(int(np.argmin(ezberci["dogrulama"])), ls="--", c="#b7791f", lw=1.5, label="burada durmalıydı")
+ax[0].set(xlabel="epok", ylabel="kayıp", title="Vaka 4 · Ezberci: makas açılıyor"); ax[0].legend(fontsize=8)
+ax[1].plot(frenli["egitim"], c="#2f3fa3", lw=2, label="eğitim"); ax[1].plot(frenli["dogrulama"], c="#be3a5a", lw=2, label="doğrulama")
+ax[1].axvline(en_iyi, ls="--", c="#0f9b8e", lw=1.5, label="erken durdurma: en iyi epok")
+ax[1].set(xlabel="epok", ylabel="kayıp", title="Tedavi: dropout + ağırlık cezası + erken durdurma", ylim=(0, 1)); ax[1].legend(fontsize=8)
+plt.tight_layout()'''),
+md("""**Okuyun:** Soldaki ağın eğitim kaybı sıfıra iniyor; yani 227 hastayı ezbere biliyor. Aynı anda doğrulama kaybı kat kat artıyor: yeni hastada
+giderek daha emin ve daha yanlış. Yalnızca eğitim eğrisine bakan biri bu ağı mükemmel sanır. Sağda aynı ağ frenlerle eğitildi ve doğrulama kaybı
+en düşükken durduruldu.
+
+> **Deneyin:** Frenleri tek tek kaldırın: `dropout=0.0`, sonra `ceza=0`, sonra `sabir=0`. Hangisi olmadan makas yeniden açılıyor?"""),
+md("""## 7 · Öznitelik çıkarmadan: ham EKG atımından öğrenmek
+
+Geçen hafta her atım için RR aralıklarını ve birkaç ölçüyü elle çıkarıp Random Forest'a vermiştik; kayıt-bazlı F1 yaklaşık 0.97 çıkmıştı.
+Şimdi hiç öznitelik çıkarmıyoruz: ağa her atımın çeyrek saniyelik **ham dalga biçimini** (89 sayı) veriyoruz, RR bilgisini bile vermiyoruz.
+Bölme yine kayıt-bazlı: ağ test edildiği hastayı hiç görmüyor."""),
+code('''import os, io, contextlib, subprocess, sys
+from scipy import signal
+from sklearn.model_selection import GroupKFold
+try:
+    import wfdb
+except ImportError:                                   # Colab'de wfdb kurulu gelmez
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "wfdb"], check=False)
+
+KAYITLAR = ["100", "101", "103", "106", "119", "200", "208", "223"]
+ekg_var = False
+try:
+    import wfdb
+    os.makedirs("mitdb", exist_ok=True)               # kayıtlar bir kez indirilir, sonra yerelden okunur
+    eksik = [r for r in KAYITLAR if not os.path.exists(f"mitdb/{r}.dat")]
+    if eksik:
+        with contextlib.redirect_stdout(io.StringIO()):
+            wfdb.dl_database("mitdb", dl_dir="mitdb", records=eksik)
+    atimlar, etiket, kayit_no = [], [], []
+    for r in KAYITLAR:
+        rec = wfdb.rdrecord(f"mitdb/{r}"); ann = wfdb.rdann(f"mitdb/{r}", "atr")
+        b, a = signal.butter(4, [0.5, 40], btype="band", fs=rec.fs)
+        x = signal.filtfilt(b, a, rec.p_signal[:, 0]); x = (x - x.mean()) / x.std()
+        n1, n2 = int(0.09 * rec.fs), int(0.16 * rec.fs)                   # R tepesinin 90 ms öncesi, 160 ms sonrası
+        for k, s in zip(ann.sample, ann.symbol):
+            if s in ("N", "V") and k - n1 >= 0 and k + n2 < len(x):
+                atimlar.append(x[k - n1 : k + n2]); etiket.append(1 if s == "V" else 0); kayit_no.append(r)
+    Xb, yb, gb_ = np.array(atimlar, dtype=np.float32), np.array(etiket), np.array(kayit_no)
+    fs_ekg = rec.fs; ekg_var = True
+    print(f"{len(yb)} atım · her atım {Xb.shape[1]} ham örnek · ventriküler ektopik oranı %{100*yb.mean():.1f} · {len(KAYITLAR)} kayıt")
+except Exception as e:
+    print("EKG kayıtları indirilemedi; bu bölüm atlanıyor:", e)'''),
+code('''def atim_agi():
+    torch.manual_seed(SEED)
+    return nn.Sequential(nn.Linear(Xb.shape[1], 64), nn.ReLU(), nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 1))
+
+def atim_egit(model, X_, y_, epok=15):
+    torch.manual_seed(SEED)
+    opt = torch.optim.Adam(model.parameters(), lr=1e-3)
+    kayip_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor((1 - y_.mean()) / y_.mean()))   # nadir sınıfa ağırlık
+    Xt_, yt_ = torch.tensor(X_), T(y_)
+    for _ in range(epok):
+        sira = torch.randperm(len(Xt_))
+        for i in range(0, len(Xt_), 256):
+            j = sira[i : i + 256]
+            opt.zero_grad(); kayip_fn(model(Xt_[j]).squeeze(1), yt_[j]).backward(); opt.step()
+    return model
+
+if ekg_var:
+    f1 = []
+    for tr_, te_ in GroupKFold(4).split(Xb, yb, gb_):                     # kayıt-bazlı: test hastası eğitimde yok
+        m = atim_egit(atim_agi(), Xb[tr_], yb[tr_]); m.eval()
+        p_ = torch.sigmoid(m(torch.tensor(Xb[te_]))).detach().numpy().ravel()
+        f1.append(f1_score(yb[te_], p_ >= 0.5))
+        print(f"  test kayıtları {', '.join(sorted(set(gb_[te_].tolist())))}: F1 = {f1[-1]:.3f}")
+    print(f"Ham atımdan öğrenen ağ, kayıt-bazlı F1 = {np.mean(f1):.3f}   (geçen hafta elle öznitelik + Random Forest: yaklaşık 0.97)")'''),
+md("""Ağ, hiçbir öznitelik mühendisliği olmadan geçen haftaki elle hazırlanmış modelin düzeyine geldi. Peki atımın neresine bakıyor?
+Basit bir deney: atımın 25 milisaniyelik bir dilimini ortalama bir atımla **kapatıyoruz** ve ağın "ventriküler" deme olasılığının ne kadar düştüğünü
+ölçüyoruz. Dilimi baştan sona kaydırınca, ağın en çok güvendiği bölgeler ortaya çıkıyor. Ağı iki kayıt (106 ve 223) olmadan eğitip o iki kayıtta deniyoruz."""),
+code('''if ekg_var:
+    test = np.isin(gb_, ["106", "223"])
+    m = atim_egit(atim_agi(), Xb[~test], yb[~test]); m.eval()
+    Xv, Xn, ortalama = Xb[test & (yb == 1)], Xb[test & (yb == 0)], Xb[~test].mean(0)
+    def olasilik(X_):
+        with torch.no_grad():
+            return torch.sigmoid(m(torch.tensor(X_))).numpy().ravel()
+    p_tam = olasilik(Xv)
+    gen = 9                                                          # 9 örnek ≈ 25 ms
+    merkez = np.arange(gen // 2, Xb.shape[1] - gen // 2)
+    dusus = []
+    for c in merkez:
+        Xk = Xv.copy(); dilim = slice(c - gen // 2, c + gen // 2 + 1)
+        Xk[:, dilim] = ortalama[dilim]                               # bu dilimi kapat
+        dusus.append((p_tam - olasilik(Xk)).mean())
+    t_ms = (np.arange(Xb.shape[1]) - int(0.09 * fs_ekg)) / fs_ekg * 1000
+
+    fig, ax = plt.subplots(2, 1, figsize=(8, 5.2), sharex=True, gridspec_kw={"height_ratios": [1.2, 1]})
+    ax[0].plot(t_ms, Xn.mean(0), c="#0f9b8e", lw=2, label="ortalama normal atım")
+    ax[0].plot(t_ms, Xv.mean(0), c="#be3a5a", lw=2, label="ortalama ventriküler atım")
+    ax[0].legend(fontsize=8); ax[0].set_yticks([]); ax[0].set_title("Ağ atımın neresine bakıyor? (hiç görmediği iki kayıtta)")
+    ax[1].fill_between(t_ms[merkez], dusus, color="#2f3fa3", alpha=0.75)
+    ax[1].set_ylabel("dilim kapatılınca\\n'ventriküler' olasılığındaki düşüş", fontsize=8); ax[1].set_xlabel("ms (R tepesine göre)")
+    plt.tight_layout()
+    print(f"Ağın en çok güvendiği dilim: R tepesinden {t_ms[merkez][int(np.argmax(dusus))]:.0f} ms sonra (olasılık {max(dusus):.2f} düşüyor)")'''),
+md("""**Okuyun:** Üç tepe var: R tepesinin hemen öncesi, tepenin kendisi ve en çok da tepeden 30–55 ms sonrası. Yani ağ, atımın **ne kadar geniş**
+olduğuna ve tepeden sonra nasıl indiğine bakıyor. Kardiyoloji kitabındaki "geniş QRS" tarifini ağa kimse okumadı; atımlardan çıkardı. 2. bölümdeki iki
+gizli nöronun potasyumda yaptığını, burada 64 nöron dalga biçiminde yapıyor. Bu basit kapatma deneyi, 12. ve 13. haftalarda göreceğimiz açıklanabilirlik
+yöntemlerinin en yalın hâlidir.
+
+> **Deneyin (sinyal projeleri):** `KAYITLAR` listesine zor kayıtları ("207", "233") ekleyin. F1 ne oluyor? Rastgele bölmeyle (`StratifiedKFold`) farkı ölçün."""),
+md("""## 8 · Fragman: aynı öğrenme, görüntüde
+
+25 Kasım'ın konusu. Görüntüde her pikseli ayrı ayrı ağırlıklandırmak yerine, 3×3'lük küçük bir şablonu görüntünün **her yerinde** gezdiririz;
+buna evrişim denir. Öğrenme aynı: ileri, hata, geri, düzelt. Aşağıda 8×8'lik el yazısı rakamlarda sekiz küçük şablon öğreten minik bir ağ var."""),
+code('''from sklearn.datasets import load_digits
+dg = load_digits()
+Xd, yd = T(dg.images / 16.0).unsqueeze(1), torch.tensor(dg.target)      # (örnek, kanal, 8, 8)
+tr_d, te_d = train_test_split(np.arange(len(yd)), test_size=0.25, stratify=dg.target, random_state=0)
+
+torch.manual_seed(SEED)
+cnn = nn.Sequential(nn.Conv2d(1, 8, kernel_size=3, padding=1), nn.ReLU(),   # 8 adet 3×3 şablon
+                    nn.MaxPool2d(2), nn.Flatten(), nn.Linear(8 * 4 * 4, 10))
+opt = torch.optim.Adam(cnn.parameters(), lr=0.01)
+for epok in range(30):
+    sira = torch.randperm(len(tr_d)).numpy()
+    for i in range(0, len(tr_d), 64):
+        j = tr_d[sira[i : i + 64]]
+        opt.zero_grad(); nn.functional.cross_entropy(cnn(Xd[j]), yd[j]).backward(); opt.step()
+with torch.no_grad():
+    dogruluk = (cnn(Xd[te_d]).argmax(1) == yd[te_d]).float().mean().item()
+    ornek = Xd[te_d[:1]]; haritalar = torch.relu(cnn[0](ornek))[0].numpy()
+print(f"Test doğruluğu: %{100*dogruluk:.1f} · öğrenilen ağırlık sayısı: {sum(p.numel() for p in cnn.parameters())}")
+
+fig, ax = plt.subplots(2, 9, figsize=(14, 3.6))
+ax[0, 0].imshow(ornek[0, 0], cmap="gray"); ax[0, 0].set_title("girdi", fontsize=9); ax[1, 0].axis("off")
+for k in range(8):
+    ax[0, k + 1].imshow(haritalar[k], cmap="magma"); ax[0, k + 1].set_title(f"şablon {k + 1} nerede yandı?", fontsize=7)
+    ax[1, k + 1].imshow(cnn[0].weight[k, 0].detach().numpy(), cmap="RdBu_r"); ax[1, k + 1].set_title("3×3 şablon", fontsize=7)
+for a_ in ax.ravel(): a_.set_xticks([]); a_.set_yticks([])
+plt.tight_layout()'''),
+md("""Üst satırda her şablonun rakamın neresinde "yandığı" görülüyor: biri yatay kenarları, biri dikey kenarları, biri köşeleri yakalıyor.
+Retina fotoğrafından diyabetik retinopatiyi okuyan ağ da, göğüs röntgeni okuyan ağ da bu fikrin büyütülmüş hâli: milyonlarca görüntü, yüzlerce katman,
+aynı dört adım. 25 Kasım'da devam.
+
+## Bugün ne gördük?
+
+| Vaka | Belirti | Tanı | Tedavi |
+|---|---|---|---|
+| Kör nokta | Kayıp başta takılır, kıpırdamaz; tahmin düz çizgi | Kapasite yetersiz | Gizli nöron / katman ekle |
+| Emekleyen | Kayıp iner ama çok yavaş | Öğrenme oranı düşük | Artır |
+| Savrulan | Kayıp sıçrar, düzen yok | Öğrenme oranı yüksek | Düşür |
+| Ezberci | Eğitim iner, doğrulama çıkar | Aşırı öğrenme | Daha çok veri, dropout, ağırlık cezası, erken durdurma |
+| Sessiz hasta | Eğriler kusursuz, model dışarıda çöker | Sızıntı / kısayol öğrenme | Hasta-bazlı bölme, dış doğrulama, modelin baktığı yere bakmak |
+
+**Proje için:** 4. bölümdeki `egit` fonksiyonunu kendi verinize taşıyın; her eğitimde iki eğriyi (eğitim ve doğrulama) birlikte çizin ve sunumunuza koyun.
+"""),
+]
+
 NOTEBOOKS = {"hafta-01": ("Hafta 1 · Uçtan Uca İlk Tur", WEEK01),
              "hafta-02": ("Hafta 2 · Eksik Veri, Sızıntı ve Hasta-Bazlı Bölme", WEEK02),
              "hafta-03": ("Hafta 3 · Veriyi Tanımak: Keşif, Öznitelik, PCA ve UMAP", WEEK03),
              "hafta-04": ("Hafta 4 · İlk Model ve Klinik Metrikler", WEEK04),
              "hafta-05": ("Hafta 5 · Ağaç Toplulukları, SVM ve Öznitelik Önemi", WEEK05),
              "hafta-06": ("Hafta 6 · Kümeleme ve Anomali", WEEK06),
-             "hafta-07": ("Hafta 7 · EKG: Filtreleme, Spektrum, HRV ve Kayıt-Bazlı Doğrulama", WEEK07)}
+             "hafta-07": ("Hafta 7 · EKG: Filtreleme, Spektrum, HRV ve Kayıt-Bazlı Doğrulama", WEEK07),
+             "hafta-08": ("Hafta 8 · Ağın EKG'sini Okumak", WEEK08)}
 
 
 def build(name, title, cells, force=False):
@@ -1191,7 +1569,10 @@ def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for name, (title, cells) in NOTEBOOKS.items():
         build(name, title, cells, force)
+    only = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
     for p in sorted(NB_DIR.glob("*.ipynb")):
+        if only and p.stem != only:
+            continue
         nb = execute(p, save=save) if run else None
         to_html(p, nb)
     print(f"\nColab bağlantı biçimi: https://colab.research.google.com/github/{REPO}/blob/main/notebooks/<ad>.ipynb")

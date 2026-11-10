@@ -1,84 +1,60 @@
 ---
 week: 9
-title: "Derin Öğrenmeye Giriş: Yapay Sinir Ağları, Geri Yayılım ve Eğitim Pratiği"
-topic: "Derin öğrenmeye giriş: yapay sinir ağları, geri yayılım ve eğitim pratiği"
-description: "Perceptron'dan çok katmanlı ağa, aktivasyon ve kayıp fonksiyonları, geri yayılım ve otomatik türev, optimizasyon, düzenlileştirme ve PyTorch ile eğitim döngüsü."
+title: "Proje Ara Sunumları (Vize)"
+topic: "Ara sınav (izlencede 8. hafta); yazılı sınav yerine proje ara sunumları olarak yapılır"
+description: "Vize notu için proje ara sunumları: her öğrenci on dakikada klinik sorusunu, veri kararlarını, doğrulama tasarımını ve temel modelinin eğrilerini sunar."
 module: m4
-exam: false
-status: taslak
-changeNote: ""
+exam: true
+status: hazir
+changeNote: "Bu hafta ders işlenmez; vize notu için proje ara sunumları yapılır. İzlencede 9. haftada görünen derin öğrenmeye giriş konusu 11 Kasım'da işlendi."
 tags:
-  - "YSA"
-  - "MLP"
-  - "geri yayılım"
-  - "PyTorch"
-  - "Adam"
-  - "dropout"
-  - "batch norm"
-  - "erken durdurma"
-  - "öğrenme oranı"
+  - "proje"
+  - "sunum"
+  - "vize"
 objectives:
-  - "Çok katmanlı algılayıcıyı bileşimsel fonksiyon olarak kurar; aktivasyon ve kayıp fonksiyonlarını probleme göre seçer."
-  - "Geri yayılımı zincir kuralı olarak türetir; PyTorch autograd ile bağlantısını kurar."
-  - "Öğrenme oranı, yığın boyutu, düzenlileştirme (L2, dropout) ve erken durdurmanın etkisini deneyle gösterir."
-  - "Eğitim/doğrulama eğrilerinden aşırı/eksik öğrenmeyi tanır; tekrarlanabilir bir PyTorch eğitim döngüsü yazar."
-methods:
-  - "MLP"
-  - "Geri yayılım"
-  - "SGD / Adam"
-  - "Dropout & BatchNorm"
-  - "Erken durdurma"
+  - "Projesinin klinik sorusunu, veri kararlarını ve doğrulama tasarımını on dakikada gerekçeleriyle sunar."
+  - "Temel modelinin eğrilerini gösterir ve hangi tabloya benzediğini (sağlıklı, ezberci, emekleyen) söyler."
+  - "Sorulara dürüst yanıt verir; bilmediği yerde nasıl bakacağını anlatır."
+methods: []
 tools:
-  - "PyTorch"
-  - "torchmetrics"
-  - "scikit-learn"
-datasets:
-  - name: "UCI Heart Disease / Breast Cancer"
-    url: "https://archive.ics.uci.edu/"
-    note: "Tablo verisinde MLP."
-  - name: "7. haftanın EEG öznitelik matrisi"
-    note: "Kendi ürettiğiniz öznitelikler."
+  - "GitHub"
+  - "PDF slayt"
+datasets: []
 resources:
-  - title: "Goodfellow, Bengio, Courville. Deep Learning. Bölüm 6 (Deep Feedforward Networks) ve 8 (Optimization)."
-    url: "https://www.deeplearningbook.org/"
-    kind: kitap
-    note: "Ana kaynak."
-  - title: "PyTorch: Learn the Basics"
-    url: "https://pytorch.org/tutorials/beginner/basics/intro.html"
+  - title: "Proje sayfası: ara sunum düzeni, slayt iskeleti ve vize ölçütleri"
+    url: "https://drferhatu.github.io/biyomedikal-yapay-zeka/proje/#ara-sunum"
     kind: dokuman
-  - title: "Smith LN. Cyclical learning rates for training neural networks. WACV 2017."
-    url: "https://arxiv.org/abs/1506.01186"
-    kind: makale
-    note: "Öğrenme oranı bulucu."
 ---
 
-## Ders Notları
+## Sunum Günü
 
-> [!not] Bu bölüm ders notlarının genişletileceği alandır. İzlencedeki özgün başlık: **Derin öğrenmeye giriş: yapay sinir ağları, geri yayılım ve eğitim pratiği**
+Yazılı ara sınav yok. Vize notu, bugünkü proje ara sunumu ve bugünkü depo durumu üzerinden verilir. Bitmiş bir proje beklenmiyor; şimdiye kadar verdiğiniz kararları ve gerekçelerini dinlemek istiyoruz.
 
-Ayrıntılı notlar ve türetimler ders yaklaştıkça buraya eklenecektir.
+| | |
+|---|---|
+| Ne zaman | 18 Kasım Çarşamba, ders saatinde (13.15) |
+| Süre | 10 dakika sunum, 5 dakika soru |
+| Sıra | Proje koduna göre: BVYZ-01'den başlayarak |
+| Slayt | 6–8 slayt, PDF |
+| Teslim | Deponuzda `sunum/ara-sunum.pdf` olarak; 17 Kasım Salı gün sonuna kadar |
 
-## Temel Kavramlar
+Slayt iskeleti ve yüz puanlık vize ölçütleri [proje sayfasının ara sunum bölümünde](/proje#ara-sunum).
 
-- **Evrensel yaklaşım** — Yeterli genişlikte tek gizli katmanlı ağın sürekli fonksiyonlara yaklaşabilmesi; pratikte derinlik daha verimlidir.
-- **Geri yayılım** — Kayıp fonksiyonunun her parametreye göre gradyanının zincir kuralıyla çıkıştan girişe hesaplanması.
-- **Kaybolan/patlayan gradyan** — Derin ağlarda gradyanın katmanlar boyunca çarpımsal küçülmesi/büyümesi; ReLU, BatchNorm ve artık bağlantılar çözüm sunar.
-- **Düzenlileştirme** — Aşırı öğrenmeyi frenleyen her şey: L2 cezası, dropout, veri artırma, erken durdurma.
+## Sunumda Ne Anlatılır?
 
-## Biyomedikal Uygulama Örnekleri
+Sekiz başlık, yaklaşık birer slayt: klinik soru, veri, keşif, ön işleme kararları, doğrulama tasarımı, temel model ve eğrileri, karşılaştığınız sorunlar ve kalan plan, kısa bir depo turu. Her kararın yanında bir cümlelik gerekçesi olsun. "Medyanla doldurdum" bir karardır; "eksiklik sınıfla ilişkili olduğu için gösterge sütunu da ekledim" gerekçeli bir karardır.
 
-- Klinik tablo verisinde MLP ile XGBoost'un karşılaştırılması: küçük veride ağaçların üstünlüğü, çok-modaliteli veride ağın esnekliği.
-- Sinyal özniteliklerinden nöbet tespiti için MLP: öğrenme oranı çok yüksekken kayıp eğrisinin salınımı.
+> [!neden] Yüksek AUC puan getirmez
+> Puanı gerekçeli karar getirir. Sızıntıyı fark edip düzelttiğini ve bu yüzden başarımının düştüğünü anlatan bir sunum, şişmiş bir sonuçtan daha yüksek not alır.
 
-## Uygulama / Laboratuvar
+## Sık Yapılan Hatalar
 
-NumPy ile iki katmanlı bir ağın ileri ve geri geçişini elle yazın; aynı ağı PyTorch autograd ile doğrulayın. Ardından PyTorch'ta tam bir eğitim döngüsü (DataLoader, kayıp, optimizer, doğrulama, erken durdurma) kurup Heart Disease verisinde XGBoost ile karşılaştırın. Öğrenme oranı taraması yapıp eğrileri çizin.
+- **Yalnızca eğitim sonucunu göstermek.** [8. haftadaki](/haftalar/hafta-08) ezberci vakayı hatırlayın; eğitim ve doğrulama sonuçları yan yana gösterilir.
+- **Bölme stratejisini atlamak.** "Veriyi yüzde seksen, yüzde yirmi böldüm" yeterli değildir. Bir hastanın kaç satırı var, satırlar nasıl bölündü?
+- **Doğruluk raporlamak.** Sınıflar dengesizse doğruluk bir şey söylemez; görevinize uygun ölçütü kullanın.
+- **Grafiği okumamak.** Her grafiğin altında bir cümle olsun: bu grafik ne söylüyor?
+- **Süreyi aşmak.** On dakika, sekiz slayttır. Prova yapın.
 
-## Tartışma Soruları
+## Sunumdan Sonra
 
-1. Aynı veri setinde MLP her çalıştırmada farklı sonuç veriyorsa tekrarlanabilirlik için hangi adımlar gerekir?
-2. Tablo hâlindeki klinik veride derin öğrenme ne zaman gerçekten haklı çıkar?
-
-## Haftanın Özeti
-
-Derin öğrenmenin çekirdeğini kurduk: ağ, kayıp, gradyan, optimizasyon ve eğitim disiplini. Sonraki iki hafta bu çekirdeği görüntü ve dizilere uyarlıyor.
+Sorular ve geri bildirim, son rapora kadar yapacaklarınızın listesidir; not alın ve deponuzda bir yapılacaklar dosyasına yazın. 25 Kasım'da derse tıbbi görüntü ve evrişimli ağlarla devam ediyoruz.

@@ -22,7 +22,7 @@ Aşağıdaki kaynakların hepsi ücretsiz, çoğu tarayıcıda çalışıyor ve 
 | 2 | Olasılık, istatistik ve metrikler | Hafta 4 | 3–4 saat |
 | 3 | scikit-learn ile uygulama | Hafta 5 | 4–6 saat |
 | 4 | Sinyal işleme temelleri | Hafta 7 | 2–3 saat |
-| 5 | Sinir ağları ve derin öğrenme | Hafta 9 | 5–8 saat |
+| 5 | Sinir ağları ve derin öğrenme | Hafta 8 | 5–8 saat |
 | 6 | Açıklanabilirlik | Hafta 12 | 2–3 saat |
 | — | Matematik tazeleme (isteğe bağlı) | İhtiyaç oldukça | 3–5 saat |
 
@@ -71,11 +71,11 @@ Yalnızca sinyal projesi olanlar (EKG, PPG, EEG) ve 7. haftada "frekans" kelimes
 - **SciPy – Signal processing tutorial** · [docs.scipy.org/doc/scipy/tutorial/signal.html](https://docs.scipy.org/doc/scipy/tutorial/signal.html) · Derste kullandığımız `butter`, `filtfilt`, `welch`, `find_peaks` fonksiyonlarının belgesi.
 - **NeuroKit2 belgeleri** · [neuropsychology.github.io/NeuroKit](https://neuropsychology.github.io/NeuroKit/) · EKG, PPG ve EEG için hazır işleme hatları; projelerde kısayol.
 
-## Aşama 5 · Sinir ağları ve derin öğrenme (Hafta 9'dan önce)
+## Aşama 5 · Sinir ağları ve derin öğrenme (Hafta 8'dan önce)
 
-Dersin ikinci yarısı burada başlıyor. Sinir ağının ne olduğunu "görmüş" olmak, 9. haftanın matematiğini çok kolaylaştırır.
+Dersin ikinci yarısı burada başlıyor. Sinir ağının ne olduğunu "görmüş" olmak, 8. haftanın matematiğini çok kolaylaştırır.
 
-- **3Blue1Brown – Neural Networks** · [3blue1brown.com/topics/neural-networks](https://www.3blue1brown.com/topics/neural-networks) · Dört video, yaklaşık 1 saat. Sinir ağının ve geri yayılımın ne yaptığını görsel olarak anlatan en iyi kaynak. 9. haftadan önce mutlaka.
+- **3Blue1Brown – Neural Networks** · [3blue1brown.com/topics/neural-networks](https://www.3blue1brown.com/topics/neural-networks) · Dört video, yaklaşık 1 saat. Sinir ağının ve geri yayılımın ne yaptığını görsel olarak anlatan en iyi kaynak. 8. haftadan önce mutlaka.
 - **Kaggle Learn – Intro to Deep Learning** · [kaggle.com/learn/intro-to-deep-learning](https://www.kaggle.com/learn/intro-to-deep-learning) · Altı ders, 4 saat; ilk ağınızı kurarsınız (Keras ile; derste PyTorch kullanıyoruz ama kavramlar aynı).
 - **PyTorch – Learn the Basics** · [pytorch.org/tutorials/beginner/basics/intro.html](https://pytorch.org/tutorials/beginner/basics/intro.html) · Derste kullanacağımız kütüphanenin resmî başlangıcı; 2 saat.
 - **fast.ai – Practical Deep Learning for Coders** · [course.fast.ai](https://course.fast.ai/) · Daha fazlasını isteyenler için; ücretsiz, uygulama odaklı, tıbbi görüntü örnekleri içeriyor. İlk iki ders 10. haftanın (CNN, transfer öğrenme) iyi bir hazırlığı.
@@ -90,7 +90,7 @@ Dersin ikinci yarısı burada başlıyor. Sinir ağının ne olduğunu "görmü�
 Derste türetim yapmıyoruz ama "vektör", "matris", "gradyan" kelimeleri geçiyor. Bunlar rahatsız ediyorsa:
 
 - **3Blue1Brown – Essence of Linear Algebra** · [3blue1brown.com/topics/linear-algebra](https://www.3blue1brown.com/topics/linear-algebra) · İlk altı video yeterli; PCA'yı (3. hafta) gerçekten anlamak için.
-- **Khan Academy – Linear Algebra** ve **Calculus** · [khanacademy.org/math](https://www.khanacademy.org/math) · Türev ve zincir kuralı (9. hafta geri yayılım) için yalnızca *Derivatives: chain rule* ünitesi.
+- **Khan Academy – Linear Algebra** ve **Calculus** · [khanacademy.org/math](https://www.khanacademy.org/math) · Türev ve zincir kuralı (8. hafta geri yayılım) için yalnızca *Derivatives: chain rule* ünitesi.
 
 ## Türkçe kaynaklar
 

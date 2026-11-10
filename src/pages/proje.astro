@@ -9,7 +9,7 @@ const { salt, iter, projects } = projectsData;
 const timeline = [
   { when: '14 Ekim (Hafta 4)', what: 'Projeler dağıtılır. Veri setinin bağlantısını açın, indirin, bir göz atın.' },
   { when: '4 Kasım (Hafta 7)', what: 'Teslim 1 · Depo bağlantısı: README taslağı, data/README.md (indirme talimatı), veriyi yükleyip tanıyan ilk defter.' },
-  { when: '11 Kasım (Hafta 8)', what: 'Proje atölyesi (ara sınav yerine): herkes kendi verisiyle gelir; boru hattı, bölme stratejisi ve temel modelin dört grafiği derste kurulur.' },
+  { when: '18 Kasım (Hafta 9)', what: 'Ara sunum · vize notu: 10 dakika sunum, 5 dakika soru. Klinik soru, veri kararları, doğrulama tasarımı ve temel modelin eğrileri. Slaytlar bir gün önce depoda olmalı.' },
   { when: '2 Aralık (Hafta 11)', what: 'Teslim 2 · Ara rapor: keşifçi analiz, ön işleme kararları, temel model ve klinik metrikler (rapor/main.pdf taslağı).' },
   { when: '23 Aralık (Hafta 14)', what: 'Teslim 3 · Son rapor (PDF) ve tamamlanmış depo; son derste 5 dakikalık sunum.' },
 ];
@@ -22,10 +22,36 @@ const rubric = [
   ['Depo, README ve tekrarlanabilirlik', 10, 'Depo düzeni, README\'nin açıklayıcılığı, ortam dosyası, tohum, veri talimatı.'],
   ['Rapor ve sunum', 5, 'LaTeX şablonuna uygun, şekil/tablo okunur, kaynakça düzgün.'],
 ];
+const araSunum = [
+  ['Ne zaman', '18 Kasım Çarşamba, ders saatinde (13.15)'],
+  ['Süre', '10 dakika sunum + 5 dakika soru'],
+  ['Sıra', 'Proje koduna göre: BVYZ-01\'den başlayarak'],
+  ['Slayt', '6–8 slayt, PDF'],
+  ['Teslim', 'Deponuzda sunum/ara-sunum.pdf olarak; 17 Kasım Salı gün sonuna kadar'],
+  ['Kural', 'Sunumdaki her grafik, deponuzdaki bir defterden üretilmiş olmalı'],
+];
+const slaytlar = [
+  ['Klinik soru', 'Hangi hasta, hangi sonuç, neden önemli? Etiket nasıl tanımlanmış?'],
+  ['Veri', 'Kaynak, boyut, sınıf oranı; bir hastanın kaç satırı var?'],
+  ['Keşif', 'En öğretici bir ya da iki grafik; veride sizi şaşırtan şey.'],
+  ['Ön işleme kararları', 'Eksik veri, ölçekleme, kategoriler; her karar için bir cümle gerekçe.'],
+  ['Doğrulama tasarımı', 'Bölme stratejisi (hasta-bazlı mı?), sızıntıya karşı önlemler, tahmin anında bilinemeyecek sütunlar.'],
+  ['Temel model ve eğriler', 'Verinize uygun en basit model ve görevinize uygun ölçütler (sınıflandırmada ROC, PR ve kalibrasyon). Sinir ağı eğittiyseniz eğitim ve doğrulama eğrisi yan yana.'],
+  ['Sorunlar ve plan', 'Nerede takıldınız? Son rapora kadar hangi modeli ve hangi açıklanabilirlik yöntemini deneyeceksiniz?'],
+  ['Depo turu', 'README ve data/README, bir dakikada.'],
+];
+const vizeRubric = [
+  ['Klinik soru ve veri anlayışı', 20, 'Soru net mi, etiket tanımı açık mı, verinin tuzakları fark edilmiş mi?'],
+  ['Ön işleme ve doğrulama tasarımı', 30, 'Kararlar gerekçeli mi, sızıntı önlenmiş mi, bölme stratejisi veriye uygun mu?'],
+  ['Temel model ve değerlendirme', 25, 'En basit model kurulmuş mu; eğriler doğru çizilip doğru yorumlanmış mı?'],
+  ['Depo ve README', 15, 'Depo çalışır durumda mı, veri talimatı var mı, README projeyi anlatıyor mu?'],
+  ['Sunum ve sorulara yanıt', 10, 'Süreye uyum, açıklık ve dürüstlük; "bilmiyorum, şöyle bakarım" geçerli bir yanıttır.'],
+];
 const toc = [
   { slug: 'projemi-bul', text: 'Projemi bul' },
   { slug: 'projeler', text: 'Projeniz' },
   { slug: 'teslimler', text: 'Teslimler ve takvim' },
+  { slug: 'ara-sunum', text: 'Ara sunum (vize)' },
   { slug: 'depo', text: 'GitHub deposu' },
   { slug: 'rapor', text: 'LaTeX rapor' },
   { slug: 'degerlendirme', text: 'Değerlendirme' },
@@ -110,6 +136,23 @@ const toc = [
         </ol>
       </section>
 
+      <!-- ARA SUNUM (VİZE) -->
+      <section id="ara-sunum" class="scroll-mt-28 prose-lesson">
+        <h2 class="!mt-0 !border-0 !pt-0">Ara sunum (vize notu)</h2>
+        <p>Yazılı ara sınav yok. Vize notu, <strong>18 Kasım Çarşamba</strong> günü ders saatinde yapılacak proje ara sunumu ve o günkü depo durumu üzerinden verilir. Bitmiş bir proje beklenmiyor; bugüne kadar verdiğiniz kararları gerekçeleriyle dinlemek istiyoruz.</p>
+        <table>
+          <tbody>{araSunum.map(([k, v]) => <tr><td class="w-28 font-medium text-ink">{k}</td><td>{v}</td></tr>)}</tbody>
+        </table>
+        <h3>Slayt iskeleti</h3>
+        <ol>{slaytlar.map(([k, v]) => <li><strong>{k}.</strong> {v}</li>)}</ol>
+        <h3>Vize ölçütleri (100 puan)</h3>
+        <table>
+          <thead><tr><th>Ölçüt</th><th>Puan</th><th>Neye bakılır</th></tr></thead>
+          <tbody>{vizeRubric.map(([k, p, d]) => <tr><td class="font-medium text-ink">{k}</td><td class="font-mono">{p}</td><td>{d}</td></tr>)}</tbody>
+        </table>
+        <aside class="callout callout-why"><p class="callout-title">Yüksek AUC puan getirmez</p><p>Puanı gerekçeli karar getirir. Sızıntıyı fark edip düzelttiğini ve bu yüzden başarımının düştüğünü anlatan bir sunum, şişmiş bir sonuçtan daha yüksek not alır. 8. haftada gördüğümüz gibi eğrilerinizi yan yana gösterin ve hangi tabloya benzediğini söyleyin: sağlıklı mı, ezberci mi, emekleyen mi?</p></aside>
+      </section>
+
       <!-- DEPO -->
       <section id="depo" class="scroll-mt-28 prose-lesson">
         <h2 class="!mt-0 !border-0 !pt-0">GitHub deposu</h2>
@@ -160,7 +203,7 @@ const toc = [
       <!-- DEĞERLENDİRME -->
       <section id="degerlendirme" class="scroll-mt-28 prose-lesson">
         <h2 class="!mt-0 !border-0 !pt-0">Değerlendirme</h2>
-        <p>Proje <strong>dönem notunun %50'sini</strong> oluşturur; izlencedeki ara sınavın yerini alır (kalan %50 genel sınav). 100 puan üzerinden değerlendirilir ve ağırlıklar dersin vurgusunu yansıtır: en çok puan doğrulama tasarımına ve klinik değerlendirmeye gider, en az puan sunuma.</p>
+        <p>Vize notu (dönem notunun %50'si) yukarıdaki <a href="#ara-sunum">ara sunum</a> üzerinden verilir; kalan %50 genel sınavdır. Aşağıdaki tablo, 23 Aralık'ta teslim edilecek son rapor ve tamamlanmış depo için ölçütlerdir; son teslimin nota nasıl yansıyacağı derste duyurulur. Ağırlıklar dersin vurgusunu yansıtır: en çok puan doğrulama tasarımına ve klinik değerlendirmeye gider, en az puan sunuma.</p>
         <table>
           <thead><tr><th>Ölçüt</th><th>Puan</th><th>Neye bakılır</th></tr></thead>
           <tbody>{rubric.map(([k, p, d]) => <tr><td class="font-medium text-ink">{k}</td><td class="font-mono">{p}</td><td>{d}</td></tr>)}</tbody>

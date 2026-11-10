@@ -1,6 +1,6 @@
 ---
 import type { Week } from '@/lib/site';
-import { moduleOf, moduleColorVar, weekHref, scheduleOf, formatDate, STATUS_LABEL } from '@/lib/site';
+import { moduleOf, moduleColorVar, weekHref, scheduleOf, formatDate, STATUS_LABEL, EXAM_LABEL } from '@/lib/site';
 import ModuleChip from './ModuleChip.astro';
 
 interface Props { week: Week; compact?: boolean; }
@@ -31,7 +31,7 @@ const statusLabel = s && s.status !== 'normal' ? STATUS_LABEL[s.status] : '';
     </ul>
   )}
   <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 text-[11px] font-medium">
-    {week.data.exam && <span class="rounded-md bg-[#fdebe0] px-2 py-0.5 text-[#c2410c]">Ara sınav</span>}
+    {week.data.exam && <span class="rounded-md bg-[#fdebe0] px-2 py-0.5 text-[#c2410c]">{EXAM_LABEL}</span>}
     {statusLabel && !week.data.exam && <span class="rounded-md bg-paper-2 px-2 py-0.5 text-ink-2">{statusLabel}</span>}
     {s?.note && !week.data.exam && <span class="text-ink-3">{s.note}</span>}
     <span class="ml-auto text-ink-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true">→</span>

@@ -1,0 +1,573 @@
+---
+/**
+ * Canlı sinir ağı (8. hafta). Bağımlılık yok; ağ ziyaretçinin tarayıcısında çalışır.
+ *
+ * İki mod:
+ *  1) Adım adım  — tek hasta, 1-2-1 ağ: İleri → Hata → Geri (suç payı) → Güncelle.
+ *  2) Vaka kliniği — ağ canlı eğitilir; hazır vakalarda eğriye bakıp tanı konur,
+ *     sürgülerle tedavi edilir (gizli nöron sayısı, öğrenme oranı, eğitim hastası sayısı).
+ *
+ * Veri sentetiktir: potasyum düzeyi → tehlikeli ritim riski; risk iki uçta yüksek (U biçimi).
+ * Sayfada tek örnek kullanılır. MDX içinde: <NeuralClinic />
+ */
+const tanilar = [
+  { id: 'kapasite', ad: 'Kapasite yetersiz (eksik öğrenme)' },
+  { id: 'dusuk', ad: 'Öğrenme oranı çok düşük' },
+  { id: 'yuksek', ad: 'Öğrenme oranı çok yüksek' },
+  { id: 'ezber', ad: 'Ezber (aşırı öğrenme)' },
+];
+const vakalar = [
+  { id: 'v1', ad: 'Vaka 1' },
+  { id: 'v2', ad: 'Vaka 2' },
+  { id: 'v3', ad: 'Vaka 3' },
+  { id: 'v4', ad: 'Vaka 4' },
+  { id: 'ok', ad: 'Sağlıklı ağ' },
+];
+---
+<section class="nn not-prose my-10 overflow-hidden rounded-2xl border border-line bg-white shadow-soft" data-nn aria-label="Canlı sinir ağı">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-paper px-4 py-3 sm:px-5">
+    <div>
+      <div class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">Canlı ağ · cihazınızda çalışır</div>
+      <div class="mt-0.5 font-display text-lg font-semibold leading-snug text-ink">Potasyum düzeyinden tehlikeli ritim riski</div>
+    </div>
+    <div class="nn-tabs flex rounded-lg border border-line-2 bg-white p-0.5 text-sm font-semibold" role="tablist" aria-label="Mod seçimi">
+      <button type="button" role="tab" data-tab="adim" aria-selected="true">Adım adım</button>
+      <button type="button" role="tab" data-tab="klinik" aria-selected="false">Vaka kliniği</button>
+    </div>
+  </div>
+
+  <!-- 1) ADIM ADIM -->
+  <div data-panel="adim" class="p-4 sm:p-5">
+    <div class="text-sm leading-relaxed text-ink-2">
+      Üç hastamız var. Potasyumu düşük olan da yüksek olan da risk altında; ortadaki güvende. Küçük ağımız
+      (bir giriş, iki gizli nöron, bir çıkış) bunu henüz bilmiyor. Bir hasta seçin ve düğmelere sırayla basın.
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2" data-hastalar></div>
+    <div class="mx-auto mt-3 max-w-[600px] rounded-xl border border-line bg-paper/60" data-adim-svg></div>
+    <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <button type="button" data-faz="1" class="nn-btn">1 · İleri</button>
+      <button type="button" data-faz="2" class="nn-btn">2 · Hata</button>
+      <button type="button" data-faz="3" class="nn-btn">3 · Geri</button>
+      <button type="button" data-faz="4" class="nn-btn">4 · Güncelle</button>
+    </div>
+    <div class="mt-3 min-h-[5.5rem] rounded-xl border-l-4 border-brand bg-brand-soft/40 px-4 py-3 text-sm leading-relaxed text-ink" data-adim-metin aria-live="polite"></div>
+    <div class="mt-3 grid gap-2 sm:grid-cols-3" data-adim-ozet></div>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <button type="button" data-oto class="nn-btn-ghost">30 tur otomatik çalıştır</button>
+      <button type="button" data-adim-sifirla class="nn-btn-ghost">Baştan başla</button>
+      <span class="font-mono text-xs text-ink-3" data-adim-sayac></span>
+    </div>
+  </div>
+
+  <!-- 2) VAKA KLİNİĞİ -->
+  <div data-panel="klinik" class="hidden p-4 sm:p-5">
+    <div class="flex flex-wrap gap-2">
+      {vakalar.map((v) => <button type="button" class="nn-chip" data-vaka={v.id} aria-pressed="false">{v.ad}</button>)}
+    </div>
+    <div class="mt-3 rounded-xl border-l-4 border-[#b7791f] bg-[#fffcf4] px-4 py-3 text-sm leading-relaxed text-ink" data-sikayet></div>
+    <div class="mt-3 grid gap-3 md:grid-cols-2">
+      <div class="rounded-xl border border-line p-2">
+        <div class="flex flex-wrap items-center justify-between gap-x-3 px-1">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-ink-3">Ağın öğrendiği risk eğrisi</span>
+          <span class="flex items-center gap-3 text-[11px] text-ink-2">
+            <span class="flex items-center gap-1"><span class="inline-block h-[3px] w-4 rounded bg-brand"></span>ağın tahmini</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 border-t-2 border-dashed border-ink-3"></span>gerçek risk</span>
+          </span>
+        </div>
+        <div data-risk-svg></div>
+      </div>
+      <div class="rounded-xl border border-line p-2">
+        <div class="flex flex-wrap items-center justify-between gap-x-3 px-1">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-ink-3">Kayıp eğrisi (ağın EKG'si)</span>
+          <span class="flex items-center gap-3 text-[11px] text-ink-2">
+            <span class="flex items-center gap-1"><span class="inline-block h-[3px] w-4 rounded bg-brand"></span>eğitim</span>
+            <span class="flex items-center gap-1"><span class="inline-block h-[3px] w-4 rounded bg-[#be3a5a]"></span>yeni hastalar</span>
+          </span>
+        </div>
+        <div data-kayip-svg></div>
+      </div>
+    </div>
+    <div class="mt-3 grid grid-cols-2 gap-2 font-mono text-xs text-ink-2 sm:grid-cols-4" data-olcum></div>
+    <div class="mt-3 grid gap-x-5 gap-y-3 sm:grid-cols-3">
+      <label class="block text-sm font-semibold text-ink">
+        <span class="flex items-baseline justify-between"><span>Gizli nöron</span><span class="font-mono text-xs font-normal text-ink-2" data-h-etiket></span></span>
+        <input type="range" data-h min="0" max="16" step="1" value="4" aria-label="Gizli nöron sayısı" />
+      </label>
+      <label class="block text-sm font-semibold text-ink">
+        <span class="flex items-baseline justify-between"><span>Öğrenme oranı</span><span class="font-mono text-xs font-normal text-ink-2" data-lr-etiket></span></span>
+        <input type="range" data-lr min="0" max="100" step="1" value="66" aria-label="Öğrenme oranı" />
+      </label>
+      <label class="block text-sm font-semibold text-ink">
+        <span class="flex items-baseline justify-between"><span>Eğitim hastası</span><span class="font-mono text-xs font-normal text-ink-2" data-n-etiket></span></span>
+        <input type="range" data-n min="10" max="400" step="2" value="200" aria-label="Eğitim hastası sayısı" />
+      </label>
+    </div>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <button type="button" data-baslat class="nn-btn-primary">Başlat</button>
+      <button type="button" data-bastan class="nn-btn-ghost">Baştan</button>
+      <span class="rounded-md px-2.5 py-1 text-xs font-semibold" data-durum></span>
+    </div>
+    <div class="mt-4 border-t border-line pt-3" data-tani-kutu>
+      <div class="text-sm font-semibold text-ink">Eğrilere bakın. Tanınız nedir?</div>
+      <div class="mt-2 grid gap-2 sm:grid-cols-2">
+        {tanilar.map((t) => <button type="button" class="nn-chip nn-chip-wide" data-tani={t.id}>{t.ad}</button>)}
+      </div>
+      <div class="mt-3 min-h-[3.5rem] text-sm leading-relaxed text-ink-2" data-geri-bildirim aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="border-t border-line px-4 py-2.5 text-xs text-ink-3 sm:px-5">
+    Veri sentetiktir ve yalnızca öğretim içindir. Hiçbir şey sunucuya gönderilmez; ağ sizin cihazınızda eğitilir.
+  </div>
+</section>
+
+<style is:global>
+  .nn button { font: inherit; cursor: pointer; }
+  .nn-tabs button { border-radius: 6px; padding: 6px 12px; color: var(--color-ink-2); background: transparent; border: 0; }
+  .nn-tabs button[aria-selected='true'] { background: var(--color-ink); color: var(--color-paper); }
+  .nn-btn { border: 1px solid var(--color-line-2); border-radius: 10px; padding: 11px 8px; font-weight: 600; font-size: 14px; background: #fff; color: var(--color-ink); }
+  .nn-btn[data-siradaki] { border-color: var(--color-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand) 18%, transparent); }
+  .nn-btn[data-bitti] { background: var(--color-brand-soft); border-color: var(--color-brand-soft); color: var(--color-brand); }
+  .nn-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .nn-btn-primary { border: 0; border-radius: 10px; padding: 10px 18px; font-weight: 600; font-size: 14px; background: var(--color-ink); color: var(--color-paper); }
+  .nn-btn-primary:hover { background: var(--color-brand); }
+  .nn-btn-ghost { border: 1px solid var(--color-line-2); border-radius: 10px; padding: 9px 14px; font-weight: 600; font-size: 13px; background: #fff; color: var(--color-ink); }
+  .nn-btn-ghost:hover { border-color: var(--color-ink); }
+  .nn-btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; }
+  .nn-chip { border: 1px solid var(--color-line-2); border-radius: 999px; padding: 7px 13px; font-weight: 600; font-size: 13px; background: #fff; color: var(--color-ink-2); }
+  .nn-chip[aria-pressed='true'] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+  .nn-chip-wide { border-radius: 10px; text-align: left; padding: 10px 13px; }
+  .nn-chip[data-sonuc='dogru'] { background: var(--color-accent-soft); border-color: var(--color-accent); color: #0b6f66; }
+  .nn-chip[data-sonuc='yanlis'] { background: #fdebe0; border-color: #c2410c; color: #9a3412; }
+  .nn input[type='range'] { width: 100%; margin-top: 6px; accent-color: var(--color-brand); }
+  .nn svg { display: block; width: 100%; height: auto; }
+  .nn svg text { font-family: var(--font-mono); }
+  .nn .akis { stroke-dasharray: 5 9; animation: nn-akis 0.8s linear infinite; }
+  .nn .akis.geri { animation-direction: reverse; }
+  @keyframes nn-akis { to { stroke-dashoffset: -28; } }
+</style>
+
+<script>
+  (() => {
+    const root = document.querySelector<HTMLElement>('[data-nn]');
+    if (!root) return;
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const $$ = (s: string) => Array.from(root.querySelectorAll<HTMLElement>(s));
+    const sig = (z: number) => 1 / (1 + Math.exp(-z));
+    const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+    const f2 = (v: number) => (Math.abs(v) < 0.005 ? '0.00' : v.toFixed(2)).replace('-', '−');
+    const yuzde = (p: number) => '%' + Math.round(p * 100);
+    const C = { ink: '#0b1526', ink2: '#2f4058', ink3: '#6b7a92', line: '#d9dfeb', line2: '#bcc6d9', brand: '#2f3fa3', accent: '#0f9b8e', rose: '#be3a5a', amber: '#b7791f' };
+    const ORTA = 4.25; // potasyum için merkez (mmol/L)
+
+    /* ---------------- sekmeler ---------------- */
+    const sekmeAc = (ad: string) => {
+      $$('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === ad)));
+      $$('[data-panel]').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== ad));
+      if (ad === 'klinik' && !K.ag) vakaYukle('v1');
+      if (ad !== 'klinik') dur();
+    };
+    $$('[data-tab]').forEach((b) => b.addEventListener('click', () => sekmeAc(b.dataset.tab!)));
+
+    /* =====================================================================
+       1) ADIM ADIM — 1-2-1 ağ, tek hasta
+    ===================================================================== */
+    const HASTALAR = [
+      { ad: 'A', K: 2.8, y: 1 },
+      { ad: 'B', K: 4.3, y: 0 },
+      { ad: 'C', K: 5.8, y: 1 },
+    ];
+    const BASLANGIC = { w1: [1.2, -0.8], b1: [-0.3, -0.2], w2: [0.6, 0.4], b2: -0.2 };
+    const LR_ADIM = 0.8;
+    type Ag = typeof BASLANGIC;
+    const A = { ag: structuredClone(BASLANGIC) as Ag, faz: 0, secili: 0, sayac: 0, oto: 0 as any, f: null as any, g: null as any, eski: null as Ag | null, L0: 0, L1: 0 };
+
+    const ileri = (a: Ag, Kd: number) => {
+      const x = Kd - ORTA;
+      const h = [0, 1].map((j) => Math.tanh(a.w1[j] * x + a.b1[j]));
+      const z = a.b2 + a.w2[0] * h[0] + a.w2[1] * h[1];
+      return { x, h, z, p: sig(z) };
+    };
+    const kayip1 = (p: number, y: number) => { const q = clamp(p, 1e-7, 1 - 1e-7); return y ? -Math.log(q) : -Math.log(1 - q); };
+    const paylar = (a: Ag, f: ReturnType<typeof ileri>, y: number) => {
+      const d = f.p - y;
+      const dj = [0, 1].map((j) => d * a.w2[j] * (1 - f.h[j] * f.h[j]));
+      return { d, g2: [d * f.h[0], d * f.h[1]], gb2: d, g1: dj.map((v) => v * f.x), gb1: dj };
+    };
+    const guncelle = (a: Ag, g: ReturnType<typeof paylar>, lr: number) => {
+      for (const j of [0, 1]) { a.w1[j] -= lr * g.g1[j]; a.b1[j] -= lr * g.gb1[j]; a.w2[j] -= lr * g.g2[j]; }
+      a.b2 -= lr * g.gb2;
+    };
+
+    function adimSvg() {
+      const h = HASTALAR[A.secili];
+      const P = { in: [48, 140], h1: [190, 62], h2: [190, 218], out: [332, 140] } as const;
+      const R = 27;
+      const kenarlar = [
+        { a: P.in, b: P.h1, w: A.ag.w1[0], eski: A.eski?.w1[0], g: A.g?.g1[0], lx: 108, ly: 78 },
+        { a: P.in, b: P.h2, w: A.ag.w1[1], eski: A.eski?.w1[1], g: A.g?.g1[1], lx: 108, ly: 212 },
+        { a: P.h1, b: P.out, w: A.ag.w2[0], eski: A.eski?.w2[0], g: A.g?.g2[0], lx: 256, ly: 74 },
+        { a: P.h2, b: P.out, w: A.ag.w2[1], eski: A.eski?.w2[1], g: A.g?.g2[1], lx: 256, ly: 214 },
+      ];
+      const gmax = Math.max(1e-6, ...kenarlar.map((k) => Math.abs(k.g ?? 0)));
+      let s = `<svg viewBox="0 0 380 280" role="img" aria-label="Bir giriş, iki gizli nöron ve bir çıkıştan oluşan ağ">`;
+      if (A.faz === 1 || A.faz === 2) s += `<text x="190" y="18" text-anchor="middle" font-size="11" fill="${C.brand}" font-weight="600">ileri →</text>`;
+      if (A.faz === 3) s += `<text x="190" y="18" text-anchor="middle" font-size="11" fill="${C.rose}" font-weight="600">← geri: suç payı dağıtılıyor</text>`;
+      if (A.faz === 4) s += `<text x="190" y="18" text-anchor="middle" font-size="11" fill="${C.accent}" font-weight="600">ağırlıklar düzeltildi</text>`;
+      for (const k of kenarlar) {
+        const geri = A.faz === 3, ileriF = A.faz === 1 || A.faz === 2;
+        const kal = geri ? 1.5 + 8 * (Math.abs(k.g ?? 0) / gmax) : 2;
+        const renk = geri ? C.rose : ileriF ? C.brand : A.faz === 4 ? C.accent : C.line2;
+        s += `<line x1="${k.a[0]}" y1="${k.a[1]}" x2="${k.b[0]}" y2="${k.b[1]}" stroke="${renk}" stroke-width="${kal.toFixed(1)}" stroke-linecap="round" opacity="${geri || ileriF ? 0.55 : 1}"/>`;
+        if (geri || ileriF) s += `<line class="akis${geri ? ' geri' : ''}" x1="${k.a[0]}" y1="${k.a[1]}" x2="${k.b[0]}" y2="${k.b[1]}" stroke="${renk}" stroke-width="${Math.max(2, kal * 0.6).toFixed(1)}" stroke-linecap="round"/>`;
+        const halo = `paint-order="stroke" stroke="#f5f7fb" stroke-width="4" stroke-linejoin="round"`;
+        if (A.faz === 4 && k.eski != null) {
+          s += `<text x="${k.lx}" y="${k.ly}" text-anchor="middle" font-size="11" font-weight="600" fill="${C.accent}" ${halo}>${f2(k.eski)} → ${f2(k.w)}</text>`;
+        } else {
+          s += `<text x="${k.lx}" y="${k.ly}" text-anchor="middle" font-size="11" fill="${C.ink2}" ${halo}>ağırlık ${f2(k.w)}</text>`;
+          if (geri) s += `<text x="${k.lx}" y="${k.ly + 13}" text-anchor="middle" font-size="11" font-weight="600" fill="${C.rose}" ${halo}>pay ${f2(k.g ?? 0)}</text>`;
+        }
+      }
+      const dugum = (p: readonly number[], ust: string, alt: string, dolu: boolean, renk: string) =>
+        `<circle cx="${p[0]}" cy="${p[1]}" r="${R}" fill="${dolu ? renk : '#fff'}" stroke="${renk}" stroke-width="2"/>` +
+        `<text x="${p[0]}" y="${p[1] - 4}" text-anchor="middle" font-size="10" fill="${dolu ? '#fff' : C.ink3}">${ust}</text>` +
+        `<text x="${p[0]}" y="${p[1] + 11}" text-anchor="middle" font-size="13" font-weight="600" fill="${dolu ? '#fff' : C.ink}">${alt}</text>`;
+      const var_ = A.faz >= 1 && A.f;
+      s += dugum(P.in, 'potasyum', h.K.toFixed(1), true, C.ink);
+      s += dugum(P.h1, 'gizli 1', var_ ? f2(A.f.h[0]) : '?', false, C.brand);
+      s += dugum(P.h2, 'gizli 2', var_ ? f2(A.f.h[1]) : '?', false, C.brand);
+      s += dugum(P.out, 'risk', var_ ? yuzde(A.f.p) : '?', !!var_, var_ ? (A.f.p >= 0.5 ? C.rose : C.accent) : C.ink3);
+      const esik = (p: readonly number[], v: number, dy: number) => `<text x="${p[0]}" y="${p[1] + dy}" text-anchor="middle" font-size="9.5" fill="${C.ink3}">eşik ${f2(v)}</text>`;
+      s += esik(P.h1, A.ag.b1[0], R + 13) + esik(P.h2, A.ag.b1[1], R + 13) + esik(P.out, A.ag.b2, R + 13);
+      if (A.faz >= 2) {
+        s += `<text x="374" y="${140 - R - 24}" text-anchor="end" font-size="10.5" fill="${C.ink2}">gerçek: ${h.y ? 'riskli' : 'risksiz'}</text>`;
+        s += `<text x="374" y="${140 - R - 11}" text-anchor="end" font-size="10.5" font-weight="600" fill="${C.rose}">hata ${f2(A.f.p - h.y)}</text>`;
+      }
+      return s + '</svg>';
+    }
+
+    function adimMetin() {
+      const h = HASTALAR[A.secili];
+      const gercek = h.y ? 'riskli' : 'risksiz';
+      if (A.faz === 0) return `Hasta ${h.ad} seçili: potasyumu ${h.K.toFixed(1)} mmol/L, gerçekte <b>${gercek}</b>. Çizgilerin üzerindeki sayılar ağın şu anki ağırlıkları. <b>İleri</b>'ye basın ve ağın ne dediğine bakın.`;
+      if (A.faz === 1) return `Potasyum ${h.K.toFixed(1)} ağa girdi. Gizli nöronlar girdiyi kendi ağırlıklarıyla tartıp ${f2(A.f.h[0])} ve ${f2(A.f.h[1])} dedi. Çıkış nöronu bu iki sayıyı kendi ağırlıklarıyla topladı ve <b>${yuzde(A.f.p)} risk</b> verdi. Şimdi bunu gerçekle karşılaştıralım: <b>Hata</b>.`;
+      if (A.faz === 2) {
+        const yon = A.f.p - h.y > 0 ? 'riski fazla buldu' : 'riski az buldu';
+        return `Gerçek: <b>${gercek}</b>. Ağ ${yuzde(A.f.p)} dedi, yani ${yon}. Hata payı (tahmin − gerçek) = <b>${f2(A.f.p - h.y)}</b>; bunu tek sayıya çeviren kayıp = <b>${f2(A.L0)}</b>. Bu hatada kimin payı var? <b>Geri</b>.`;
+      }
+      if (A.faz === 3) {
+        const adlar = ['girişten üst nörona giden', 'girişten alt nörona giden', 'üst nörondan çıkışa giden', 'alt nörondan çıkışa giden'];
+        const gs = [A.g.g1[0], A.g.g1[1], A.g.g2[0], A.g.g2[1]];
+        const i = gs.map(Math.abs).indexOf(Math.max(...gs.map(Math.abs)));
+        return `Hata, çıkıştan girişe doğru bağlantılara paylaştırıldı. <b>Kalın çizgi, bu hatada payı büyük olan bağlantıdır.</b> En büyük pay ${adlar[i]} bağlantıda (${f2(gs[i])}). Kimse suçlanıp atılmıyor; herkes payı kadar düzeltilecek: <b>Güncelle</b>.`;
+      }
+      const yorum = A.L1 < A.L0 ? 'Hata azaldı.' : 'Bu adımda azalmadı; başka hastalarla birlikte tekrarlandıkça yön bulur.';
+      return `Her ağırlık, payının tersi yönünde bir adım attı (adım büyüklüğü ${LR_ADIM}). Bu hasta için kayıp <b>${f2(A.L0)} → ${f2(A.L1)}</b>. ${yorum} Aşağıdaki kutulara bakın: bir hastayı düzeltirken ötekiler bozulmuş olabilir. Bu yüzden ağ bütün hastaları tekrar tekrar görür; öğrenme, bu dört adımın binlerce kez yinelenmesidir. Başka bir hasta seçin ya da otomatik çalıştırın.`;
+    }
+
+    function adimOzet() {
+      const ps = HASTALAR.map((h) => ileri(A.ag, h.K).p);
+      const ort = HASTALAR.reduce((t, h, i) => t + kayip1(ps[i], h.y), 0) / 3;
+      $('[data-adim-ozet]').innerHTML = HASTALAR.map((h, i) => {
+        const dogru = (ps[i] >= 0.5) === (h.y === 1);
+        return `<div class="rounded-lg border border-line bg-white px-3 py-2 text-xs">
+          <div class="flex items-center justify-between font-semibold text-ink"><span>Hasta ${h.ad} · K ${h.K.toFixed(1)}</span><span style="color:${dogru ? C.accent : C.rose}">${dogru ? '✓' : '✗'}</span></div>
+          <div class="mt-1 text-ink-3">gerçek: ${h.y ? 'riskli' : 'risksiz'} · ağ: <b class="text-ink">${yuzde(ps[i])}</b></div>
+          <div class="mt-1.5 h-1.5 overflow-hidden rounded bg-paper-2"><div style="width:${Math.round(ps[i] * 100)}%;height:100%;background:${ps[i] >= 0.5 ? C.rose : C.accent}"></div></div>
+        </div>`;
+      }).join('');
+      $('[data-adim-sayac]').textContent = `güncelleme: ${A.sayac} · ortalama kayıp: ${ort.toFixed(2)}`;
+    }
+
+    function adimCiz() {
+      $('[data-adim-svg]').innerHTML = adimSvg();
+      $('[data-adim-metin]').innerHTML = adimMetin();
+      $$('[data-faz]').forEach((b) => {
+        const n = Number(b.dataset.faz);
+        const siradaki = n === (A.faz % 4) + 1;
+        (b as HTMLButtonElement).disabled = !siradaki || !!A.oto;
+        b.toggleAttribute('data-siradaki', siradaki && !A.oto);
+        b.toggleAttribute('data-bitti', n <= A.faz);
+      });
+      $$('[data-hasta]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.hasta) === A.secili)));
+      adimOzet();
+    }
+
+    function fazYap(n: number) {
+      const h = HASTALAR[A.secili];
+      if (n === 1) { A.eski = null; A.g = null; A.f = ileri(A.ag, h.K); A.L0 = kayip1(A.f.p, h.y); A.faz = 1; }
+      else if (n === 2) { A.faz = 2; }
+      else if (n === 3) { A.g = paylar(A.ag, A.f, h.y); A.faz = 3; }
+      else if (n === 4) {
+        A.eski = structuredClone(A.ag);
+        guncelle(A.ag, A.g, LR_ADIM);
+        A.sayac++;
+        A.L1 = kayip1(ileri(A.ag, h.K).p, h.y);
+        A.faz = 4;
+      }
+      adimCiz();
+    }
+
+    $('[data-hastalar]').innerHTML = HASTALAR.map((h, i) =>
+      `<button type="button" class="nn-chip" data-hasta="${i}" aria-pressed="${i === 0}">Hasta ${h.ad} · K ${h.K.toFixed(1)} · ${h.y ? 'riskli' : 'risksiz'}</button>`).join('');
+    $$('[data-hasta]').forEach((b) => b.addEventListener('click', () => {
+      if (A.oto) return;
+      A.secili = Number(b.dataset.hasta); A.faz = 0; A.f = null; A.g = null; A.eski = null; adimCiz();
+    }));
+    $$('[data-faz]').forEach((b) => b.addEventListener('click', () => fazYap(Number(b.dataset.faz))));
+    $('[data-adim-sifirla]').addEventListener('click', () => {
+      clearInterval(A.oto); A.oto = 0;
+      A.ag = structuredClone(BASLANGIC); A.faz = 0; A.sayac = 0; A.f = null; A.g = null; A.eski = null;
+      ($('[data-oto]') as HTMLButtonElement).disabled = false;
+      adimCiz();
+    });
+    $('[data-oto]').addEventListener('click', () => {
+      if (A.oto) return;
+      let t = 0; const toplam = 90;
+      A.faz = 0; A.f = null; A.g = null; A.eski = null;
+      ($('[data-oto]') as HTMLButtonElement).disabled = true;
+      A.oto = setInterval(() => {
+        const h = HASTALAR[t % 3];
+        const f = ileri(A.ag, h.K);
+        guncelle(A.ag, paylar(A.ag, f, h.y), LR_ADIM);
+        A.sayac++; t++;
+        A.secili = t % 3;
+        if (t >= toplam) {
+          clearInterval(A.oto); A.oto = 0;
+          ($('[data-oto]') as HTMLButtonElement).disabled = false;
+          adimCiz();
+          const ps = HASTALAR.map((x) => ileri(A.ag, x.K).p);
+          const dogru = HASTALAR.filter((x, i) => (ps[i] >= 0.5) === (x.y === 1)).length;
+          $('[data-adim-metin]').innerHTML = `30 tur bitti: her hasta 30 kez ağdan geçti ve her seferinde ağırlıklar bir tık düzeltildi. Ağ artık ${dogru}/3 hastayı doğru tarafa koyuyor (${ps.map(yuzde).join(', ')}). Kimse ona "potasyum iki uçta tehlikelidir" demedi; bunu hatalarından çıkardı. Ağırlıklara bakın: iki gizli nöron işi paylaştı, biri düşük potasyumu, diğeri yüksek potasyumu yakalıyor.`;
+        } else adimCiz();
+      }, 45);
+    });
+    adimCiz();
+
+    /* =====================================================================
+       2) VAKA KLİNİĞİ — canlı eğitim
+    ===================================================================== */
+    const rng32 = (a: number) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const gercekRisk = (Kd: number) => sig(4 * (Math.abs(Kd - ORTA) - 0.75));
+    type Veri = { X: number[]; Y: number[] };
+    const veriUret = (n: number, rnd: () => number): Veri => {
+      const X: number[] = [], Y: number[] = [];
+      for (let i = 0; i < n; i++) { const Kd = 2.5 + 3.5 * rnd(); X.push(Kd - ORTA); Y.push(rnd() < gercekRisk(Kd) ? 1 : 0); }
+      return { X, Y };
+    };
+    type Net = { H: number; w: number; b: number; w1: number[]; b1: number[]; w2: number[]; b2: number };
+    const agKur = (H: number, rnd: () => number): Net => {
+      const u = (s: number) => (rnd() * 2 - 1) * s;
+      const n: Net = { H, w: u(0.5), b: 0, w1: [], b1: [], w2: [], b2: 0 };
+      for (let j = 0; j < H; j++) { n.w1.push(u(2)); n.b1.push(u(1.5)); n.w2.push(u(0.8)); }
+      return n;
+    };
+    const tahmin = (n: Net, x: number) => {
+      if (n.H === 0) return sig(n.w * x + n.b);
+      let z = n.b2;
+      for (let j = 0; j < n.H; j++) z += n.w2[j] * Math.tanh(n.w1[j] * x + n.b1[j]);
+      return sig(z);
+    };
+    const kayip = (n: Net, D: Veri) => {
+      let L = 0;
+      for (let i = 0; i < D.X.length; i++) L += kayip1(tahmin(n, D.X[i]), D.Y[i]);
+      return L / D.X.length;
+    };
+    const gdAdim = (n: Net, D: Veri, lr: number) => {
+      const N = D.X.length;
+      if (n.H === 0) {
+        let gw = 0, gb = 0;
+        for (let i = 0; i < N; i++) { const d = sig(n.w * D.X[i] + n.b) - D.Y[i]; gw += d * D.X[i]; gb += d; }
+        n.w -= (lr * gw) / N; n.b -= (lr * gb) / N; return;
+      }
+      const g1 = new Array(n.H).fill(0), gb1 = new Array(n.H).fill(0), g2 = new Array(n.H).fill(0); let gb2 = 0;
+      const h = new Array(n.H);
+      for (let i = 0; i < N; i++) {
+        const x = D.X[i]; let z = n.b2;
+        for (let j = 0; j < n.H; j++) { h[j] = Math.tanh(n.w1[j] * x + n.b1[j]); z += n.w2[j] * h[j]; }
+        const d = sig(z) - D.Y[i]; gb2 += d;
+        for (let j = 0; j < n.H; j++) { g2[j] += d * h[j]; const dj = d * n.w2[j] * (1 - h[j] * h[j]); g1[j] += dj * x; gb1[j] += dj; }
+      }
+      for (let j = 0; j < n.H; j++) { n.w1[j] -= (lr * g1[j]) / N; n.b1[j] -= (lr * gb1[j]) / N; n.w2[j] -= (lr * g2[j]) / N; }
+      n.b2 -= (lr * gb2) / N;
+    };
+
+    const VAKALAR: Record<string, { H: number; lr: number; n: number; tohum: number; dogru: string | null; sikayet: string; ipucu: string; aciklama: string }> = {
+      v1: { H: 0, lr: 1, n: 200, tohum: 1, dogru: 'kapasite',
+        sikayet: '<b>Vaka 1.</b> Şikâyet: kayıp daha ilk adımlarda bir yerde takılıyor ve ne kadar beklerseniz bekleyin kıpırdamıyor. Başlat\'a basın, iki grafiğe birlikte bakın.',
+        ipucu: 'Soldaki risk eğrisine bakın: ağ ne çiziyor, gerçek risk (kesikli çizgi) neye benziyor?',
+        aciklama: '<b>Doğru: kör nokta.</b> Bu ağda gizli nöron yok; tek nöron tek bir düz eğilim çizebilir. Riskin hem düşük hem yüksek potasyumda arttığı U biçimini çizmesi imkânsız. Daha uzun eğitmek işe yaramaz. <b>Tedavi:</b> gizli nöron ekleyin; iki tanesi bile yeter.' },
+      v2: { H: 4, lr: 0.003, n: 200, tohum: 1, dogru: 'dusuk',
+        sikayet: '<b>Vaka 2.</b> Şikâyet: ağ çalışıyor gibi ama yüzlerce adım sonra hâlâ başladığı yerin yakınında. Başlat\'a basın ve eğrinin eğimine dikkat edin.',
+        ipucu: 'Eğri tam düz mü, yoksa çok yavaş da olsa iniyor mu? Vaka 1 ile farkı ne?',
+        aciklama: '<b>Doğru: emekleyen ağ.</b> Kapasite yeterli, yön doğru; ama adımlar o kadar küçük ki ağ yokuşu emekleyerek iniyor. Eğri düz değil, çok yavaş iniyor; kör noktadan farkı bu. <b>Tedavi:</b> öğrenme oranını artırın (1 civarı).' },
+      v3: { H: 4, lr: 15, n: 200, tohum: 1, dogru: 'yuksek',
+        sikayet: '<b>Vaka 3.</b> Şikâyet: kayıp bir iniyor bir fırlıyor; ağın ne öğrendiği adımdan adıma değişiyor. Başlat\'a basın.',
+        ipucu: 'Eğri düzgün bir iniş mi, yoksa düzensiz sıçramalar mı? Soldaki risk eğrisi yerinde duruyor mu?',
+        aciklama: '<b>Doğru: savrulan ağ.</b> Adımlar o kadar büyük ki ağ vadinin dibine inmek yerine bir yamaçtan ötekine sıçrıyor. Ritim bozukluğuna benzer: düzen yok. <b>Tedavi:</b> öğrenme oranını düşürün; eğri sakinleşecek.' },
+      v4: { H: 16, lr: 1.5, n: 14, tohum: 3, dogru: 'ezber',
+        sikayet: '<b>Vaka 4.</b> Şikâyet: eğitim kaybı mükemmel; yine de bu ağı yeni hastalarda kullanan herkes pişman. Başlat\'a basın ve iki eğriyi birlikte izleyin; soldaki eğrinin şekline de bakın.',
+        ipucu: 'Eğitim ve doğrulama eğrileri birlikte mi hareket ediyor, yoksa aralarındaki makas açılıyor mu?',
+        aciklama: '<b>Doğru: ezberci.</b> 14 hasta, 16 nöron: ağ kuralı öğrenmek yerine hastaları tek tek ezberliyor. Eğitim kaybı sıfıra inerken doğrulama kaybı tırmanıyor; soldaki eğri her noktadan geçmek için kıvrılıyor. Kesikli dikey çizgi durulması gereken yeri gösterir. <b>Tedavi:</b> asıl ilaç veridir; eğitim hastasını artırın. Yalnızca ağı küçültmeyi de deneyin: 14 hastada o bile yetmiyor.' },
+      ok: { H: 4, lr: 1, n: 200, tohum: 3, dogru: null,
+        sikayet: '<b>Sağlıklı ağ (karşılaştırma için).</b> İki eğri birlikte iner ve birlikte düzleşir; ağın çizdiği risk, gerçek riske oturur. Kayıp sıfıra inmez, çünkü veri gürültülüdür: sınırdaki hastaların yarısı riskli, yarısı değildir. Sürgülerle oynayıp ağı hasta edebilirsiniz.',
+        ipucu: '', aciklama: '' },
+    };
+
+    const MAKS = 4000, ADIM_SN = 240; // saniyede 240 eğitim adımı; ekran yenileme hızından bağımsız
+    const K = { ag: null as Net | null, tr: null as Veri | null, va: veriUret(400, rng32(999)), H: 4, lr: 1, n: 200, tohum: 1, vaka: 'v1',
+      adim: 0, gt: [] as number[], gv: [] as number[], enIyi: [Infinity, 0] as [number, number], calisiyor: false, raf: 0 as any, son: 0, patladi: false, tanindi: false };
+
+    const lrDegeri = (t: number) => Math.pow(10, -3 + (4.5 * t) / 100);
+    const lrKonum = (lr: number) => Math.round(((Math.log10(lr) + 3) / 4.5) * 100);
+    const lrYaz = (lr: number) => (lr < 0.01 ? lr.toFixed(4) : lr < 1 ? lr.toFixed(3) : lr.toFixed(1));
+
+    function kur() {
+      dur();
+      K.tr = veriUret(K.n, rng32(K.tohum));
+      K.ag = agKur(K.H, rng32(K.tohum + 7));
+      K.adim = 0; K.gt = []; K.gv = []; K.enIyi = [Infinity, 0]; K.patladi = false;
+      K.gt.push(kayip(K.ag, K.tr)); K.gv.push(kayip(K.ag, K.va));
+      klinikCiz();
+    }
+    function vakaYukle(id: string) {
+      const v = VAKALAR[id];
+      K.vaka = id; K.H = v.H; K.lr = v.lr; K.n = v.n; K.tohum = v.tohum; K.tanindi = false;
+      ($('[data-h]') as HTMLInputElement).value = String(v.H);
+      ($('[data-lr]') as HTMLInputElement).value = String(lrKonum(v.lr));
+      ($('[data-n]') as HTMLInputElement).value = String(v.n);
+      $$('[data-vaka]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vaka === id)));
+      $('[data-sikayet]').innerHTML = v.sikayet;
+      $('[data-tani-kutu]').classList.toggle('hidden', v.dogru === null);
+      $$('[data-tani]').forEach((b) => b.removeAttribute('data-sonuc'));
+      $('[data-geri-bildirim]').innerHTML = '';
+      kur();
+    }
+    function dur() { K.calisiyor = false; clearTimeout(K.raf); const b = root!.querySelector('[data-baslat]'); if (b) b.textContent = K.adim > 0 && K.adim < MAKS ? 'Devam' : 'Başlat'; }
+    function basla() { K.calisiyor = true; K.son = performance.now(); $('[data-baslat]').textContent = 'Duraklat'; K.raf = setTimeout(tik, 16); }
+    function tik() {
+      if (!K.calisiyor || !K.ag || !K.tr) return;
+      const simdi = performance.now();
+      const sayi = clamp(Math.round((ADIM_SN * (simdi - K.son)) / 1000), 1, 300);
+      K.son = simdi;
+      for (let k = 0; k < sayi && K.adim < MAKS; k++) {
+        gdAdim(K.ag, K.tr, K.lr); K.adim++;
+        const a = kayip(K.ag, K.tr), b = kayip(K.ag, K.va);
+        if (!isFinite(a) || !isFinite(b)) { K.patladi = true; break; }
+        K.gt.push(a); K.gv.push(b);
+        if (b < K.enIyi[0]) K.enIyi = [b, K.adim];
+      }
+      klinikCiz();
+      if (K.patladi || K.adim >= MAKS) { dur(); klinikCiz(); return; }
+      K.raf = setTimeout(tik, 16);
+    }
+
+    function durumHesapla() {
+      const n = K.gv.length;
+      if (K.patladi) return { ad: 'ağ patladı', iyi: false };
+      if (n < 150) return { ad: 'gözlem altında', iyi: null as boolean | null };
+      const son = K.gv.slice(-60), sonT = K.gt.slice(-60);
+      const ort = son.reduce((a, b) => a + b, 0) / son.length, ortT = sonT.reduce((a, b) => a + b, 0) / sonT.length;
+      const oynak = Math.max(...son) - Math.min(...son);
+      const iyi = ort < 0.49 && oynak < 0.05 && ort - ortT < 0.12;
+      return { ad: iyi ? 'iyileşti ✓' : 'hasta', iyi };
+    }
+
+    function riskSvg() {
+      const W = 340, Hh = 210, m = { l: 34, r: 8, t: 10, b: 30 };
+      const x = (Kd: number) => m.l + ((Kd - 2.5) / 3.5) * (W - m.l - m.r);
+      const y = (p: number) => m.t + (1 - p) * (Hh - m.t - m.b);
+      let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Potasyuma göre risk: gerçek ve ağın tahmini">`;
+      s += `<rect x="${x(3.5)}" y="${m.t}" width="${x(5.0) - x(3.5)}" height="${Hh - m.t - m.b}" fill="${C.accent}" opacity="0.07"/>`;
+      s += `<text x="${x(4.25)}" y="${m.t + 12}" text-anchor="middle" font-size="9" fill="${C.accent}">normal aralık</text>`;
+      for (const p of [0, 0.5, 1]) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(p)}" y2="${y(p)}" stroke="${C.line}"/><text x="${m.l - 5}" y="${y(p) + 3}" text-anchor="end" font-size="9" fill="${C.ink3}">${p * 100}%</text>`;
+      for (const Kd of [2.5, 3.5, 5.0, 6.0]) s += `<text x="${x(Kd)}" y="${Hh - m.b + 12}" text-anchor="middle" font-size="9" fill="${C.ink3}">${Kd.toFixed(1)}</text>`;
+      s += `<text x="${(m.l + W - m.r) / 2}" y="${Hh - 4}" text-anchor="middle" font-size="9" fill="${C.ink3}">potasyum (mmol/L)</text>`;
+      const ger: string[] = [], ag: string[] = [];
+      for (let i = 0; i <= 90; i++) {
+        const Kd = 2.5 + (3.5 * i) / 90;
+        ger.push(`${x(Kd).toFixed(1)},${y(gercekRisk(Kd)).toFixed(1)}`);
+        if (K.ag) ag.push(`${x(Kd).toFixed(1)},${y(tahmin(K.ag, Kd - ORTA)).toFixed(1)}`);
+      }
+      if (K.tr) {
+        const N = Math.min(K.tr.X.length, 160);
+        for (let i = 0; i < N; i++) {
+          const jit = ((i * 7919) % 13) / 13;
+          const yy = K.tr.Y[i] ? y(1) + 3 + jit * 7 : y(0) - 3 - jit * 7;
+          s += `<circle cx="${x(K.tr.X[i] + ORTA).toFixed(1)}" cy="${yy.toFixed(1)}" r="${N <= 30 ? 3 : 1.7}" fill="${K.tr.Y[i] ? C.rose : C.accent}" opacity="${N <= 30 ? 0.9 : 0.55}"/>`;
+        }
+      }
+      s += `<polyline points="${ger.join(' ')}" fill="none" stroke="${C.ink3}" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+      if (ag.length) s += `<polyline points="${ag.join(' ')}" fill="none" stroke="${C.brand}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      return s + '</svg>';
+    }
+
+    function kayipSvg() {
+      const W = 340, Hh = 210, m = { l: 34, r: 8, t: 10, b: 30 };
+      const n = K.gt.length;
+      const xmax = Math.max(300, n - 1);
+      const gor = Math.max(...K.gt, ...K.gv, 1.0);
+      const ymax = clamp(gor * 1.08, 1.0, 6);
+      const x = (i: number) => m.l + (i / xmax) * (W - m.l - m.r);
+      const y = (v: number) => m.t + (1 - clamp(v, 0, ymax) / ymax) * (Hh - m.t - m.b);
+      let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Eğitim ve doğrulama kaybı">`;
+      const tik = ymax <= 1.2 ? [0, 0.25, 0.5, 0.75, 1.0] : ymax <= 3 ? [0, 1, 2, 3] : [0, 2, 4, 6];
+      for (const v of tik) if (v <= ymax) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="${C.line}"/><text x="${m.l - 5}" y="${y(v) + 3}" text-anchor="end" font-size="9" fill="${C.ink3}">${v}</text>`;
+      for (const f of [0, 0.5, 1]) s += `<text x="${x(xmax * f)}" y="${Hh - m.b + 12}" text-anchor="${f === 0 ? 'start' : f === 1 ? 'end' : 'middle'}" font-size="9" fill="${C.ink3}">${Math.round(xmax * f)}</text>`;
+      s += `<text x="${(m.l + W - m.r) / 2}" y="${Hh - 4}" text-anchor="middle" font-size="9" fill="${C.ink3}">adım</text>`;
+      const adim = Math.max(1, Math.floor(n / 500));
+      const cizgi = (g: number[]) => { const p: string[] = []; for (let i = 0; i < n; i += adim) p.push(`${x(i).toFixed(1)},${y(g[i]).toFixed(1)}`); p.push(`${x(n - 1).toFixed(1)},${y(g[n - 1]).toFixed(1)}`); return p.join(' '); };
+      if (n > 150 && K.enIyi[1] > 0 && K.gv[n - 1] - K.enIyi[0] > 0.05) {
+        s += `<line x1="${x(K.enIyi[1])}" x2="${x(K.enIyi[1])}" y1="${m.t}" y2="${Hh - m.b}" stroke="${C.amber}" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+        s += `<text x="${Math.min(x(K.enIyi[1]) + 4, W - 92)}" y="${m.t + 20}" font-size="9" fill="${C.amber}">burada durmalıydı</text>`;
+      }
+      s += `<polyline points="${cizgi(K.gv)}" fill="none" stroke="${C.rose}" stroke-width="2" stroke-linejoin="round"/>`;
+      s += `<polyline points="${cizgi(K.gt)}" fill="none" stroke="${C.brand}" stroke-width="2" stroke-linejoin="round"/>`;
+      return s + '</svg>';
+    }
+
+    function klinikCiz() {
+      $('[data-risk-svg]').innerHTML = riskSvg();
+      $('[data-kayip-svg]').innerHTML = kayipSvg();
+      const n = K.gt.length;
+      const kutu = (ad: string, d: string) => `<div class="rounded-lg border border-line bg-paper/60 px-2.5 py-1.5"><div class="text-[10px] uppercase tracking-wider text-ink-3">${ad}</div><div class="mt-0.5 text-sm font-semibold text-ink">${d}</div></div>`;
+      $('[data-olcum]').innerHTML = kutu('adım', String(K.adim)) + kutu('eğitim kaybı', K.gt[n - 1].toFixed(3)) + kutu('yeni hasta kaybı', K.gv[n - 1].toFixed(3)) + kutu('en iyi (adım)', isFinite(K.enIyi[0]) ? `${K.enIyi[0].toFixed(3)} (${K.enIyi[1]})` : '—');
+      $('[data-h-etiket]').textContent = K.H === 0 ? 'yok (tek nöron)' : String(K.H);
+      $('[data-lr-etiket]').textContent = lrYaz(K.lr);
+      $('[data-n-etiket]').textContent = String(K.n);
+      const d = durumHesapla(), el = $('[data-durum]');
+      el.textContent = 'Durum: ' + d.ad;
+      el.style.background = d.iyi === true ? '#d8f1ee' : d.iyi === false ? '#fdebe0' : '#e9edf5';
+      el.style.color = d.iyi === true ? '#0b6f66' : d.iyi === false ? '#9a3412' : '#2f4058';
+      const b = $('[data-baslat]');
+      if (K.calisiyor) b.textContent = 'Duraklat';
+    }
+
+    $$('[data-vaka]').forEach((b) => b.addEventListener('click', () => vakaYukle(b.dataset.vaka!)));
+    $('[data-baslat]').addEventListener('click', () => {
+      if (K.calisiyor) { dur(); return; }
+      if (K.adim >= MAKS || K.patladi) kur();
+      basla();
+    });
+    $('[data-bastan]').addEventListener('click', () => kur());
+    const surgu = (sec: string, uygula: (v: number) => void) => $(sec).addEventListener('input', (e) => {
+      const calisiyordu = K.calisiyor;
+      uygula(Number((e.target as HTMLInputElement).value));
+      kur();
+      if (calisiyordu) basla();
+    });
+    surgu('[data-h]', (v) => (K.H = v));
+    surgu('[data-lr]', (v) => (K.lr = lrDegeri(v)));
+    surgu('[data-n]', (v) => (K.n = v));
+    $$('[data-tani]').forEach((b) => b.addEventListener('click', () => {
+      const v = VAKALAR[K.vaka];
+      if (!v.dogru) return;
+      const dogru = b.dataset.tani === v.dogru;
+      $$('[data-tani]').forEach((x) => x.removeAttribute('data-sonuc'));
+      b.setAttribute('data-sonuc', dogru ? 'dogru' : 'yanlis');
+      $('[data-geri-bildirim]').innerHTML = dogru
+        ? v.aciklama + ' Sürgüyle tedaviyi uygulayın ve durumun <b>iyileşti</b> olmasını bekleyin.'
+        : '<b>Tam değil.</b> ' + v.ipucu;
+    }));
+  })();
+</script>

@@ -80,7 +80,7 @@ title: "Klasik Makine Öğrenmesi I: Denetimli Öğrenme ve Klinik Metrikler"  #
 topic: "Klasik makine öğrenmesi I: ..."                                    # izlencedeki özgün satır
 description: "Lojistik regresyon ve k-NN ..."                              # kart ve meta açıklaması
 module: m2              # modules.json'daki modül kimliği
-exam: false             # true ise "Ara sınav" etiketi
+exam: false             # true ise "Vize sunumları" etiketi (bkz. site.ts → EXAM_LABEL)
 status: taslak          # taslak → "Hazırlık aşamasında" kutusu; notlar bitince hazir yapın
 changeNote: ""          # dolu ise sayfada "Program değişikliği" uyarısı çıkar
 tags: [...]             # arama ve etiketler

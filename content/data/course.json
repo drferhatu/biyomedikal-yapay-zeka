@@ -95,7 +95,7 @@
       "text": "Derin öğrenme yöntemlerini (YSA, CNN, RNN/Transformer) tıbbi sinyal, görüntü ve zaman serisi verilerine uygular.",
       "weeks": [
         7,
-        9,
+        8,
         10,
         11
       ]
@@ -108,7 +108,7 @@
         3,
         4,
         5,
-        9,
+        8,
         10
       ]
     },
@@ -125,11 +125,11 @@
   "assessment": {
     "components": [
       {
-        "name": "Dönem projesi (ara sınav yerine)",
-        "method": "GitHub deposu + LaTeX rapor + sunum",
+        "name": "Vize: dönem projesi ara sunumu",
+        "method": "Sunum + GitHub deposu",
         "count": 1,
         "weight": 50,
-        "note": "Ara sınav yapılmaz. Teslimler: 4 Kasım (depo), 2 Aralık (ara rapor), 23 Aralık (son rapor ve sunum). 8. hafta proje atölyesidir."
+        "note": "Yazılı ara sınav yapılmaz. Vize notu, 18 Kasım'daki proje ara sunumu ve o günkü depo durumu üzerinden verilir."
       },
       {
         "name": "Genel sınav (final)",
@@ -144,7 +144,7 @@
       "Ödev",
       "Proje"
     ],
-    "optionalNote": "İzlencedeki ara sınav, öğretim üyesinin kararıyla dönem projesine dönüştürülmüştür; proje dönem notunun %50'sini oluşturur. Ayrıca kısa sınav ya da ödev verilmez.",
+    "optionalNote": "İzlencedeki yazılı ara sınav, öğretim üyesinin kararıyla dönem projesine bağlanmıştır: vize notu proje ara sunumuyla belirlenir. Projenin son teslimi (rapor ve kapanış sunumu) 23 Aralık'tadır. Ayrıca kısa sınav ya da ödev verilmez.",
     "workloadNote": "6 AKTS ≈ 180 saatlik toplam öğrenci iş yükü: 42 saat ders, kalan süre ön okuma, uygulama ve sınav hazırlığı."
   },
   "textbooks": [
@@ -154,7 +154,7 @@
       "publisher": "MIT Press",
       "year": 2016,
       "url": "https://www.deeplearningbook.org/",
-      "note": "Tam metin çevrimiçi ve ücretsiz. Derin öğrenme modülünün (9–11. hafta) ana kaynağı."
+      "note": "Tam metin çevrimiçi ve ücretsiz. Derin öğrenme modülünün (8–11. hafta) ana kaynağı."
     },
     {
       "author": "Christoph Molnar",

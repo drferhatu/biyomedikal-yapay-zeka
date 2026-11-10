@@ -14,3 +14,6 @@ umap-learn
 xgboost
 wfdb
 neurokit2
+# PyTorch: CI'da yalnızca CPU sürümü (küçük indirme)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch

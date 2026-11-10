@@ -1,0 +1,256 @@
+---
+week: 8
+title: "Derin Öğrenmeye Giriş: Ağın EKG'sini Okumak"
+topic: "Derin öğrenmeye giriş: yapay sinir ağları, geri yayılım ve eğitim pratiği (izlencede 9. hafta)"
+description: "Bir ağ nasıl öğrenir ve öğrenemediğinde bunu nereden anlarız? Bu hafta mimari yok, vaka var: telefonunuzdaki canlı ağda geri yayılımı gözle görüyor, dört hasta ağa eğrisinden tanı koyuyor ve tedavi ediyoruz."
+module: m4
+exam: false
+status: hazir
+changeNote: "İzlencede 8. hafta ara sınav, 9. hafta derin öğrenmeye giriş olarak görünür. Yazılı ara sınav yapılmadığı için sıra değişti: bu hafta derin öğrenmeye giriş işlenir, 18 Kasım'da vize notu için proje ara sunumları yapılır."
+tags:
+  - "sinir ağı"
+  - "geri yayılım"
+  - "öğrenme oranı"
+  - "aşırı öğrenme"
+  - "erken durdurma"
+  - "dropout"
+  - "kısayol öğrenme"
+  - "eğitim eğrisi"
+  - "PyTorch"
+objectives:
+  - "Tek nöronun, gizli katmanın ve katmanlar arasındaki bükümün ne işe yaradığını klinik bir örnek üzerinden açıklar."
+  - "Geri yayılımı, hatanın bağlantılara paylaştırılması olarak anlatır; elle hesabın PyTorch ile aynı sonucu verdiğini gösterir."
+  - "Eğitim ve doğrulama eğrilerine bakarak dört tabloyu ayırt eder (kapasite yetersizliği, düşük öğrenme oranı, yüksek öğrenme oranı, ezber) ve her birine uygun tedaviyi uygular."
+  - "Eğrilerin göstermediği beşinci tabloyu, sızıntı ve kısayol öğrenmeyi, sahadan örneklerle tanır."
+  - "Derin öğrenmenin kendi verisi için gerekli olup olmadığını basit bir modelle karşılaştırarak gerekçelendirir."
+methods:
+  - "Nöron ve gizli katman"
+  - "Geri yayılım"
+  - "Öğrenme oranı"
+  - "Dropout ve erken durdurma"
+  - "Eğitim eğrisi okuma"
+tools:
+  - "PyTorch"
+  - "scikit-learn"
+  - "wfdb"
+datasets:
+  - name: "Potasyum ve ritim riski (sentetik)"
+    note: "Canlı ağda ve defterin ilk bölümlerinde; risk iki uçta yüksek."
+  - name: "UCI Heart Disease"
+    url: "https://archive.ics.uci.edu/dataset/45/heart+disease"
+    note: "303 hasta; sinir ağı ile basit modellerin dürüst karşılaştırması."
+  - name: "PhysioNet MIT-BIH Arrhythmia"
+    url: "https://physionet.org/content/mitdb/1.0.0/"
+    note: "Öznitelik çıkarmadan, ham atımdan öğrenme."
+notebook:
+  file: notebooks/hafta-08.ipynb
+  title: "Hafta 8 · Ağın EKG'sini Okumak"
+  embed: true
+  placement: inline
+resources:
+  - title: "3Blue1Brown. Neural Networks (video dizisi)."
+    url: "https://www.3blue1brown.com/topics/neural-networks"
+    kind: video
+    note: "İlk iki video bu haftanın görsel özeti; yaklaşık 40 dakika."
+  - title: "TensorFlow Playground"
+    url: "https://playground.tensorflow.org/"
+    kind: diger
+    note: "Tarayıcıda sinir ağı; sayfadaki canlı ağın iki boyutlu kardeşi."
+  - title: "Roberts M ve ark. Common pitfalls and recommendations for using machine learning to detect and prognosticate for COVID-19 using chest radiographs and CT scans. Nat Mach Intell 2021."
+    url: "https://doi.org/10.1038/s42256-021-00307-0"
+    kind: makale
+    note: "İncelenen 62 modelden hiçbiri klinikte kullanılabilir bulunmadı."
+  - title: "DeGrave AJ, Janizek JD, Lee S-I. AI for radiographic COVID-19 detection selects shortcuts over signal. Nat Mach Intell 2021."
+    url: "https://doi.org/10.1038/s42256-021-00338-7"
+    kind: makale
+    note: "Kısayol öğrenmenin en iyi belgelenmiş örneği."
+  - title: "Gulshan V ve ark. Development and validation of a deep learning algorithm for detection of diabetic retinopathy in retinal fundus photographs. JAMA 2016."
+    url: "https://doi.org/10.1001/jama.2016.17216"
+    kind: makale
+  - title: "Poplin R ve ark. Prediction of cardiovascular risk factors from retinal fundus photographs via deep learning. Nat Biomed Eng 2018."
+    url: "https://doi.org/10.1038/s41551-018-0195-0"
+    kind: makale
+    note: "Retinadan cinsiyet, yaş ve tansiyon."
+  - title: "Attia ZI ve ark. Screening for cardiac contractile dysfunction using an artificial intelligence-enabled electrocardiogram. Nat Med 2019."
+    url: "https://doi.org/10.1038/s41591-018-0240-2"
+    kind: makale
+    note: "Sıradan EKG'den düşük ejeksiyon fraksiyonu."
+  - title: "Rumelhart DE, Hinton GE, Williams RJ. Learning representations by back-propagating errors. Nature 1986."
+    url: "https://doi.org/10.1038/323533a0"
+    kind: makale
+    note: "Geri yayılımın üç sayfalık klasiği."
+  - title: "Goodfellow, Bengio, Courville. Deep Learning. Bölüm 6 ve 8."
+    url: "https://www.deeplearningbook.org/"
+    kind: kitap
+    note: "Matematiğini görmek isteyenler için."
+---
+
+import NotebookEmbed from '@/components/NotebookEmbed.astro';
+import NeuralClinic from '@/components/NeuralClinic.astro';
+
+## Ön Okuma ve Hazırlık
+
+Bu hafta okuma yerine izleme var: 3Blue1Brown'un sinir ağları dizisinin ilk iki videosu, yaklaşık 40 dakika. İzleyemediyseniz sorun değil; derste her şeyi baştan kuruyoruz. Telefonunuzun şarjı dolu olsun, çünkü dersin yarısını telefonla yapacağız.
+
+Bir de şu soruyu düşünerek gelin: bir göz hekimi, retina fotoğrafına bakarak hastanın kadın mı erkek mi olduğunu söyleyebilir mi?
+
+> [!not] Dersin akışı
+> İlk on dakika iki hikâye. Sonra herkes telefonunu çıkarır: yarım saat canlı ağın "Adım adım" sekmesiyle bir ağın nasıl öğrendiğini görürüz, bir saat "Vaka kliniği" sekmesinde dört hasta ağa tanı koyar ve beşinci vakayı tartışırız. Aradan sonra yarım saat defter, on dakika fragman, son on dakika gelecek haftaki vize sunumlarının düzeni.
+
+## Canlı Ağ
+
+Bu sayfanın en önemli parçası aşağıdaki kutu: tarayıcınızda çalışan gerçek bir sinir ağı. Kurulum yok, hesap yok; telefonda da çalışır. Notların tamamı bu kutuya başvuruyor. "Adım adım" sekmesiyle başlayın, "Vaka kliniği" sekmesine notlarda sırası gelince geçeceğiz.
+
+<NeuralClinic />
+
+## Ders Notları
+
+### Aynı araç, iki kader
+
+2020 baharında dünyanın dört bir yanındaki araştırma grupları aynı işe girişti: akciğer grafisinden ve tomografisinden COVID-19'u tanıyan yapay zeka modelleri. Aylar içinde binlerce makale yazıldı ve çoğu yüzde doksanın üzerinde başarı bildiriyordu. Bir yıl sonra Cambridge'den bir ekip bu çalışmaları tek tek elden geçirdi. İki binden fazla makale taradılar, yöntemi incelenmeye değer bulunan altmış iki tanesine yakından baktılar ve vardıkları sonucu tek cümleyle yazdılar: bu modellerin hiçbiri klinikte kullanılabilecek durumda değildi.
+
+Aynı yıllarda bambaşka bir hikâye de yazılıyordu. 2016'da Google'dan bir ekip, 128 bin retina fotoğrafıyla eğittiği bir ağın diyabetik retinopatiyi göz hekimleri düzeyinde tanıdığını gösterdi. İki yıl sonra FDA, tarihinde ilk kez bir yapay zeka sistemine, görüntüyü hiçbir hekim yorumlamadan tarama kararı verme izni tanıdı. 2024'te Nobel fizik ödülü yapay sinir ağlarının temelini atan iki isme, kimya ödülünün yarısı da bir sinir ağıyla protein yapılarını çözen ekibe gitti.
+
+İki hikâyede de aynı araç var. Aradaki farkı yaratan mimari değildi; COVID modellerinin çoğu dönemin en gözde mimarilerini kullanıyordu. Fark, öğrenmenin nasıl yürütüldüğünde ve nasıl denetlendiğindeydi.
+
+Derin öğrenmeyi daha önce gördünüz; katmanları, mimari adlarını biliyorsunuz. O yüzden bugün başka bir kapıdan giriyoruz ve tek bir soru soruyoruz: bir ağ nasıl öğrenir ve öğrenemediğinde, ya da yanlış şeyi öğrendiğinde, bunu nereden anlarız? Geçen hafta EKG okumayı konuştuk: ritme bakılır, eğime bakılır, alarm işaretleri aranır. Bir ağın eğitim eğrisi de onun EKG'sidir. Bugün dört hasta ağı muayene edecek, eğrilerine bakıp tanı koyacak ve tedavi edeceğiz. Ama her hekim gibi önce biraz fizyoloji bilmemiz gerekiyor.
+
+### Fizyoloji 1: tek nöron ve kör noktası
+
+Canlı ağdaki hastalık tablosu potasyum. Potasyumu çok düşük olan hastada da çok yüksek olan hastada da tehlikeli ritim bozukluğu riski artar; ortadaki aralık güvenlidir. Klinikte bu tür ilişki çok yaygındır: vücut ısısında hipotermi de yüksek ateş de tehlikelidir, kan şekerinde iki uç da acildir. Risk düz bir yokuş değil, bir vadidir.
+
+Bir nöron ne yapar? 4. haftadan tanıdığınız şeyi: girdiyi bir ağırlıkla çarpar, bir eşik ekler ve sonucu 0 ile 1 arasına sıkıştırır. Tek nöron, lojistik regresyonun ta kendisidir. Bu yüzden tek bir eğilim söyleyebilir: ya "potasyum arttıkça risk artar" ya da "potasyum arttıkça risk azalır". İkisini birden söyleyemez. Defterde denedik: tek nöron bu veride yazı turadan iyi değil, ROC-AUC 0.52.
+
+Bu, sinir ağlarının tarihindeki ilk büyük hayal kırıklığının da hikâyesidir. 1958'de Frank Rosenblatt ilk öğrenen nöronu, perceptronu tanıttığında gazeteler yakında yürüyen, konuşan, kendini çoğaltan makinelerden söz ediyordu. 1969'da Minsky ve Papert, tek katmanlı bir ağın "ya o ya bu, ama ikisi birden değil" türünden ilişkileri hiçbir zaman öğrenemeyeceğini matematiksel olarak gösterdi. Para kesildi, alan yıllarca soğudu. Bizim potasyum vadimiz, o sınırın klinik kılıklı hâlidir.
+
+### Fizyoloji 2: gizli katman, yani ağın kendi türettiği sorular
+
+Çözüm, araya bir katman koymaktır. Canlı ağdaki iki gizli nöronu, hastayı önce gören iki asistan gibi düşünün. Biri yalnızca "potasyum düşük mü?" sorusuna bakar, diğeri yalnızca "potasyum yüksek mü?" sorusuna. Çıkıştaki nöron, yani uzman, hastayı hiç görmez; yalnızca iki asistanın söylediğini dinler ve "ikisinden biri evet diyorsa risk var" der. Hiçbiri tek başına vadiyi çizemez; birlikte çizerler.
+
+Burada asıl önemli nokta, bu iki soruyu kimsenin yazmamış olması. 3. haftada yaş grubu, nabız oranı gibi ara değişkenleri klinik bilgimizle biz türetmiştik; 7. haftada RR aralıklarını elle çıkardık. Ağda ise ara sorular eğitim sırasında kendiliğinden oluşur. Defterin ikinci bölümünde eğitimden sonra iki gizli nöronun ne öğrendiğini çizdik: biri 3.5'in, öbürü 5.0'ın çevresinde yön değiştiriyor. Normal aralığın iki sınırını ağa kimse söylemedi; hatasını azaltmanın yolu olarak kendisi buldu. Derin öğrenmenin bütün iddiası bu cümlededir: öznitelikler de öğrenilir.
+
+"Derin" kelimesinin anlamı da buradan gelir. Katmanlar üst üste bindikçe sorular da üst üste biner: ilk katman basit şeyler sorar, sonraki katman bu cevapları birleştirip daha karmaşık şeyler sorar. Bir görüntüde ilk katman kenarları, sonraki dokuları, daha sonraki parçaları, en sonuncusu nesneleri tanır. Bir EKG'de önce eğimler, sonra dalgalar, sonra atım, sonra ritim gelir.
+
+Küçük görünen ama her şeyin bağlı olduğu bir ayrıntı daha var. Her nöron topladığı sayıyı bir bükümden geçirir; canlı ağda bu, sayıyı eksi bir ile bir arasına sıkıştıran yumuşak bir eğridir. Bu büküm olmasaydı, kaç katman koyarsanız koyun hepsi tek bir düz hesaba indirgenir ve vadi yine çizilemezdi. Ağa güç veren şey katman sayısı değil, katmanlar arasındaki bu bükümlerdir.
+
+### Fizyoloji 3: hata, suç payı, küçük düzeltme
+
+Peki ağırlıklar nereden geliyor? Başlangıçta rastgeledir. Canlı ağda Hasta A'yı seçip İleri'ye basın: potasyumu 2.8 olan, gerçekte riskli bir hastaya ağ yüzde 38 risk veriyor. Yanlış. Öğrenme dediğimiz şey bu yanlıştan sonra olanlardır ve üç adımdan ibarettir.
+
+Birinci adım, hatayı tek bir sayıya çevirmektir. Bu sayıya kayıp denir: ağ doğru cevaptan ne kadar eminse o kadar küçük, yanlış cevaptan ne kadar eminse o kadar büyüktür. Eğitim eğrisinde izlediğimiz şey budur; ağın ateşi gibi düşünebilirsiniz.
+
+İkinci adım, bu hatada kimin ne kadar payı olduğunu bulmaktır. Hastanelerde kötü sonuçlanan vakaların tartışıldığı toplantıları bilirsiniz. Amaç birini suçlayıp göndermek değildir; zincir sondan başa doğru izlenir ve her halka kendi payına düşeni görür: triyaj mı gecikti, tetkik mi yanlış yorumlandı, karar mı geç verildi? Ağ da aynısını yapar. Hata çıkıştan girişe doğru geriye taşınır ve her bağlantıya bir pay biçilir. Canlı ağda Geri'ye bastığınızda gördüğünüz kalın çizgiler, o hatada payı büyük olan bağlantılardır. Bu işlemin adı geri yayılımdır ve 1986'da Rumelhart, Hinton ve Williams'ın üç sayfalık bir makalesiyle yaygınlaştı. Matematiği lisedeki zincir kuralından ibarettir. Defterin üçüncü bölümünde aynı hesabı önce elle, sonra PyTorch'a yaptırdık; yedi sayının yedisi de aynı çıktı.
+
+Üçüncü adım düzeltmektir: her ağırlık, payının tersi yönünde küçük bir adım atar. Sisli bir dağdan inmeye benzer. Vadiyi göremezsiniz; yalnızca ayağınızın altındaki eğimi hissedersiniz ve aşağı doğru bir adım atarsınız. Adımın büyüklüğüne öğrenme oranı denir ve bugünkü vakaların yarısı ondan çıkacak. Bütün eğitim hastalarının ağdan bir kez geçmesine bir epok denir; pratikte hastalar küçük gruplar hâlinde geçirilir ve her gruptan sonra bir düzeltme yapılır.
+
+Hepsi bu kadar: ileri, hata, geri, düzelt. Canlı ağı otomatik çalıştırdığınızda otuz turda üç hastayı da doğru yere koyuyor. Bir retina ağında aynı dört adım milyonlarca ağırlık için milyonlarca kez tekrarlanır; fark yalnızca ölçektedir. Fikir 1986'dan beri aynıydı. 2012'de değişen şey veri ve hesap gücüydü: o yıl Toronto'dan üç kişilik bir ekip, oyun bilgisayarları için üretilmiş iki ekran kartında yaklaşık bir hafta eğittiği bir ağla dünyanın en büyük görüntü tanıma yarışmasına girdi. İkinci gelen ekibin hata oranı yüzde 26'ydı, onlarınki yüzde 15. Bugün yaşadığımız her şey o haftanın devamıdır.
+
+## Vaka Konferansı
+
+Fizyoloji bu kadar. Şimdi canlı ağın "Vaka kliniği" sekmesine geçin. Her vakada önce Başlat'a basıp iki grafiği izleyin, tanınızı seçin, sonra sürgülerle tedavi edin ve durumun "iyileşti" olmasını bekleyin. Aşağıda her vakanın dosyası ve sahadaki karşılığı var; tanıları derste birlikte koyacağız, o yüzden okumadan önce kendiniz deneyin.
+
+### Vaka 1: kör nokta
+
+Belirti şudur: kayıp daha ilk adımlarda 0.69 dolayında takılır ve bir daha kıpırdamaz. 0.69 tesadüf değildir; iki seçenekli bir soruda yazı tura atan birinin kaybıdır. Soldaki grafikte ağın çizdiği risk neredeyse düz bir çizgidir; kesikli çizgiyle gösterilen gerçek risk ise bir vadidir.
+
+Tanı kapasite yetersizliğidir. Bu ağda vadiyi çizecek parça yok. Daha uzun eğitmek ya da öğrenme oranıyla oynamak hiçbir şeyi değiştirmez; deneyin ve görün. Tedavi gizli nöron eklemektir ve iki tanesi yeter.
+
+Sahadaki karşılığı düşündüğünüzden yaygın. Klinik risk skorlarının çoğu toplamalıdır: her bulguya puan verir, puanları toplar. İlişki bir vadi olduğunda bu skorlar tam bu vakadaki gibi kör kalır. Bir modelin eğrisi hiç inmiyorsa sorulacak ilk soru şudur: bu modelin, aradığım ilişkiyi çizebilecek kapasitesi var mı?
+
+### Vaka 2: emekleyen ağ
+
+Burada kayıp iniyor, ama o kadar yavaş iniyor ki yüzlerce adım sonra hâlâ başladığı yerin yakınında. Vaka 1 ile karıştırmak kolaydır ve ayırıcı bulgu eğimdir: kör noktada eğri dümdüzdür, burada çok hafif ama sürekli bir iniş vardır.
+
+Tanı, öğrenme oranının çok düşük olmasıdır. Yön doğru, ama adımlar karınca adımı. Tedavi öğrenme oranını artırmaktır.
+
+Bu, sahadaki en pahalı hastalıktır, çünkü kimse fark etmez. Ağ öğreniyor görünür, ekran kartı günlerce çalışır, fatura büyür. Defterde aynı ağ, öğrenme oranı 0.001 iken altmış epokta kaybı 0.69'dan ancak 0.67'ye indirebildi; 0.1 iken 0.2 dolayına indirdi.
+
+### Vaka 3: savrulan ağ
+
+Kayıp bir iner, bir fırlar; eğride hiçbir düzen yoktur. Soldaki risk eğrisi her adımda başka bir şekle girer.
+
+Tanı, öğrenme oranının çok yüksek olmasıdır. Sisli dağdaki yürüyüşçü o kadar büyük adımlar atıyor ki vadinin dibine inmek yerine bir yamaçtan karşı yamaca sıçrıyor. Tedavi öğrenme oranını düşürmektir; eğri birkaç saniyede sakinleşir.
+
+Geçen haftanın diliyle söylersek bu, ağın fibrilasyonudur. Pratikte öğrenme oranı bir projede ilk ayarlanan ve en çok fark yaratan düğmedir. İyi bir alışkanlık şudur: küçük bir değerden başlayın, kayıp savrulmaya başlayana kadar artırın ve o noktanın biraz altında kalın.
+
+### Vaka 4: ezberci
+
+Bu vakada eğitim kaybı mükemmeldir, sıfıra iner. Ama doğrulama kaybı, yani ağın hiç görmediği hastalardaki kaybı, bir noktadan sonra tırmanmaya başlar ve iki eğri arasındaki makas açılır. Soldaki grafiğe de bakın: ağın çizdiği risk eğrisi, her eğitim hastasının tam üzerinden geçebilmek için kıvrım kıvrım olmuştur.
+
+Tanı ezberdir; teknik adı aşırı öğrenme. On dört hasta ve on altı nöron var. Ağın kuralı öğrenmesine gerek yok; hastaları tek tek ezberlemek daha kolay.
+
+Asıl ilaç veridir. Eğitim hastası sürgüsünü 200'e çekin, makas kapanır. Yalnızca ağı küçültmeyi de deneyin: on dört hastada o bile yetmiyor. Veri artırılamıyorsa üç fren vardır. Birincisi, ağın her adımda rastgele bazı nöronlarını dersten çıkarmaktır; hiçbir nöron vazgeçilmez olmasın diye. Buna dropout denir. İkincisi, büyük ağırlıkları cezalandırmaktır. Üçüncüsü, doğrulama kaybı en düşükken durmaktır; grafikteki kesikli çizgi o noktayı gösterir ve yöntemin adı erken durdurmadır.
+
+Tıbbi yapay zekanın en yaygın hastalığı budur, çünkü verimiz az, ağlarımız büyüktür. Defterde 227 hastaya karşı 256'şar nöronlu iki katmanlı bir ağ eğittik: eğitim kaybı sıfıra indi, doğrulama kaybı 0.4 dolayından 3'ün üzerine çıktı. Yalnızca eğitim eğrisine bakan biri bu ağı kusursuz sanırdı.
+
+> [!uyari] İki eğriyi birlikte çizmeden hiçbir ağa güvenmeyin
+> Eğitim eğrisi tek başına hiçbir şey söylemez; ezberci ağda en güzel görünen eğri odur. Proje sunumunuzda da eğitim ve doğrulama eğrilerini yan yana göstereceksiniz. Bir uyarı daha: durma noktasını test verisine bakarak seçmeyin. 5. haftadaki ayar düğmesi kuralı burada da geçerlidir; test verisi yalnızca en sonda, bir kez açılır.
+
+### Vaka 5: sessiz hasta
+
+Bu vaka canlı ağda yok, çünkü onu hiçbir eğri göstermez. Eğitim kaybı iner, doğrulama kaybı iner, ikisi birlikte düzleşir. Tablo kusursuzdur. Model hastaneye girer ve çöker.
+
+COVID modellerine dönelim. Cambridge ekibinin bulduğu en yaygın kusurlardan biri şuydu: araştırmacılar COVID'li hastaların görüntülerini bir kaynaktan, karşılaştırma grubunun görüntülerini başka bir kaynaktan almıştı. Sık kullanılan karşılaştırma verilerinden biri çocuk hastalardan oluşuyordu. Ağ, COVID'i tanımayı değil, çocuk göğsünü yetişkin göğsünden ayırmayı öğrendi; sorulan soruya göre bu daha kolay bir yoldu ve aynı puanı getiriyordu. Washington Üniversitesi'nden başka bir ekip bu tür modellerin görüntünün neresine baktığını incelediğinde akciğerleri değil, görüntü kenarındaki yazıları, işaretleri ve hastanın duruşunu buldu.
+
+Ağ tembel değildir, ama kestirmecidir: kendisine sorulan soruyu en kolay yoldan çözer. Eğitim ve doğrulama verisi aynı kestirmeyi içeriyorsa iki eğri de size yalan söyler. 2. haftadaki deneyi hatırlayın: tamamen rastgele veride, yalnızca bir sızıntı sayesinde 0.84 AUC almıştık.
+
+Tanı sızıntı ve kısayol öğrenmedir. Bu tanı eğriyle konmaz; modelin hiç görmediği bir kurumun verisiyle ve modelin baktığı yere bakarak konur. Dış doğrulamayı 14. haftada, "ağ nereye bakıyor" sorusunu 12. ve 13. haftalarda ele alacağız; bugünkü defterin yedinci bölümünde bunun en yalın hâlini deniyoruz. Çıkarılacak ders şudur: eğri okumak gereklidir, ama yeterli değildir.
+
+## Sahadan: Ağ Bizden İyi Gördüğünde
+
+Karanlık hikâyelerden sonra dengelemek gerek, çünkü aynı araç doğru yürütüldüğünde hekimlerin göremediğini görüyor.
+
+Dersin başındaki soruya dönelim: bir göz hekimi retina fotoğrafından cinsiyeti söyleyebilir mi? Söyleyemez; retinada cinsiyete özgü bilinen bir bulgu yoktur. 2018'de Google ekibi 284 bin hastanın retina fotoğrafıyla eğittiği ağa aynı soruyu sordu. Ağ, 0.97 AUC ile doğru bildi. Aynı fotoğraftan yaşı ortalama üç yıl hatayla tahmin etti, tansiyonu ve sigara kullanımını da kestirdi. Hekimlerin yüz yılı aşkın süredir baktığı bir görüntüde, kimsenin bakmayı bilmediği bir bilgi duruyordu.
+
+Mayo Clinic'in 2019'daki çalışması daha da klinik. Kalbin pompa gücünün düştüğünü anlamak için ekokardiyografi gerekir; EKG'de çoğu zaman bir şey görünmez. Ekip, 45 bin hastanın EKG'sini eko sonucuyla eşleştirerek bir ağ eğitti ve ağı 53 bin başka hastada denedi. Ağ, sıradan on iki derivasyonlu bir EKG'den düşük ejeksiyon fraksiyonunu 0.93 AUC ile yakaladı. Ucuz ve her yerde bulunan bir tetkik, pahalı bir tetkikin tarama aracına dönüştü.
+
+Bu iki hikâyeyi COVID hikâyesinden ayıran şey mimari değil. Fark üç şeyde: yüz binlerce hasta, eğitimde hiç kullanılmamış bağımsız bir test kümesi ve "bu ağ kestirmeye mi kaçtı?" sorusunu baştan sormuş araştırmacılar.
+
+### Ne zaman derin öğrenme?
+
+Buraya kadar anlatılanlardan "her işe sinir ağı" sonucu çıkmasın. Defterin dördüncü bölümünde 3. ve 4. haftanın verisini, 303 kalp hastasını, üç modele verdik. Lojistik regresyon 0.91, gradyan artırma 0.90, sinir ağı 0.89 AUC aldı. Küçük bir tabloda ağın bulacağı yeni bir ara soru pek yoktur; sütunlar zaten hekimlerin yüz yılda damıttığı özniteliklerdir. 5. haftanın kuralı burada da geçerli: karmaşık model basitini geçemiyorsa karmaşıklığın anlamı yok.
+
+Tablo, veri ham olduğunda değişir. Defterin yedinci bölümünde geçen haftanın EKG atımlarını bu kez hiçbir öznitelik çıkarmadan, ham dalga biçimi olarak ağa verdik; RR aralıklarını bile vermedik. Ağ, hiç görmediği hastalarda yaklaşık 0.98 F1'e ulaştı; geçen hafta elle çıkardığımız özniteliklerle 0.97 almıştık. Sonra atımın küçük dilimlerini sırayla kapatıp ağın en çok hangi dilime güvendiğine baktık. En çok güvendiği yer R tepesinin hemen öncesi ve özellikle tepeden 30 ile 55 milisaniye sonrasıydı; yani atımın genişliği. Kardiyoloji kitabındaki "geniş QRS" tarifini ağa kimse okumadı.
+
+Pratik kural şöyle özetlenebilir. Veriniz küçük bir tabloysa lojistik regresyon ve ağaç topluluklarıyla başlayın; büyük olasılıkla orada kalırsınız. Veriniz sinyal, görüntü ya da metinse ve örnek sayınız binlerle ölçülüyorsa, ağ sizin akıl edemeyeceğiniz öznitelikleri bulabilir. Her iki durumda da basit modeli yanınızda tutun; ağın gerçekten bir şey kattığını ancak onunla karşılaştırarak bilirsiniz.
+
+## Temel Kavramlar
+
+- **Nöron** — Ağırlıklı toplam, eşik ve büküm; tek başına lojistik regresyondur ve tek bir eğilim çizebilir.
+- **Gizli katman** — Ağın kendi türettiği ara sorular. Öznitelikler de öğrenilir.
+- **Büküm (aktivasyon)** — Katmanları tek bir düz hesaba çökmekten kurtaran doğrusal olmayan adım.
+- **Kayıp** — Hatanın tek sayılık ölçüsü; eğitim eğrisinde izlenen şey.
+- **Geri yayılım** — Hatanın çıkıştan girişe doğru bağlantılara paylaştırılması; matematiği zincir kuralıdır.
+- **Öğrenme oranı** — Her düzeltmede atılan adımın büyüklüğü. Çok küçükse ağ emekler, çok büyükse savrulur.
+- **Epok** — Bütün eğitim verisinin ağdan bir kez geçmesi.
+- **Aşırı öğrenme ve frenleri** — Ezber. İlaçları: daha çok veri, dropout, ağırlık cezası, erken durdurma.
+- **Kısayol öğrenme** — Ağın soruyu, veride gizli kalmış ilgisiz bir ipucuyla çözmesi. Eğriler göstermez.
+
+## Uygulama / Laboratuvar
+
+Defter, canlı ağdaki vakaların PyTorch ve gerçek veriyle karşılığıdır. Sırasıyla: tek nöronun kör noktası, iki gizli nöronun kendi türettiği sorular, geri yayılımın elle ve PyTorch ile hesabı, Heart Disease verisinde eğitim döngüsü ve üç modelin dürüst karşılaştırması, üç öğrenme oranının eğrileri, ezberci ağ ve frenleri, ham EKG atımından öğrenen ağ ve onun baktığı yer, son olarak fragman. Dördüncü bölümdeki eğitim fonksiyonunu projenize doğrudan taşıyabilirsiniz.
+
+<NotebookEmbed file="notebooks/hafta-08.ipynb" title="Hafta 8 · Ağın EKG'sini Okumak" />
+
+**Ders içi çalışma:** Canlı ağda "Sağlıklı ağ"ı yükleyin ve sürgülerle onu bilerek hasta edin. Yanınızdaki arkadaşınıza yalnızca eğrileri gösterin; hangi sürgüyü oynattığınızı eğriden bulsun. Sonra roller değişsin.
+
+## Fragman: Aynı Öğrenme, Görüntüde
+
+25 Kasım'ın konusuna kısa bir bakış. Bugünkü ağda her girdinin kendi ağırlığı vardı. Bir göğüs röntgeninde milyonlarca piksel var; her birine ayrı ağırlık vermek hem pahalı hem anlamsızdır, çünkü bir nodül görüntünün sol üstünde de sağ altında da nodüldür. Evrişimli ağların fikri şudur: birkaç piksellik küçük bir şablon öğren ve onu görüntünün her yerinde gezdir.
+
+Defterin son bölümünde bunu sekize sekiz piksellik el yazısı rakamlarda yaptık. Ağ sekiz tane üçe üçlük şablon öğrendi ve toplam 1370 ağırlıkla yaklaşık yüzde 98 doğruluğa ulaştı. Şablonların rakamın neresinde "yandığını" çizdiğimizde biri yatay kenarları, biri dikey kenarları, biri köşeleri yakalıyordu. Kenar aramayı ona kimse öğretmedi.
+
+Diyabetik retinopatiyi okuyan ağ da budur: aynı dört adım, aynı kenar şablonları; yalnızca yüzlerce katman ve yüz binlerce fotoğraf. Bugün sohbet ettiğiniz dil modelleri de aynı tuğladan örülüdür: nöron, katman, hata, geri yayılım; yalnızca milyarlarca ağırlıkla. 25 Kasım'da görüntüye, 2 Aralık'ta zamana ve dile gidiyoruz. Öğrenme kısmını bugün bitirdik; oralarda yalnızca kablolamayı konuşacağız.
+
+## Tartışma Soruları
+
+1. Vaka 1 ile Vaka 2'nin kayıp eğrileri ilk bakışta birbirine benzer. Onları ayırmak için hangi iki şeye bakarsınız?
+2. Ezberci ağın eğitim kaybı sıfır. Bu ağın kendi eğitim hastalarındaki ROC-AUC'si kaçtır ve bu sayı size ne söyler?
+3. COVID modellerinin eğrileri kusursuzdu. Kendi projenizde "sessiz hasta" olup olmadığını anlamak için elinizdeki veriyle yapabileceğiniz bir deney tasarlayın.
+4. Retina fotoğrafından cinsiyeti, yaşı ve tansiyonu okuyabilen bir ağ, hasta mahremiyeti açısından ne anlama gelir?
+
+## Haftanın Özeti
+
+Bugün mimari konuşmadık; öğrenmenin kendisini konuştuk. Bir ağ dört adımla öğrenir: ileri, hata, geri, düzelt. Gizli katmanlar, bizim elle türettiğimiz öznitelikleri kendi başına türetir. Eğitim eğrisi ağın EKG'sidir ve dört tabloyu ondan okuruz: kör nokta, emekleyen, savrulan, ezberci. Beşinci tablo, sessiz hasta, eğriden okunmaz; onu ancak dürüst bir doğrulama tasarımı ve modelin baktığı yere bakmak yakalar. Ağın gücü küçük tablolarda değil, ham ve büyük veride ortaya çıkar.
+
+Gelecek hafta, 18 Kasım'da ders işlenmiyor; vize notu için proje ara sunumları var. Bugünden sunuma taşıyacağınız tek şey şu olsun: modelinizin eğrilerini yan yana gösterin ve hangi vakaya benzediğini söyleyin.

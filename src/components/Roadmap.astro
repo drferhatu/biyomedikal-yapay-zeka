@@ -3,7 +3,7 @@
  * Dönem haritası: tek yarıyıl, 5 modül, 14 hafta.
  * Modül şeridi + haftalık düğümler; her düğüm hafta sayfasına gider.
  */
-import { modules, moduleColorVar, weekHref, scheduleOf, formatDate, type Week } from '@/lib/site';
+import { modules, moduleColorVar, weekHref, scheduleOf, formatDate, weekRange, EXAM_LABEL, type Week } from '@/lib/site';
 interface Props { weeks: Week[]; }
 const { weeks } = Astro.props;
 const byNum = new Map(weeks.map((w) => [w.data.week, w]));
@@ -14,7 +14,7 @@ const byNum = new Map(weeks.map((w) => [w.data.week, w]));
       <span class="absolute -left-[calc(1.5rem+7px)] top-2 size-3.5 rounded-sm border-2 border-paper bg-[var(--mod)] ring-4 ring-[color-mix(in_srgb,var(--mod)_18%,transparent)] sm:-left-[calc(2.5rem+7px)]" aria-hidden="true"></span>
       <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--mod)]">Modül {i + 1}</span>
-        <span class="font-mono text-[11px] text-ink-3">Hafta {m.weeks[0]}–{m.weeks[m.weeks.length - 1]}</span>
+        <span class="font-mono text-[11px] text-ink-3">Hafta {weekRange(m)}</span>
       </div>
       <h3 class="mt-1 font-display text-xl font-semibold text-ink md:text-2xl">{m.title}</h3>
       <p class="mt-1.5 max-w-2xl text-[15px] leading-relaxed text-ink-2">{m.summary}</p>
@@ -33,7 +33,7 @@ const byNum = new Map(weeks.map((w) => [w.data.week, w]));
                   <span class="block text-[13px] font-semibold leading-snug text-ink group-hover:text-brand">{w?.data.title ?? `Hafta ${n}`}</span>
                   <span class="mt-1 flex flex-wrap gap-x-2 font-mono text-[11px] text-ink-3">
                     {d && <span>{d}</span>}
-                    {w?.data.exam && <span class="font-semibold text-[#c2410c]">Ara sınav</span>}
+                    {w?.data.exam && <span class="font-semibold text-[#c2410c]">{EXAM_LABEL}</span>}
                     {off && <span class="font-semibold">{s!.status === 'tatil' ? 'Tatil' : 'Ertelendi'}</span>}
                     {w && w.data.methods.length > 0 && !w.data.exam && <span class="truncate">{w.data.methods.slice(0, 2).join(' · ')}</span>}
                   </span>

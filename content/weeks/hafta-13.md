@@ -37,7 +37,7 @@ tools:
   - "dice-ml"
   - "fairlearn"
 datasets:
-  - name: "5. ve 9. haftaların modelleri (XGBoost, MLP)"
+  - name: "5. ve 8. haftaların modelleri (XGBoost, MLP)"
     note: "SHAP/LIME uygulaması."
   - name: "10. haftanın PneumoniaMNIST CNN'i"
     note: "Grad-CAM."

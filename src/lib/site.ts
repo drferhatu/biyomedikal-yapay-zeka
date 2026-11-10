@@ -60,5 +60,11 @@ export const STATUS_LABEL: Record<string, string> = {
   sinav: 'Sınav haftası',
 };
 
+/** Modülün hafta aralığı: tek haftaysa "7", değilse "8–11" */
+export const weekRange = (m: Module) => (m.weeks.length === 1 ? String(m.weeks[0]) : `${m.weeks[0]}–${m.weeks[m.weeks.length - 1]}`);
+
+/** exam: true olan haftada görünen etiket (yazılı ara sınav yerine proje ara sunumları) */
+export const EXAM_LABEL = 'Vize sunumları';
+
 /** Modül rengi için CSS değişken adı */
 export const moduleColorVar = (m: Module) => `var(--mod-${m.color})`;

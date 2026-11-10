@@ -33,3 +33,6 @@ public/notebooks/
 # yoklama ve öğrenci listeleri: asla depoya girmez
 Yoklama/
 *.xlsx
+
+# defterlerin indirdiği PhysioNet kayıtları (yerel önbellek)
+notebooks/mitdb/
