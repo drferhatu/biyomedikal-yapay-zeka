@@ -201,7 +201,9 @@ const { class: className } = Astro.props;
     toggle.addEventListener('click', () => {
       const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
       const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void> } };
+      const doc = document as Document & {
+        startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> };
+      };
 
       // Destekleyen tarayıcılarda yeni tema düğmeden dairesel olarak yayılır
       if (doc.startViewTransition && !reduce) {
@@ -212,14 +214,16 @@ const { class: className } = Astro.props;
         root.classList.add('theme-vt');
         const vt = doc.startViewTransition(() => applyTheme(next));
         vt.ready
-          .then(() =>
+          .then(() => {
             root.animate(
               { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`] },
-              { duration: 650, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', pseudoElement: '::view-transition-new(root)' },
-            ).finished,
-          )
-          .catch(() => {})
-          .finally(() => root.classList.remove('theme-vt'));
+              { duration: 650, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards', pseudoElement: '::view-transition-new(root)' },
+            );
+          })
+          .catch(() => {});
+        // Sınıf, geçiş tamamen bitene kadar kalmalı: erken kaldırılırsa tarayıcının varsayılan
+        // çapraz geçişi devreye girip eski temayı bir anlığına geri gösterir
+        vt.finished.finally(() => root.classList.remove('theme-vt'));
         return;
       }
 
