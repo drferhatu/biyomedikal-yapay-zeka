@@ -35,7 +35,7 @@ Yazılı ara sınav yok. Vize notu, bugünkü proje ara sunumu ve bugünkü depo
 | Ne zaman | 18 Kasım Çarşamba, ders saatinde (13.15) |
 | Süre | 10 dakika sunum, 5 dakika soru |
 | Sıra | Proje koduna göre: BVYZ-01'den başlayarak |
-| Slayt | 6–8 slayt, PDF |
+| Slayt | [Ortak şablon](/proje#ara-sunum) üzerinden: kapak, sekiz slayt ve kapanış; PDF |
 | Teslim | Deponuzda `sunum/ara-sunum.pdf` olarak; 17 Kasım Salı gün sonuna kadar |
 
 Slayt iskeleti ve yüz puanlık vize ölçütleri [proje sayfasının ara sunum bölümünde](/proje#ara-sunum).
