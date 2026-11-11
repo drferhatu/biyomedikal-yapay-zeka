@@ -1,0 +1,238 @@
+---
+/**
+ * Tema düğmesi: gündüz göğü (güneş + bulutlar) ⇄ gece göğü (kraterli ay + yıldızlar).
+ * Varsayılan tema açıktır; seçim localStorage'da tutulur (ilk boyama: BaseLayout).
+ */
+interface Props { class?: string; }
+const { class: className } = Astro.props;
+---
+<button type="button" class:list={['tt', className]} role="switch" aria-checked="false" aria-label="Koyu temaya geç" title="Koyu temaya geç">
+  <span class="tt-sky" aria-hidden="true">
+    <span class="tt-stars"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="tt-clouds tt-clouds-back"><i></i><i></i><i></i></span>
+    <span class="tt-clouds tt-clouds-front"><i></i><i></i><i></i></span>
+  </span>
+  <span class="tt-orb" aria-hidden="true">
+    <span class="tt-moon"><i></i><i></i><i></i></span>
+  </span>
+</button>
+
+<style>
+  .tt {
+    --ease: cubic-bezier(0.65, 0, 0.35, 1);
+    --dur: 0.6s;
+    position: relative;
+    flex-shrink: 0;
+    width: 62px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    overflow: hidden;
+    isolation: isolate;
+    background: linear-gradient(180deg, #3d8fe0 0%, #6db6f2 55%, #a9dafa 100%);
+    box-shadow:
+      inset 0 2px 5px rgb(4 30 66 / 0.35),
+      inset 0 -1px 1px rgb(255 255 255 / 0.35),
+      0 1px 2px rgb(11 21 38 / 0.12);
+    transition: box-shadow var(--dur) var(--ease), transform 0.2s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tt:active { transform: scale(0.96); }
+
+  /* Dar ekranlarda site başlığı tek satırda kalsın: düğme küçülür, en dar ekranlarda mobil menüye taşınır */
+  @media (max-width: 440px) { .tt { zoom: 0.84; } }
+  @media (max-width: 384px) { .tt-header { display: none; } }
+  :global(.tt-menu-row) { display: none; }
+  @media (max-width: 384px) { :global(.tt-menu-row) { display: flex; } }
+
+  .tt::after { /* gece göğü katmanı: gradyanlar geçiş yapamadığından opaklıkla karışır */
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(120% 140% at 75% 10%, #2a3a78 0%, #141d42 55%, #070b1f 100%);
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+  }
+  .tt-sky { position: absolute; inset: 0; }
+
+  /* Güneş / ay küresi + ışık halkaları */
+  .tt-orb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden; /* ay yüzeyi küre dışına taşmasın */
+    z-index: 2;
+    background: radial-gradient(circle at 34% 32%, #fff8d6 0%, #ffd84a 38%, #f7a91c 100%);
+    box-shadow:
+      inset -2px -2px 4px rgb(196 104 0 / 0.45),
+      inset 2px 2px 3px rgb(255 255 255 / 0.65),
+      0 0 0 5px rgb(255 255 255 / 0.16),
+      0 0 0 10px rgb(255 255 255 / 0.10),
+      0 0 0 15px rgb(255 255 255 / 0.06),
+      0 0 14px 2px rgb(255 214 74 / 0.55);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .tt:hover .tt-orb {
+    box-shadow:
+      inset -2px -2px 4px rgb(196 104 0 / 0.45),
+      inset 2px 2px 3px rgb(255 255 255 / 0.65),
+      0 0 0 6px rgb(255 255 255 / 0.20),
+      0 0 0 12px rgb(255 255 255 / 0.12),
+      0 0 0 18px rgb(255 255 255 / 0.07),
+      0 0 18px 4px rgb(255 214 74 / 0.65);
+  }
+
+  /* Ay yüzeyi güneşin üzerine kayarak gelir */
+  .tt-moon {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 32%, #fbfcff 0%, #d9dee9 48%, #a7afc2 100%);
+    box-shadow: inset -3px -2px 5px rgb(60 70 100 / 0.45), inset 2px 2px 3px rgb(255 255 255 / 0.8);
+    transform: translateX(110%);
+    transition: transform var(--dur) var(--ease);
+  }
+  .tt-moon i {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 60% 60%, #b4bccd 0%, #8e97ac 100%);
+    box-shadow: inset 1px 1px 1.5px rgb(60 70 100 / 0.55), 0.5px 0.5px 0 rgb(255 255 255 / 0.5);
+  }
+  .tt-moon i:nth-child(1) { width: 7px; height: 7px; top: 5px; left: 11px; }
+  .tt-moon i:nth-child(2) { width: 4.5px; height: 4.5px; top: 14px; left: 5px; }
+  .tt-moon i:nth-child(3) { width: 3.5px; height: 3.5px; top: 15px; left: 14px; }
+
+  /* Bulutlar: iki katman, gündüz yavaşça süzülür */
+  .tt-clouds {
+    position: absolute;
+    inset: 0;
+    transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .tt-clouds i { position: absolute; border-radius: 50%; background: #fff; }
+  .tt-clouds-back { opacity: 0.55; }
+  .tt-clouds-back i:nth-child(1) { width: 20px; height: 20px; right: -4px; top: 6px; }
+  .tt-clouds-back i:nth-child(2) { width: 16px; height: 16px; right: 12px; top: 13px; }
+  .tt-clouds-back i:nth-child(3) { width: 18px; height: 18px; right: 22px; top: 19px; }
+  .tt-clouds-front i:nth-child(1) { width: 18px; height: 18px; right: -6px; top: 13px; }
+  .tt-clouds-front i:nth-child(2) { width: 14px; height: 14px; right: 8px; top: 19px; }
+  .tt-clouds-front i:nth-child(3) { width: 16px; height: 16px; right: 18px; top: 22px; }
+  .tt-clouds-front { animation: tt-drift 7s ease-in-out infinite alternate; }
+  .tt-clouds-back { animation: tt-drift 9s ease-in-out infinite alternate-reverse; }
+  @keyframes tt-drift { from { translate: 0 0; } to { translate: -3px 0; } }
+
+  /* Yıldızlar: gece belirir, farklı ritimlerde parıldar */
+  .tt-stars {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .tt-stars i {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 3px 0.5px rgb(255 255 255 / 0.8);
+    animation: tt-twinkle 2.4s ease-in-out infinite;
+  }
+  .tt-stars i:nth-child(1) { top: 6px; left: 8px; }
+  .tt-stars i:nth-child(2) { top: 15px; left: 14px; width: 1.5px; height: 1.5px; animation-delay: 0.6s; }
+  .tt-stars i:nth-child(3) { top: 22px; left: 6px; width: 1.5px; height: 1.5px; animation-delay: 1.2s; }
+  .tt-stars i:nth-child(4) { top: 8px; left: 22px; width: 1.5px; height: 1.5px; animation-delay: 1.8s; }
+  .tt-stars i:nth-child(5) { top: 21px; left: 24px; animation-delay: 0.9s; }
+  .tt-stars i:nth-child(6) { top: 4px; left: 30px; width: 1px; height: 1px; animation-delay: 1.5s; }
+  @keyframes tt-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.6); } }
+
+  /* ---- Gece durumu ---- */
+  :global(html[data-theme='dark']) .tt {
+    box-shadow:
+      inset 0 2px 5px rgb(0 0 0 / 0.55),
+      inset 0 -1px 1px rgb(255 255 255 / 0.10),
+      0 0 0 1px rgb(255 255 255 / 0.06);
+  }
+  :global(html[data-theme='dark']) .tt::after { opacity: 1; }
+  :global(html[data-theme='dark']) .tt-orb {
+    transform: translateX(32px) rotate(-20deg);
+    box-shadow:
+      0 0 0 5px rgb(255 255 255 / 0.07),
+      0 0 0 10px rgb(255 255 255 / 0.045),
+      0 0 0 15px rgb(255 255 255 / 0.025),
+      0 0 12px 1px rgb(200 214 255 / 0.35);
+  }
+  :global(html[data-theme='dark']) .tt-moon { transform: translateX(0); }
+  :global(html[data-theme='dark']) .tt-clouds { transform: translateY(26px); opacity: 0; }
+  :global(html[data-theme='dark']) .tt-stars { transform: translateY(0); opacity: 1; }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const toggles = Array.from(document.querySelectorAll<HTMLButtonElement>('.tt'));
+  const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  const THEME_COLOR = { light: '#f5f7fb', dark: '#0b1220' } as const;
+
+  const syncToggles = () => {
+    const dark = root.dataset.theme === 'dark';
+    const label = dark ? 'Açık temaya geç' : 'Koyu temaya geç';
+    for (const t of toggles) {
+      t.setAttribute('aria-checked', String(dark));
+      t.setAttribute('aria-label', label);
+      t.setAttribute('title', label);
+    }
+  };
+
+  const applyTheme = (theme: 'light' | 'dark') => {
+    if (theme === 'dark') root.dataset.theme = 'dark';
+    else delete root.dataset.theme;
+    themeMeta?.setAttribute('content', THEME_COLOR[theme]);
+    try { localStorage.setItem('theme', theme); } catch {}
+    syncToggles();
+  };
+
+  syncToggles();
+  for (const toggle of toggles) {
+    toggle.addEventListener('click', () => {
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const doc = document as Document & {
+        startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> };
+      };
+
+      // Destekleyen tarayıcılarda yeni tema düğmeden dairesel olarak yayılır
+      if (doc.startViewTransition && !reduce) {
+        const r = toggle.getBoundingClientRect();
+        const x = r.left + r.width / 2;
+        const y = r.top + r.height / 2;
+        const end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        root.classList.add('theme-vt');
+        const vt = doc.startViewTransition(() => applyTheme(next));
+        vt.ready
+          .then(() => {
+            root.animate(
+              { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`] },
+              { duration: 650, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards', pseudoElement: '::view-transition-new(root)' },
+            );
+          })
+          .catch(() => {});
+        // Sınıf, geçiş tamamen bitene kadar kalmalı: erken kaldırılırsa tarayıcının varsayılan
+        // çapraz geçişi devreye girip eski temayı bir anlığına geri gösterir
+        vt.finished.finally(() => root.classList.remove('theme-vt'));
+        return;
+      }
+
+      // Yedek: renkler kısa bir geçişle değişir
+      if (!reduce) {
+        root.classList.add('theme-anim');
+        setTimeout(() => root.classList.remove('theme-anim'), 450);
+      }
+      applyTheme(next);
+    });
+  }
+</script>

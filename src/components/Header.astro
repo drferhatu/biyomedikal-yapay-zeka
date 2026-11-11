@@ -1,5 +1,6 @@
 ---
 import { course, href } from '@/lib/site';
+import ThemeToggle from '@/components/ThemeToggle.astro';
 
 const nav = [
   { label: 'Ders Hakkında', path: '/ders-hakkinda' },
@@ -27,6 +28,7 @@ const isActive = (p: string) => current === href(p).replace(/\/$/, '') || curren
       <span class="lg:hidden">{course.shortTitle}</span>
     </a>
 
+    <div class="flex items-center gap-2 min-[850px]:gap-3">
     <nav aria-label="Ana menü" class="hidden md:flex items-center gap-1">
       {nav.map((n) => (
         <a
@@ -43,10 +45,13 @@ const isActive = (p: string) => current === href(p).replace(/\/$/, '') || curren
       </a>
     </nav>
 
+    <ThemeToggle class="tt-header" />
+
     <button id="nav-toggle" class="md:hidden grid size-10 place-items-center rounded-lg border border-line-2 text-ink" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menüyü aç">
       <svg class="icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       <svg class="icon-close hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
+    </div>
   </div>
 
   <nav id="mobile-nav" aria-label="Mobil menü" class="hidden md:hidden border-t border-line bg-paper">
@@ -56,9 +61,20 @@ const isActive = (p: string) => current === href(p).replace(/\/$/, '') || curren
            class:list={['rounded-lg px-3 py-3 text-base font-medium', isActive(n.path) ? 'bg-ink text-paper' : 'text-ink hover:bg-paper-2']}>{n.label}</a>
       ))}
       <a href={href('/arama')} class="rounded-lg px-3 py-3 text-base font-medium text-ink hover:bg-paper-2">Ara</a>
+      <div class="tt-menu-row items-center justify-between rounded-lg px-3 py-3 text-base font-medium text-ink">
+        <span>Tema</span>
+        <ThemeToggle class="tt-menu" />
+      </div>
     </div>
   </nav>
 </header>
+
+<style>
+  /* Tablet (768–849 px): nav bar dolu; tema düğmesine yer açmak için menü öğelerinin yatay boşluğu daralır */
+  @media (min-width: 768px) and (max-width: 849.98px) {
+    nav[aria-label='Ana menü'] > a:not([aria-label]) { padding-inline: 8px; }
+  }
+</style>
 
 <script>
   const btn = document.getElementById('nav-toggle');
