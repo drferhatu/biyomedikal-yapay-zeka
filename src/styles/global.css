@@ -142,3 +142,136 @@ body {
 /* Makale gövdesi içindeki düğmeler: prose bağlantı rengini ezme */
 .prose-lesson a.btn-primary, .prose-lesson a.btn-accent { color: var(--color-paper) !important; text-decoration: none !important; }
 .prose-lesson a.btn-ghost { color: var(--color-ink) !important; text-decoration: none !important; }
+
+/* ------------------------------------------------------------------
+   Koyu tema — yalnızca <html data-theme="dark"> iken etkin.
+   Açık tema (varsayılan) bu bloktan hiç etkilenmez.
+------------------------------------------------------------------- */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #0b1220;
+  --color-paper-2: #141e31;
+  --color-ink: #e7ecf5;
+  --color-ink-2: #b5c1d5;
+  --color-ink-3: #8593ab;
+  --color-line: #222e45;
+  --color-line-2: #33415c;
+
+  --color-brand: #7383ea;
+  --color-brand-2: #95a2ff;
+  --color-brand-soft: #1b2350;
+  --color-accent: #25b3a3;
+  --color-accent-soft: #0e2c2b;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.35), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.4), 0 18px 40px -16px rgb(0 0 0 / 0.7);
+
+  --mod-teal: #1f9488;
+  --mod-blue: #3b80cf;
+  --mod-violet: #8a6ad6;
+  --mod-rose: #d4506f;
+  --mod-amber: #c48a2c;
+  --mod-emerald: #2f9c66;
+  --mod-indigo: #5c6ddb;
+  --mod-cyan: #1f98ad;
+
+  --dk-surface: #101a2b;
+  --dk-inverse: #1c2944;
+}
+
+/* "Ters" bloklar (bg-ink + text-paper): koyu temada açık renge dönmek yerine yükseltilmiş koyu yüzey olur */
+html[data-theme="dark"] .bg-ink { --color-ink: var(--dk-inverse); --color-paper: #e7ecf5; }
+
+/* Sabit beyaz yüzeyler */
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .chip-mono,
+html[data-theme="dark"] .callout,
+html[data-theme="dark"] .prose-lesson pre,
+html[data-theme="dark"] .prose-lesson details { background-color: var(--dk-surface); }
+html[data-theme="dark"] .hover\:bg-white:hover,
+html[data-theme="dark"] .btn-ghost:hover { background-color: var(--color-paper-2); }
+html[data-theme="dark"] .btn-accent { color: #04201d; }
+html[data-theme="dark"] .hover\:bg-\[\#0c7f75\]:hover,
+html[data-theme="dark"] .btn-accent:hover { background-color: #3cc8b8; }
+
+/* Sabit açık zeminli rozetler ve vurgular */
+html[data-theme="dark"] .bg-\[\#fdebe0\] { background-color: rgb(234 88 12 / 0.16); }
+html[data-theme="dark"] .text-\[\#c2410c\] { color: #f39467; }
+html[data-theme="dark"] .bg-\[\#fbeeda\] { background-color: rgb(196 138 44 / 0.18); }
+html[data-theme="dark"] .text-\[\#8a5a10\] { color: #e6b768; }
+html[data-theme="dark"] .bg-\[\#fff3e0\] { background-color: rgb(232 113 10 / 0.16); }
+html[data-theme="dark"] .text-\[\#e8710a\] { color: #f7a25a; }
+html[data-theme="dark"] .bg-\[\#fffcf4\] { background-color: rgb(196 138 44 / 0.10); }
+
+/* Modül çipleri (satır içi "…12%, white" karışımı) */
+html[data-theme="dark"] [style*="12%, white"] { background: color-mix(in srgb, currentColor 16%, transparent) !important; }
+
+/* Uyarı kutuları */
+html[data-theme="dark"] .callout-warn { border-color: #ea6a33; background: rgb(234 88 12 / 0.09); }
+html[data-theme="dark"] .callout-warn .callout-title { color: #f39467; }
+html[data-theme="dark"] .callout-why { background: rgb(196 138 44 / 0.09); }
+html[data-theme="dark"] .callout-paper { background: rgb(37 179 163 / 0.08); }
+html[data-theme="dark"] .callout-formula { background: var(--color-paper-2); }
+
+/* Hero nokta ızgarası */
+html[data-theme="dark"] .dot-grid { background-image: radial-gradient(rgb(231 236 245 / 0.09) 1px, transparent 1px); }
+
+/* Şeffaf arka planlı ders görselleri beyaz zemin için çizildi */
+html[data-theme="dark"] .prose-lesson img { background-color: #fff; }
+
+/* Kod blokları (Shiki çift tema) */
+html[data-theme="dark"] .astro-code,
+html[data-theme="dark"] .astro-code span {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+html[data-theme="dark"] .astro-code { background-color: var(--dk-surface) !important; }
+
+/* Satır içi SVG şemalar (ana sayfa hero'su, NeuralClinic): sabit renk öznitelikleri */
+html[data-theme="dark"] svg [fill="#fff"]:not(text) { fill: var(--dk-surface); }
+html[data-theme="dark"] svg [fill="#f5f7fb"] { fill: var(--color-paper-2); }
+html[data-theme="dark"] svg [stroke="#f5f7fb"] { stroke: var(--color-paper); }
+html[data-theme="dark"] svg [stroke="#d9dfeb"],
+html[data-theme="dark"] svg [stroke="#e2e7f0"],
+html[data-theme="dark"] svg [stroke="#c9d1e3"] { stroke: #2c3a56; }
+html[data-theme="dark"] svg [stroke="#eef1f7"] { stroke: #182338; }
+html[data-theme="dark"] svg [stroke="#bcc6d9"] { stroke: #3e4d6b; }
+html[data-theme="dark"] svg [fill="#bcc6d9"] { fill: #56657f; }
+html[data-theme="dark"] svg [fill="#6b7a92"] { fill: var(--color-ink-3); }
+html[data-theme="dark"] svg [stroke="#6b7a92"] { stroke: var(--color-ink-3); }
+html[data-theme="dark"] svg [fill="#2f4058"] { fill: var(--color-ink-2); }
+html[data-theme="dark"] svg text[fill="#0b1526"] { fill: var(--color-ink); }
+html[data-theme="dark"] svg :not(text)[fill="#0b1526"] { fill: var(--dk-inverse); }
+html[data-theme="dark"] svg [stroke="#0b1526"] { stroke: #4a5a7a; }
+html[data-theme="dark"] svg [fill="#2f3fa3"] { fill: var(--color-brand); }
+html[data-theme="dark"] svg [stroke="#2f3fa3"] { stroke: var(--color-brand); }
+html[data-theme="dark"] svg [stop-color="#2f3fa3"] { stop-color: var(--color-brand); }
+
+/* NeuralClinic etkileşimli bileşeni */
+html[data-theme="dark"] .nn-btn,
+html[data-theme="dark"] .nn-btn-ghost,
+html[data-theme="dark"] .nn-chip { background: var(--dk-surface); }
+html[data-theme="dark"] .nn-btn[data-bitti] { background: var(--color-brand-soft); }
+html[data-theme="dark"] .nn-chip[aria-pressed='true'] { background: var(--dk-inverse); border-color: var(--color-line-2); color: var(--color-ink); }
+html[data-theme="dark"] .nn-tabs button[aria-selected='true'] { background: var(--dk-inverse); color: var(--color-ink); }
+html[data-theme="dark"] .nn-btn-primary { background: var(--dk-inverse); color: var(--color-ink); }
+html[data-theme="dark"] .nn-btn-primary:hover { background: var(--color-brand); color: #fff; }
+html[data-theme="dark"] .nn-chip[data-sonuc='dogru'] { color: #5fd6c7; }
+html[data-theme="dark"] .nn-chip[data-sonuc='yanlis'] { background: rgb(234 88 12 / 0.16); border-color: #ea6a33; color: #f39467; }
+html[data-theme="dark"] [data-durum][style*="216, 241, 238"] { background: rgb(37 179 163 / 0.16) !important; color: #5fd6c7 !important; }
+html[data-theme="dark"] [data-durum][style*="253, 235, 224"] { background: rgb(234 88 12 / 0.16) !important; color: #f39467 !important; }
+html[data-theme="dark"] [data-durum][style*="233, 237, 245"] { background: var(--color-paper-2) !important; color: var(--color-ink-2) !important; }
+
+/* Pagefind arama arayüzü */
+html[data-theme="dark"] .pagefind-ui { --pagefind-ui-background: var(--dk-surface); --pagefind-ui-tag: var(--color-paper-2); }
+
+/* Tema geçişi: View Transitions destekleniyorsa dairesel yayılma, yoksa kısa renk geçişi */
+html.theme-vt::view-transition-old(root),
+html.theme-vt::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.theme-anim *:not(.tt, .tt *),
+html.theme-anim *:not(.tt, .tt *)::before,
+html.theme-anim *:not(.tt, .tt *)::after {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, fill 0.35s ease, stroke 0.35s ease !important;
+}

@@ -27,6 +27,15 @@ const ogImage = new URL(href('/og.png'), Astro.site);
     <link rel="icon" href={href('/favicon.svg')} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={href('/apple-touch-icon.png')} />
     <meta name="theme-color" content="#f5f7fb" />
+    <!-- Tema: varsayılan açık; kullanıcı koyu temayı seçtiyse boyamadan önce uygula (beyaz parlamayı önler) -->
+    <script is:inline>
+      try {
+        if (localStorage.getItem('theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0b1220');
+        }
+      } catch (e) {}
+    </script>
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />

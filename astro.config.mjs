@@ -19,7 +19,8 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkCallouts],
     rehypePlugins: [[rehypeBaseLinks, { base }]],
-    shikiConfig: { theme: 'github-light', wrap: true },
+    // Açık tema varsayılan; koyu tema renkleri --shiki-dark değişkenleriyle gelir (global.css)
+    shikiConfig: { themes: { light: 'github-light', dark: 'github-dark' }, wrap: true },
   },
   vite: { plugins: [tailwindcss()] },
 });
