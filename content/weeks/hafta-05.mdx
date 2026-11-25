@@ -57,7 +57,7 @@ import NotebookEmbed from '@/components/NotebookEmbed.astro';
 
 ## Ön Okuma ve Hazırlık
 
-Hafif bir hazırlık yeter. Geçen haftaki defterin dört grafiğini bir kez daha açıp bakın; bugün aynı grafikleri dört farklı model için çizeceğiz. Bir de şunu düşünün: bir konuda beş uzmana danışıp çoğunluğun dediğini yapmak, tek bir uzmana güvenmekten ne zaman daha iyidir, ne zaman değildir?
+Hafif bir hazırlık yeter. Geçen haftaki defterin dört grafiğini bir kez daha açıp bakın; bugün aynı grafikleri dört farklı model için çizeceğiz. Bir de şunu düşünün: Bir konuda beş uzmana danışıp çoğunluğun dediğini yapmak, tek bir uzmana güvenmekten ne zaman daha iyidir, ne zaman değildir?
 
 > [!not] Dersin akışı
 > İlk saat karar ağacından Random Forest ve XGBoost'a, ikinci saat SVM, ayar düğmeleri ve "model neye bakıyor?", son saat defter. Defterin sonunda moral için küçük bir sürpriz var.
@@ -66,7 +66,7 @@ Hafif bir hazırlık yeter. Geçen haftaki defterin dört grafiğini bir kez dah
 
 ### Basit modelden güçlü modele
 
-Geçen hafta tek bir basit model kurduk, lojistik regresyon, ve onu dört soruyla sınadık. Bu hafta daha güçlü modeller geliyor. Ama bir şeyi baştan söyleyelim: güçlü model, otomatik olarak daha iyi model demek değil. Her yeni modeli yine aynı dört soruyla sınayacağız ve basit modeli geçemiyorsa karmaşıklığın bir anlamı olmadığını söyleyeceğiz. Küçük klinik veri setlerinde bu sık olur.
+Geçen hafta tek bir basit model kurduk, lojistik regresyon, ve onu dört soruyla sınadık. Bu hafta daha güçlü modeller geliyor. Ama bir şeyi baştan söyleyelim: Güçlü model, otomatik olarak daha iyi model demek değil. Her yeni modeli yine aynı dört soruyla sınayacağız ve basit modeli geçemiyorsa karmaşıklığın bir anlamı olmadığını söyleyeceğiz. Küçük klinik veri setlerinde bu sık olur.
 
 ### Karar ağacı: sorularla ilerlemek
 
@@ -78,7 +78,7 @@ Tek bir ağacın derdi kararsızlığıdır. Veriyi biraz değiştirin, birkaç 
 
 Çözüm, tek ağaç yerine yüzlerce ağaç yetiştirmek. Her ağaca verinin rastgele bir parçasını ve sütunların rastgele bir alt kümesini gösterirsiniz; böylece her ağaç biraz farklı bir şey öğrenir. Sonra hepsine oy kullandırırsınız. Tek ağacın kaprisleri ortalamada kaybolur. Buna Random Forest deniyor ve adı tam olarak yaptığı şeyi anlatıyor: rastgele yetiştirilmiş bir orman.
 
-Konsültasyon örneği iyi oturur. Zor bir vakada beş uzmanın görüşünü alırsınız; her biri hastanın farklı bir yönüne bakmıştır, biri yanılsa bile çoğunluk genellikle doğru yere gelir. Random Forest'ın tıp verisinde bu kadar yaygın olmasının nedeni budur: az ayar ister, zor bozulur, küçük veride bile makul çalışır.
+Konsültasyon örneği iyi oturur. Zor bir vakada beş uzmanın görüşünü alırsınız; her biri hastanın farklı bir yönüne bakmıştır, biri yanılsa bile çoğunluk genellikle doğru yere gelir. Random Forest'ın tıp verisinde bu kadar yaygın olmasının nedeni budur: Az ayar ister, zor bozulur, küçük veride bile makul çalışır.
 
 ### XGBoost: hatadan öğrenen sıra
 
@@ -87,27 +87,27 @@ Konsültasyon örneği iyi oturur. Zor bir vakada beş uzmanın görüşünü al
 Bir öğrencinin sınav kâğıdını alıp yalnızca yanlış yaptığı soruların benzerlerini çözdürmek gibi düşünün. Çok etkilidir, ama abartılırsa öğrenci o soruların kalıbını ezberler. O yüzden XGBoost'un düğmeleri Random Forest'tan daha çok ve ayarı daha önemlidir.
 
 > [!ornek] Tablo verisinde XGBoost neden derin öğrenmeyi geçer?
-> Laboratuvar sonuçları, vital bulgular, demografi gibi tablo hâlindeki klinik veride ağaç toplulukları çoğu zaman sinir ağlarını geçer. Nedeni basit: tablo verisinde ilişkiler genellikle eşiklerle anlatılır, "kreatinin 1.4'ün üstündeyse risk artar" gibi, ve ağaçlar tam olarak eşik sorar. Sinir ağları görüntü ve sinyal gibi sürekli yapılarda parlar; 8. haftada oraya geçeceğiz.
+> Laboratuvar sonuçları, vital bulgular, demografi gibi tablo hâlindeki klinik veride ağaç toplulukları çoğu zaman sinir ağlarını geçer. Nedeni basit: Tablo verisinde ilişkiler genellikle eşiklerle anlatılır, "kreatinin 1.4'ün üstündeyse risk artar" gibi, ve ağaçlar tam olarak eşik sorar. Sinir ağları görüntü ve sinyal gibi sürekli yapılarda parlar; 8. haftada oraya geçeceğiz.
 
 ### SVM: en geniş yolu çizmek
 
 Üçüncü model farklı bir aileden. Destek vektör makinesi iki grubu ayıran bir çizgi çizer, ama herhangi bir çizgi değil: iki tarafa da en çok mesafe bırakan çizgiyi arar. İki mahalle arasına yol açıyorsanız, yolu evlere en uzak yerden geçirirsiniz; SVM aynı şeyi yapar.
 
-Veri düz bir çizgiyle ayrılmıyorsa ne olur? Burada çekirdek hilesi devreye girer. Fikri bir cümleyle söylemek mümkün: iki boyutta iç içe duran iki grup, veriyi bir üst boyuta kaldırınca bir düzlemle ayrılabilir hâle gelir. SVM bu kaldırma işlemini açıkça yapmadan sonucunu hesaplar. Pratikte bilmeniz gereken iki şey var: SVM'den önce veriyi mutlaka ölçeklemek gerekir, çünkü mesafeye dayanır; ve SVM olasılık üretmek için tasarlanmamıştır, kalibrasyonu sonradan düzeltilir.
+Veri düz bir çizgiyle ayrılmıyorsa ne olur? Burada çekirdek hilesi devreye girer. Fikri bir cümleyle söylemek mümkün: İki boyutta iç içe duran iki grup, veriyi bir üst boyuta kaldırınca bir düzlemle ayrılabilir hâle gelir. SVM bu kaldırma işlemini açıkça yapmadan sonucunu hesaplar. Pratikte bilmeniz gereken iki şey var: SVM'den önce veriyi mutlaka ölçeklemek gerekir, çünkü mesafeye dayanır; ve SVM olasılık üretmek için tasarlanmamıştır, kalibrasyonu sonradan düzeltilir.
 
 ### Ayar düğmeleri
 
-Bu modellerin hepsinin düğmeleri var: ağaç sayısı, derinlik, öğrenme oranı, SVM'de C ve gamma. Bunlara hiperparametre deniyor ve doğru ayar sonucu değiştirir. Tuzak şurada: düğmeleri test verisine bakarak çevirirseniz, test verisi artık test verisi değildir; onu da modelin ayarında kullanmış olursunuz. Bu da bir sızıntıdır, 2. haftadan tanıdık.
+Bu modellerin hepsinin düğmeleri var: ağaç sayısı, derinlik, öğrenme oranı, SVM'de C ve gamma. Bunlara hiperparametre deniyor ve doğru ayar sonucu değiştirir. Tuzak şurada: Düğmeleri test verisine bakarak çevirirseniz, test verisi artık test verisi değildir; onu da modelin ayarında kullanmış olursunuz. Bu da bir sızıntıdır, 2. haftadan tanıdık.
 
-Doğru yol, aramayı da çapraz doğrulamanın içinde yapmak. Defterde rastgele arama kullanıyoruz: yirmi beş farklı ayar denenir, her biri çapraz doğrulamayla puanlanır, en iyisi seçilir. Bir adım daha dürüst olan yöntem, aramayı dış bir çapraz doğrulamanın her katlamasında ayrı ayrı yapmaktır; buna iç içe çapraz doğrulama deniyor ve raporunuzda "model nasıl ayarlandı" sorusunun cevabı budur.
+Doğru yol, aramayı da çapraz doğrulamanın içinde yapmak. Defterde rastgele arama kullanıyoruz: Yirmi beş farklı ayar denenir, her biri çapraz doğrulamayla puanlanır, en iyisi seçilir. Bir adım daha dürüst olan yöntem, aramayı dış bir çapraz doğrulamanın her katlamasında ayrı ayrı yapmaktır; buna iç içe çapraz doğrulama deniyor ve raporunuzda "model nasıl ayarlandı" sorusunun cevabı budur.
 
 ### Model neye bakıyor?
 
 Günün son ve belki en önemli sorusu. Random Forest yüzlerce ağaçtan oluşuyor; hangi sütunlara önem verdiğini nasıl anlarız? Üç farklı cevap var ve üçü farklı liste verir.
 
-Birincisi ağacın kendi hesabı: her sütun dallanmalarda ne kadar işe yaradı? Hızlıdır ama yanlıdır; çok farklı değer alan sütunları, trombosit sayısı gibi, gereğinden fazla sever. İkincisi permütasyon: bir sütunu karıştırıp modelin ne kadar bozulduğuna bakmak. Daha dürüsttür ve önceki haftalardan tanıyorsunuz. Üçüncüsü basit modelin katsayıları: lojistik regresyon aynı soruya kendi gözünden cevap verir.
+Birincisi ağacın kendi hesabı: Her sütun dallanmalarda ne kadar işe yaradı? Hızlıdır ama yanlıdır; çok farklı değer alan sütunları, trombosit sayısı gibi, gereğinden fazla sever. İkincisi permütasyon: Bir sütunu karıştırıp modelin ne kadar bozulduğuna bakmak. Daha dürüsttür ve önceki haftalardan tanıyorsunuz. Üçüncüsü basit modelin katsayıları: Lojistik regresyon aynı soruya kendi gözünden cevap verir.
 
-Üç liste aynı çıkmayınca öğrenciler genellikle "hangisi doğru?" diye sorar. Cevap: hepsi, çünkü farklı sorulara cevap veriyorlar. Asıl öğrenilmesi gereken şey, bu listelerin tek bir gerçeği değil modelin davranışını anlattığıdır.
+Üç liste aynı çıkmayınca öğrenciler genellikle "hangisi doğru?" diye sorar. Cevap: Hepsi, çünkü farklı sorulara cevap veriyorlar. Asıl öğrenilmesi gereken şey, bu listelerin tek bir gerçeği değil modelin davranışını anlattığıdır.
 
 > [!uyari] Birbirine benzeyen iki sütun önemi paylaşır
 > Klinikte aynı bilgiyi taşıyan sütun çiftleri çok yaygındır: kreatinin ve eGFR, kilo ve VKİ, hemoglobin ve hematokrit. İkisi de modelde olduğunda önem aralarında bölünür ve ikisi de "orta" görünür. Birini çıkarırsanız öbürünün önemi aniden yükselir. Yani bir modelin "bu sütun önemsiz" demesi, o sütunun bilgisiz olduğu anlamına gelmez; bilgisi başka bir sütunda da olabilir. Defterde bunu kreatininin bir kopyasını ekleyerek gösteriyoruz; bonus bölümde ise taraftar umudu ile son beş maç formu arasında aynı şey oluyor.
@@ -125,7 +125,7 @@ Bu, açıklanabilirliğin ilk kapısı. 12. ve 13. haftalarda SHAP ile aynı sor
 
 ## Uygulama / Laboratuvar
 
-Defter Heart Failure verisiyle başlıyor ve önce bu veri setinin ünlü tuzağını gösteriyor: takip süresi sütunu gelecekten bilgi taşır, modele verilirse başarım şişer. Sonra dört model aynı boru hattında, geçen haftanın ölçütleriyle karşılaştırılıyor; XGBoost için rastgele hiperparametre araması yapılıyor; üç öznitelik önemi yöntemi yan yana çiziliyor; kreatininin kopyası eklenerek önem paylaşımı gösteriliyor.
+Defter Heart Failure verisiyle başlıyor ve önce bu veri setinin ünlü tuzağını gösteriyor: Takip süresi sütunu gelecekten bilgi taşır, modele verilirse başarım şişer. Sonra dört model aynı boru hattında, geçen haftanın ölçütleriyle karşılaştırılıyor; XGBoost için rastgele hiperparametre araması yapılıyor; üç öznitelik önemi yöntemi yan yana çiziliyor; kreatininin kopyası eklenerek önem paylaşımı gösteriliyor.
 
 Sonda bir bonus var: tamamen uydurma bir Fenerbahçe veri seti. Dört yüz sentetik maç, rakip gücü, deplasman, hakem kararları ve ertesi gün taraftar morali. Veriyi biz ürettiğimiz için "gerçek" nedenleri biliyoruz ve modelin bunları bulup bulamadığına bakıyoruz. Taraftar umudu ile son beş maç formu birbirine çok benziyor; önemi paylaşıyorlar. Konu aynı, kostüm farklı.
 

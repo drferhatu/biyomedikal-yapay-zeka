@@ -155,7 +155,7 @@ const toc = [
           <thead><tr><th>Ölçüt</th><th>Puan</th><th>Neye bakılır</th></tr></thead>
           <tbody>{vizeRubric.map(([k, p, d]) => <tr><td class="font-medium text-ink">{k}</td><td class="font-mono">{p}</td><td>{d}</td></tr>)}</tbody>
         </table>
-        <aside class="callout callout-why"><p class="callout-title">Yüksek AUC puan getirmez</p><p>Puanı gerekçeli karar getirir. Sızıntıyı fark edip düzelttiğini ve bu yüzden başarımının düştüğünü anlatan bir sunum, şişmiş bir sonuçtan daha yüksek not alır. 8. haftada gördüğümüz gibi eğrilerinizi yan yana gösterin ve hangi tabloya benzediğini söyleyin: sağlıklı mı, ezberci mi, emekleyen mi?</p></aside>
+        <aside class="callout callout-why"><p class="callout-title">Yüksek AUC puan getirmez</p><p>Puanı gerekçeli karar getirir. Sızıntıyı fark edip düzelttiğini ve bu yüzden başarımının düştüğünü anlatan bir sunum, şişmiş bir sonuçtan daha yüksek not alır. 8. haftada gördüğümüz gibi eğrilerinizi yan yana gösterin ve hangi tabloya benzediğini söyleyin: Sağlıklı mı, ezberci mi, emekleyen mi?</p></aside>
       </section>
 
       <!-- DEPO -->
@@ -208,7 +208,7 @@ const toc = [
       <!-- DEĞERLENDİRME -->
       <section id="degerlendirme" class="scroll-mt-28 prose-lesson">
         <h2 class="!mt-0 !border-0 !pt-0">Değerlendirme</h2>
-        <p>Vize notu (dönem notunun %50'si) yukarıdaki <a href="#ara-sunum">ara sunum</a> üzerinden verilir; kalan %50 genel sınavdır. Aşağıdaki tablo, 23 Aralık'ta teslim edilecek son rapor ve tamamlanmış depo için ölçütlerdir; son teslimin nota nasıl yansıyacağı derste duyurulur. Ağırlıklar dersin vurgusunu yansıtır: en çok puan doğrulama tasarımına ve klinik değerlendirmeye gider, en az puan sunuma.</p>
+        <p>Vize notu (dönem notunun %50'si) yukarıdaki <a href="#ara-sunum">ara sunum</a> üzerinden verilir; kalan %50 genel sınavdır. Aşağıdaki tablo, 23 Aralık'ta teslim edilecek son rapor ve tamamlanmış depo için ölçütlerdir; son teslimin nota nasıl yansıyacağı derste duyurulur. Ağırlıklar dersin vurgusunu yansıtır: En çok puan doğrulama tasarımına ve klinik değerlendirmeye gider, en az puan sunuma.</p>
         <table>
           <thead><tr><th>Ölçüt</th><th>Puan</th><th>Neye bakılır</th></tr></thead>
           <tbody>{rubric.map(([k, p, d]) => <tr><td class="font-medium text-ink">{k}</td><td class="font-mono">{p}</td><td>{d}</td></tr>)}</tbody>
@@ -242,7 +242,7 @@ const toc = [
 
       async function deriveKey(no) {
         const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(no), 'PBKDF2', false, ['deriveKey']);
-        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: new TextEncoder().encode(salt), iterations: iter, hash: 'SHA-256' },
+        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: New TextEncoder().encode(salt), iterations: iter, hash: 'SHA-256' },
           base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
       }
       async function tryOpen(key, card) {

@@ -2,7 +2,7 @@
 week: 10
 title: "Evrişimli Ağlar: Anahtar Deliğinden Görmek"
 topic: "Evrişimli sinir ağları ve tıbbi görüntü analizi: sınıflandırma, segmentasyon (U-Net) ve transfer öğrenme"
-description: "Yanlış gibi gelen altı doğru cümle üzerinden evrişimli ağlar: ağ resmin tamamını neden hiç görmez, filtreleri kim yazar, kedi fotoğrafı kansere nasıl yardım eder, otuz görüntüyle nasıl yarışma kazanılır, yüzde 99 doğru model neden hiçbir şey bulmamış olabilir ve ağ neden hekimin kalemine bakar. Telefonda çalışan görüntü atölyesiyle."
+description: "Yanlış gibi gelen altı doğru cümle üzerinden evrişimli ağlar: Ağ resmin tamamını neden hiç görmez, filtreleri kim yazar, kedi fotoğrafı kansere nasıl yardım eder, otuz görüntüyle nasıl yarışma kazanılır, yüzde 99 doğru model neden hiçbir şey bulmamış olabilir ve ağ neden hekimin kalemine bakar. Telefonda çalışan görüntü atölyesiyle."
 module: m4
 exam: false
 status: hazir
@@ -96,7 +96,7 @@ import GoruntuAtolyesi from '@/components/GoruntuAtolyesi.astro';
 
 Okuma yok. Telefonunuzun şarjı dolu olsun; dersin üç yerinde telefonu çıkaracağız.
 
-Gelirken şunu deneyin: bir kâğıt peçeteye kalem ucuyla küçük bir delik açın ve odanıza o delikten bakın. Deliği gezdirerek odada ne olduğunu çıkarabilir misiniz? Ne kadar sürer? Bugünkü dersin tamamı bu küçük deneyin içinde saklı.
+Gelirken şunu deneyin: Bir kâğıt peçeteye kalem ucuyla küçük bir delik açın ve odanıza o delikten bakın. Deliği gezdirerek odada ne olduğunu çıkarabilir misiniz? Ne kadar sürer? Bugünkü dersin tamamı bu küçük deneyin içinde saklı.
 
 > [!not] Dersin akışı
 > Evrişimli ağları daha önce dinleyenler var. O yüzden bugün katman katman mimari anlatmıyoruz. Onun yerine altı cümle söyleyeceğim; her biri ilk duyuşta yanlış gelecek, her birinin sonunda temel bir kavram cebinizde olacak.
@@ -105,7 +105,7 @@ Gelirken şunu deneyin: bir kâğıt peçeteye kalem ucuyla küçük bir delik a
 
 ## Haftanın Hikâyesi: Yanlış Tutulan Cam
 
-1958, Baltimore. İki genç araştırmacı, David Hubel ve Torsten Wiesel, uyutulmuş bir kedinin görme korteksine saç telinden ince bir elektrot yerleştirmiş. Elektrot tek bir sinir hücresini dinliyor ve hücre her ateşlediğinde hoparlörden bir çıtırtı geliyor. Amaçları basit: bu hücre neyi görünce ateşliyor?
+1958, Baltimore. İki genç araştırmacı, David Hubel ve Torsten Wiesel, uyutulmuş bir kedinin görme korteksine saç telinden ince bir elektrot yerleştirmiş. Elektrot tek bir sinir hücresini dinliyor ve hücre her ateşlediğinde hoparlörden bir çıtırtı geliyor. Amaçları basit: Bu hücre neyi görünce ateşliyor?
 
 Kedinin önündeki perdeye cam slaytlarla ışık noktaları, karanlık noktalar yansıtıyorlar. Büyük nokta, küçük nokta, sağda, solda. Hücre susuyor. Saatler geçiyor. O güne kadar herkes gözün dünyayı noktalar hâlinde gördüğünü düşünüyor; öyleyse bir yerde o noktayı seven bir hücre olmalı.
 
@@ -115,7 +115,7 @@ Hücre noktayı sevmiyordu. Belli bir yönde duran bir kenarı seviyordu.
 
 Sonraki yıllarda aynı korteksi hücre hücre dolaştılar ve bir düzen buldular. Bazı hücreler görme alanının küçücük bir bölgesine bakıyor ve yalnızca belli yöndeki kenara yanıt veriyordu; bunlara basit hücreler dediler. Bazıları ise aynı kenarı biraz sağda da biraz solda da tanıyordu, yani konuma aldırmıyordu; bunlara karmaşık hücreler dediler. Görme, küçük pencerelerden bakan kenar dedektörleriyle başlıyor, katman katman birleşerek şekle, yüze, nesneye dönüşüyordu. 1981'de Nobel ödülünü aldılar.
 
-Hikâyenin ikinci yarısı mühendislerin. 1980'de Japonya'da Kunihiko Fukushima bu iki hücre tipini taklit eden bir ağ kurdu: bir katman kenar arıyor, sonraki katman konumu biraz bulanıklaştırıyordu. 1989'da Yann LeCun aynı fikre geri yayılımı ekledi ve zarfların üstündeki elle yazılmış posta kodlarını okuttu; birkaç yıl sonra aynı ağ bankalarda çekleri okuyordu. Sonra uzun bir sessizlik. 2012'de üç kişilik bir ekip aynı fikri iki oyun ekran kartında, bir milyondan fazla fotoğrafla eğitti ve dünyanın en büyük görüntü tanıma yarışmasında hata oranını yüzde yirmi altıdan yüzde on beşe indirdi. O günden beri görüntüyle ilgili neredeyse her şey bu ağların torunlarıyla yapılıyor.
+Hikâyenin ikinci yarısı mühendislerin. 1980'de Japonya'da Kunihiko Fukushima bu iki hücre tipini taklit eden bir ağ kurdu: Bir katman kenar arıyor, sonraki katman konumu biraz bulanıklaştırıyordu. 1989'da Yann LeCun aynı fikre geri yayılımı ekledi ve zarfların üstündeki elle yazılmış posta kodlarını okuttu; birkaç yıl sonra aynı ağ bankalarda çekleri okuyordu. Sonra uzun bir sessizlik. 2012'de üç kişilik bir ekip aynı fikri iki oyun ekran kartında, bir milyondan fazla fotoğrafla eğitti ve dünyanın en büyük görüntü tanıma yarışmasında hata oranını yüzde yirmi altıdan yüzde on beşe indirdi. O günden beri görüntüyle ilgili neredeyse her şey bu ağların torunlarıyla yapılıyor.
 
 Bugün konuşacağımız her şeyin kökü, yanlış açıyla tutulmuş bir cam parçası. Hikâyeden aklınızda iki şey kalsın. Birincisi, görme küçük pencerelerle başlar. İkincisi, en önemli bulgu deneyin planlanan kısmında değil, kimsenin bakmadığı kenarında çıkabilir; altıncı cümlede buna döneceğiz.
 
@@ -131,25 +131,25 @@ Geçen ders bir ağın nasıl öğrendiğini konuştuk: ileri, hata, geri, düze
 
 ### Birinci cümle: Ağ, resmin tamamını hiçbir zaman görmez
 
-Atölyede "Anahtar deliği" tezgâhını açın. Görüntü kapalı; elinizde üçe üçlük bir pencere var. Gezdirin ve bana söyleyin: bu görüntüde ne var?
+Atölyede "Anahtar deliği" tezgâhını açın. Görüntü kapalı; elinizde üçe üçlük bir pencere var. Gezdirin ve bana söyleyin: Bu görüntüde ne var?
 
 Söyleyemezsiniz. Dokuz piksel görüyorsunuz; biraz açık, biraz koyu, belki bir geçiş. Yandaki kutuda o dokuz pikselin sayılarını da görüyorsunuz, çünkü ağ için görüntü zaten budur: bir sayı tablosu. Evrişimli ağın ilk katmanındaki her birim dünyaya tam olarak bu delikten bakar. Hubel ile Wiesel'in basit hücresi gibi tek bir iş yapar: "benim penceremde şu yönde bir kenar var mı?"
 
 Şimdi pencereyi büyütün: 5×5, 7×7, 15×15. Her adımda biraz daha fazlasını anlıyorsunuz. Önce kenarın yönü, sonra ince koyu çizginin bir kıl olduğu, sonra lezyonun içiyle dışının farklı dokuda olduğu, en sonunda sınırın düzensizliği. Ağda da böyle olur. Üçe üçlük iki katman üst üste gelince ikinci katmandaki bir birim aslında beşe beşlik bir bölgeden haber alır; üçüncü katmanda yediye yedi. Bir birimin girdi görüntüsünde haberdar olduğu bölgeye **alıcı alan** denir. Katman eklemek, anahtar deliğini büyütmektir.
 
-Deliği daha hızlı büyütmenin bir yolu da ayrıntıyı bilerek atmaktır. Telefonunuzda haritayı uzaklaştırdığınızda sokak adları kaybolur ama mahallenin şekli ortaya çıkar. **Havuzlama** budur: her ikiye ikilik karenin yalnızca en büyük değerini tutarsınız, görüntü yarıya iner. "Burada bir kenar vardı" bilgisi kalır, "tam hangi pikseldeydi" bilgisi gider. Karmaşık hücrenin yaptığı da buydu: kenarı biraz sağda da biraz solda da tanımak.
+Deliği daha hızlı büyütmenin bir yolu da ayrıntıyı bilerek atmaktır. Telefonunuzda haritayı uzaklaştırdığınızda sokak adları kaybolur ama mahallenin şekli ortaya çıkar. **Havuzlama** budur: Her ikiye ikilik karenin yalnızca en büyük değerini tutarsınız, görüntü yarıya iner. "Burada bir kenar vardı" bilgisi kalır, "tam hangi pikseldeydi" bilgisi gider. Karmaşık hücrenin yaptığı da buydu: Kenarı biraz sağda da biraz solda da tanımak.
 
 Sonuç bir sıradüzendir. İlk katmanlar kenar görür, ortadakiler doku ve kıvrım, derindekiler parça ve şekil. Radyoloji asistanının ilk ayında "burada bir opasite var" demesiyle dördüncü yılında "sağ alt lobda konsolidasyon, hava bronkogramı eşlik ediyor" demesi arasındaki fark gibi. Kimse tek bakışta görmez; görme birikir.
 
 > [!ornek] Tahtada bir hesap
-> 28×28 piksellik bir görüntüye, kenarlarına dolgu koymadan 3×3 bir filtre gezdirirseniz çıktı 26×26 olur, çünkü pencere her yönde bir piksel içeride durmak zorundadır. Üstüne 2×2 havuzlama yaparsanız 13×13 kalır. Genel kural: çıktı kenarı, girdi kenarı eksi filtre kenarı artı birdir; dolgu eklerseniz iki katını eklersiniz, adımı büyütürseniz adıma bölersiniz.
+> 28×28 piksellik bir görüntüye, kenarlarına dolgu koymadan 3×3 bir filtre gezdirirseniz çıktı 26×26 olur, çünkü pencere her yönde bir piksel içeride durmak zorundadır. Üstüne 2×2 havuzlama yaparsanız 13×13 kalır. Genel kural: Çıktı kenarı, girdi kenarı eksi filtre kenarı artı birdir; dolgu eklerseniz iki katını eklersiniz, adımı büyütürseniz adıma bölersiniz.
 
 ### İkinci cümle: Filtreleri kimse yazmaz
 
-"Filtre" tezgâhına geçin ve "Dikey kenar"a basın. Ortadaki dokuz sayıya bakın: sol sütun eksi, sağ sütun artı, orta sıfır. Bu dokuz sayı görüntünün her noktasına sırayla konuyor, altına düşen dokuz pikselle çarpılıp toplanıyor ve tek bir sayı üretiyor. Soldan sağa parlaklık değişiyorsa sonuç büyük çıkar, düz bir bölgedeyse eksilerle artılar birbirini götürür ve sonuç sıfırdır. Hepsi bu. **Evrişim** dediğimiz işlem, bir şablonu görüntüde gezdirip her durakta "ne kadar uydu" diye not almaktır. Çıkan görüntüye **öznitelik haritası** denir.
+"Filtre" tezgâhına geçin ve "Dikey kenar"a basın. Ortadaki dokuz sayıya bakın: Sol sütun eksi, sağ sütun artı, orta sıfır. Bu dokuz sayı görüntünün her noktasına sırayla konuyor, altına düşen dokuz pikselle çarpılıp toplanıyor ve tek bir sayı üretiyor. Soldan sağa parlaklık değişiyorsa sonuç büyük çıkar, düz bir bölgedeyse eksilerle artılar birbirini götürür ve sonuç sıfırdır. Hepsi bu. **Evrişim** dediğimiz işlem, bir şablonu görüntüde gezdirip her durakta "ne kadar uydu" diye not almaktır. Çıkan görüntüye **öznitelik haritası** denir.
 
 > [!ornek] Elle bir evrişim
-> Sol iki sütunu 0, sağ üç sütunu 1 olan 5×5 bir görüntü düşünün: ortasından dikey bir kenar geçiyor. Her satırı (−1, 0, 1) olan 3×3 filtreyi gezdirin. Pencere kenarın üstündeyken sağ sütun 1, sol sütun 0 görür; üç satırdan 3 gelir. Pencere tamamen sağdayken iki sütun da 1'dir; sonuç 0. Çıktının her satırı 3, 3, 0 olur. Filtre kenarın olduğu yerde bağırıyor, düz yerde susuyor.
+> Sol iki sütunu 0, sağ üç sütunu 1 olan 5×5 bir görüntü düşünün: Ortasından dikey bir kenar geçiyor. Her satırı (−1, 0, 1) olan 3×3 filtreyi gezdirin. Pencere kenarın üstündeyken sağ sütun 1, sol sütun 0 görür; üç satırdan 3 gelir. Pencere tamamen sağdayken iki sütun da 1'dir; sonuç 0. Çıktının her satırı 3, 3, 0 olur. Filtre kenarın olduğu yerde bağırıyor, düz yerde susuyor.
 
 Şimdi sırayla "Yatay kenar"a, "Bulanıklaştır"a, "Keskinleştir"e basın. Telefonunuzun fotoğraf düzenleyicisindeki düğmelerin arkasında bu dokuzar sayı var; onları yıllar önce mühendisler elle yazdı.
 
@@ -163,24 +163,24 @@ Kalabalık bir düğün fotoğrafında arkadaşınızı ararken de aynısını y
 
 2017'de Stanford'dan bir ekip cilt kanserini dermatologlar düzeyinde tanıyan bir ağ yayımladı. Ellerinde yaklaşık 130 bin cilt görüntüsü vardı. Ama ağı sıfırdan eğitmediler. Önce bir milyondan fazla sıradan fotoğrafla, yani kediler, köpekler, arabalar, çiçeklerle eğitilmiş hazır bir ağ aldılar; sonra onu cilt görüntüleriyle eğitmeye devam ettiler.
 
-Kedinin melanomla ne ilgisi var? Hiç. Ama ikinci cümleyi hatırlayın: ilk katmanlar kenar, köşe, doku öğrenir. Kedinin bıyığındaki kenar ile lezyonun sınırındaki kenar aynı kenardır. Ağın ilk katmanları görmeyi öğrenmiştir; neye baktığı son katmanların işidir. Piyano çalan biri org öğrenmeye sıfırdan başlamaz; parmakları zaten biliyordur, yalnızca yeni çalgının huyunu öğrenir. Buna **transfer öğrenme** denir.
+Kedinin melanomla ne ilgisi var? Hiç. Ama ikinci cümleyi hatırlayın: İlk katmanlar kenar, köşe, doku öğrenir. Kedinin bıyığındaki kenar ile lezyonun sınırındaki kenar aynı kenardır. Ağın ilk katmanları görmeyi öğrenmiştir; neye baktığı son katmanların işidir. Piyano çalan biri org öğrenmeye sıfırdan başlamaz; parmakları zaten biliyordur, yalnızca yeni çalgının huyunu öğrenir. Buna **transfer öğrenme** denir.
 
-İki yolu var. Elinizde birkaç yüz görüntü varsa hazır ağın bütün katmanlarını **dondurur**, yalnızca en sondaki karar katmanını söküp yerine kendi sınıflarınız için yenisini takar ve bir tek onu eğitirsiniz. Tıp fakültesini bitirmiş birine yalnızca sizin kliniğin formlarını öğretmek gibi. Birkaç bin görüntünüz varsa bütün katmanları küçük bir öğrenme oranıyla eğitmeye devam edersiniz; buna **ince ayar** denir ve uzmanlık eğitimine benzer: temel bilgi yerinde durur, her şey yeni alana göre biraz bükülür.
+İki yolu var. Elinizde birkaç yüz görüntü varsa hazır ağın bütün katmanlarını **dondurur**, yalnızca en sondaki karar katmanını söküp yerine kendi sınıflarınız için yenisini takar ve bir tek onu eğitirsiniz. Tıp fakültesini bitirmiş birine yalnızca sizin kliniğin formlarını öğretmek gibi. Birkaç bin görüntünüz varsa bütün katmanları küçük bir öğrenme oranıyla eğitmeye devam edersiniz; buna **ince ayar** denir ve uzmanlık eğitimine benzer: Temel bilgi yerinde durur, her şey yeni alana göre biraz bükülür.
 
 > [!uyari] Kör güvenmeyin
 > Doğal fotoğraf renklidir, röntgen gridir; fotoğrafta nesne ortada ve büyüktür, tıbbi görüntüde aradığınız şey çoğu zaman küçük bir doku farkıdır. Yapılan karşılaştırmalar, hazır ağın tıbbi görüntüde her zaman beklendiği kadar fark yaratmadığını, küçük bir ağın sıfırdan eğitilince bazen aynı yere vardığını gösteriyor. Projenizde ikisini de deneyin ve farkı raporlayın; "transfer kullandım" bir sonuç değil, bir deneydir.
 
-Verinin az olduğu yerde ikinci bir yardımcı da **veri artırma**dır: aynı görüntüyü biraz döndürerek, biraz kaydırarak, biraz soluklaştırarak ağa tekrar gösterirsiniz. Asistanın aynı hastalığı farklı cihazlarda, farklı pozisyonlarda görmesi gibi. Ama her dönüşüm masum değildir. Göğüs röntgenini yatay çevirirseniz kalp sağa geçer; bu gerçek hayatta çok nadir görülen bir durumdur ve ağa yanlış bir anatomi öğretmiş olursunuz. Kural basit: hekimin gerçekte karşılaşabileceği değişiklikleri yapın, karşılaşamayacaklarını yapmayın.
+Verinin az olduğu yerde ikinci bir yardımcı da **veri artırma**dır: Aynı görüntüyü biraz döndürerek, biraz kaydırarak, biraz soluklaştırarak ağa tekrar gösterirsiniz. Asistanın aynı hastalığı farklı cihazlarda, farklı pozisyonlarda görmesi gibi. Ama her dönüşüm masum değildir. Göğüs röntgenini yatay çevirirseniz kalp sağa geçer; bu gerçek hayatta çok nadir görülen bir durumdur ve ağa yanlış bir anatomi öğretmiş olursunuz. Kural basit: Hekimin gerçekte karşılaşabileceği değişiklikleri yapın, karşılaşamayacaklarını yapmayın.
 
 ### Dördüncü cümle: Otuz görüntüyle yarışma kazanılır
 
-Buraya kadar ağa "bu görüntüde hastalık var mı" diye sorduk. Cerrah ve radyasyon onkoloğu başka bir şey sorar: nerede, sınırı neresi? Tümöre verilecek ışının planı, lezyonun milimetre milimetre çizilmesine bağlıdır. Her piksele "lezyon" ya da "değil" demeye **segmentasyon** denir. Çocukların boyama kitabı gibi: çizginin içini boyayacaksınız, dışına taşmayacaksınız.
+Buraya kadar ağa "bu görüntüde hastalık var mı" diye sorduk. Cerrah ve radyasyon onkoloğu başka bir şey sorar: Nerede, sınırı neresi? Tümöre verilecek ışının planı, lezyonun milimetre milimetre çizilmesine bağlıdır. Her piksele "lezyon" ya da "değil" demeye **segmentasyon** denir. Çocukların boyama kitabı gibi: Çizginin içini boyayacaksınız, dışına taşmayacaksınız.
 
 2015'te Freiburg'dan üç araştırmacı bir hücre görüntüsü yarışmasına katıldı. Eğitim için ellerinde yalnızca otuz görüntü vardı. Kazandılar. Ağlarının adı, şeklinden geliyordu: U-Net.
 
-U'nun neden U olduğunu bir tablo boyayan ressam üzerinden düşünün. Önce geri çekilir ve ne boyadığına bakar: burası gökyüzü, burası ağaç. Sonra tuvale yaklaşır ve sınırı ince fırçayla çizer. U-Net'in sol kolu geri çekilmedir: evrişim ve havuzlamayla görüntü küçülür, alıcı alan büyür, ağ "burada bir lezyon var" bilgisine ulaşır ama tam yerini kaybetmiştir. Sağ kolu yaklaşmadır: görüntü adım adım yeniden büyütülür.
+U'nun neden U olduğunu bir tablo boyayan ressam üzerinden düşünün. Önce geri çekilir ve ne boyadığına bakar: Burası gökyüzü, burası ağaç. Sonra tuvale yaklaşır ve sınırı ince fırçayla çizer. U-Net'in sol kolu geri çekilmedir: Evrişim ve havuzlamayla görüntü küçülür, alıcı alan büyür, ağ "burada bir lezyon var" bilgisine ulaşır ama tam yerini kaybetmiştir. Sağ kolu yaklaşmadır: Görüntü adım adım yeniden büyütülür.
 
-Sorun şu: geri çekilirken atılan ayrıntı geri gelmez. U-Net'in buluşu, sol koldaki her kattan sağ koldaki aynı kata doğrudan bir köprü atmaktır. Ressam geri çekilmeden önce yakından fotoğraf çekmiş gibi; yaklaştığında o fotoğraf elindedir. Bu köprülere **atlama bağlantısı** denir. "Ne" bilgisi U'nun dibinden, "nerede" bilgisi köprülerden gelir.
+Sorun şu: Geri çekilirken atılan ayrıntı geri gelmez. U-Net'in buluşu, sol koldaki her kattan sağ koldaki aynı kata doğrudan bir köprü atmaktır. Ressam geri çekilmeden önce yakından fotoğraf çekmiş gibi; yaklaştığında o fotoğraf elindedir. Bu köprülere **atlama bağlantısı** denir. "Ne" bilgisi U'nun dibinden, "nerede" bilgisi köprülerden gelir.
 
 Otuz görüntünün sırrı da buradadır. Sınıflandırmada bir görüntü tek bir etikettir. Segmentasyonda her piksel bir etikettir; beş yüze beş yüzlük tek bir görüntü çeyrek milyon örnek demektir. Üstüne hücre görüntülerini lastik gibi esnetip bükerek çoğalttılar, çünkü dokular gerçekte de böyle esner.
 
@@ -190,28 +190,28 @@ Otuz görüntünün sırrı da buradadır. Sınıflandırmada bir görüntü tek
 
 Piksel doğruluğu yüzde doksan dokuz. Hiçbir şey yapmadınız.
 
-Sebebi basit: görüntünün yüzde doksan dokuzu zaten sağlıklı cilt. "Hiçbir yerde lezyon yok" diyen bir model o piksellerin hepsini doğru bilir. Ülkede nadir görülen bir hastalık için herkese "sizde yok" diyen hekimin isabet oranı da çok yüksektir. Dengesiz sınıflarda doğruluğun yanılttığını sınıflandırmada görmüştük; segmentasyonda çok daha serttir, çünkü aradığımız şey neredeyse her zaman görüntünün küçük bir parçasıdır.
+Sebebi basit: Görüntünün yüzde doksan dokuzu zaten sağlıklı cilt. "Hiçbir yerde lezyon yok" diyen bir model o piksellerin hepsini doğru bilir. Ülkede nadir görülen bir hastalık için herkese "sizde yok" diyen hekimin isabet oranı da çok yüksektir. Dengesiz sınıflarda doğruluğun yanılttığını sınıflandırmada görmüştük; segmentasyonda çok daha serttir, çünkü aradığımız şey neredeyse her zaman görüntünün küçük bir parçasıdır.
 
-Bu yüzden segmentasyonda yalnızca lezyonla ilgilenen ölçütler kullanılır. **Dice** katsayısı şunu sorar: benim boyadığım alanla hekimin çizdiği alan ne kadar örtüşüyor? Örtüşen pikselleri iki kez sayar, iki alanın toplamına bölersiniz. Tam örtüşmede 1, hiç örtüşmede 0. **IoU** aynı şeyi biraz daha sert ölçer: örtüşen alanı, ikisinin birlikte kapladığı alana böler.
+Bu yüzden segmentasyonda yalnızca lezyonla ilgilenen ölçütler kullanılır. **Dice** katsayısı şunu sorar: Benim boyadığım alanla hekimin çizdiği alan ne kadar örtüşüyor? Örtüşen pikselleri iki kez sayar, iki alanın toplamına bölersiniz. Tam örtüşmede 1, hiç örtüşmede 0. **IoU** aynı şeyi biraz daha sert ölçer: Örtüşen alanı, ikisinin birlikte kapladığı alana böler.
 
 > [!ornek] Elle hesap
 > 100×100 bir görüntüde lezyon 100 piksel. Model 80 piksel boyadı, bunların 60'ı lezyonun üstünde. Dice: 2 × 60 / (100 + 80) = 0,67. IoU: 60 / (100 + 80 − 60) = 0,50. Piksel doğruluğu ise 60 yanlış piksel dışında her şey doğru olduğu için yüzde 99,4. Aynı tahmin, üç ayrı hikâye.
 
-Şimdi yarışma: küçük lezyonda en yüksek Dice kimde? Boyarken şuna dikkat edin: büyük lezyonda birkaç piksel taşmak sayıyı oynatmaz, küçük lezyonda aynı taşma Dice'ı yere indirir. Bir makalede "Dice 0,90" gördüğünüzde ilk sorunuz bu olsun: neyin Dice'ı? Karaciğerin tamamı için 0,90 sıradandır, birkaç milimetrelik bir metastaz için olağanüstüdür. Bir de şunu bilin: aynı lezyonu iki deneyimli hekime çizdirdiğinizde aralarındaki Dice de 1 çıkmaz. Ağın ulaşabileceği tavan, hekimlerin kendi aralarında anlaşabildiği kadardır.
+Şimdi yarışma: Küçük lezyonda en yüksek Dice kimde? Boyarken şuna dikkat edin: Büyük lezyonda birkaç piksel taşmak sayıyı oynatmaz, küçük lezyonda aynı taşma Dice'ı yere indirir. Bir makalede "Dice 0,90" gördüğünüzde ilk sorunuz bu olsun: Neyin Dice'ı? Karaciğerin tamamı için 0,90 sıradandır, birkaç milimetrelik bir metastaz için olağanüstüdür. Bir de şunu bilin: Aynı lezyonu iki deneyimli hekime çizdirdiğinizde aralarındaki Dice de 1 çıkmaz. Ağın ulaşabileceği tavan, hekimlerin kendi aralarında anlaşabildiği kadardır.
 
 ### Altıncı cümle: Ağ lezyona değil, hekimin kalemine bakar
 
 "Anahtar deliği" tezgâhına dönün ve pencereyi "Tamamı" yapın. Görüntünün altında bir cetvel var. Dermatologlar şüphelendikleri lezyonu ölçmek için yanına cetvel koyar; iyi huylu görünen bir bene çoğu zaman koymazlar. Çıkarmayı düşündükleri lezyonun çevresini de mor cerrahi kalemle işaretlerler.
 
-2019'da Heidelberg'den bir ekip, melanom tanısında çok başarılı bir ağı aldı ve basit bir şey denedi: iyi huylu benlerin fotoğraflarını, çevrelerine cerrahi kalemle işaret çizilmiş hâlleriyle yeniden gösterdi. Ağ aynı benlere çok daha sık "melanom" demeye başladı. Lezyon değişmemişti; değişen tek şey mürekkepti. Ağ, eğitim verisinde kalem izinin kötü huylu lezyonlarla birlikte görüldüğünü öğrenmişti. Hekimin şüphesini okuyordu, lezyonu değil.
+2019'da Heidelberg'den bir ekip, melanom tanısında çok başarılı bir ağı aldı ve basit bir şey denedi: İyi huylu benlerin fotoğraflarını, çevrelerine cerrahi kalemle işaret çizilmiş hâlleriyle yeniden gösterdi. Ağ aynı benlere çok daha sık "melanom" demeye başladı. Lezyon değişmemişti; değişen tek şey mürekkepti. Ağ, eğitim verisinde kalem izinin kötü huylu lezyonlarla birlikte görüldüğünü öğrenmişti. Hekimin şüphesini okuyordu, lezyonu değil.
 
-Geçen hafta Akıllı Hans'ı konuştuk: hesap yapmıyor, soranın yüzünü okuyordu. Göğüs röntgeninde aynısı hastane için yaşandı: pnömoni modeli filmin köşesindeki işaretten hangi hastanede çekildiğini çıkarıyor, o hastanede pnömoni sık olduğu için "pnömoni" diyordu. Başka hastanenin filmlerinde başarısı düştü. Buna **kısayol öğrenme** diyoruz ve görüntüde özellikle sinsidir, çünkü bir görüntüde bizim bakmadığımız çok yer vardır: köşedeki etiket, cetvel, kablo, yatağın kenarı, filmin parlaklığı.
+Geçen hafta Akıllı Hans'ı konuştuk: Hesap yapmıyor, soranın yüzünü okuyordu. Göğüs röntgeninde aynısı hastane için yaşandı: Pnömoni modeli filmin köşesindeki işaretten hangi hastanede çekildiğini çıkarıyor, o hastanede pnömoni sık olduğu için "pnömoni" diyordu. Başka hastanenin filmlerinde başarısı düştü. Buna **kısayol öğrenme** diyoruz ve görüntüde özellikle sinsidir, çünkü bir görüntüde bizim bakmadığımız çok yer vardır: köşedeki etiket, cetvel, kablo, yatağın kenarı, filmin parlaklığı.
 
 Haftanın hikâyesini hatırlayın: Hubel ile Wiesel'in hücresi noktaya değil, camın kenarına bakıyordu ve bunu ancak hoparlörü dinledikleri için fark ettiler. Bizim hoparlörümüz üç basit deneydir.
 
 Birincisi, şüphelendiğiniz yeri kapatıp modele yeniden sormak. Görüntünün ortasını, yani lezyonu ya da akciğeri tamamen karartın ve yalnızca çerçeveyi gösterin. Model hâlâ iyi tahmin ediyorsa hastalığa bakmıyordur.
 
-İkincisi, bölmeyi hastaya göre yapmak. Geçen haftaki sunumlarda bunun güzel örneklerini gördük: aynı hastanın iki görüntüsü biri eğitimde biri testteyse ağ hastalığı değil hastayı tanır.
+İkincisi, bölmeyi hastaya göre yapmak. Geçen haftaki sunumlarda bunun güzel örneklerini gördük: Aynı hastanın iki görüntüsü biri eğitimde biri testteyse ağ hastalığı değil hastayı tanır.
 
 Üçüncüsü, başka bir yerin verisinde denemek. Başka cihaz, başka hastane, başka yıl. Düşüş yoksa sevinin; varsa en değerli bulgunuz odur.
 
@@ -219,11 +219,11 @@ Birincisi, şüphelendiğiniz yeri kapatıp modele yeniden sormak. Görüntünü
 
 ## Bugün Sahada Ne Var?
 
-Derin öğrenme dersini alanlar soracaktır: evrişimli ağlar eskimedi mi? Kısa cevap hayır; biraz daha uzunu şöyle.
+Derin öğrenme dersini alanlar soracaktır: Evrişimli ağlar eskimedi mi? Kısa cevap hayır; biraz daha uzunu şöyle.
 
-2020'den beri görüntüde ikinci bir aile var: görüntü dönüştürücüleri. Onlar görüntüyü on altıya on altılık karelere böler ve her karenin diğer bütün karelerle ilişkisine bakar. Anahtar deliği yerine yapboz gibi düşünün: parçalar baştan masaya serilir, hangisinin hangisiyle ilgili olduğu öğrenilir. Çok büyük veride çok güçlüdürler. Ama dikkat edin, ilk adımda yine küçük bir pencere var.
+2020'den beri görüntüde ikinci bir aile var: görüntü dönüştürücüleri. Onlar görüntüyü on altıya on altılık karelere böler ve her karenin diğer bütün karelerle ilişkisine bakar. Anahtar deliği yerine yapboz gibi düşünün: Parçalar baştan masaya serilir, hangisinin hangisiyle ilgili olduğu öğrenilir. Çok büyük veride çok güçlüdürler. Ama dikkat edin, ilk adımda yine küçük bir pencere var.
 
-Tıbbi segmentasyonda ise şaşırtıcı bir tablo var. 2021'de yayımlanan nnU-Net yeni bir mimari önermedi; bildiğimiz U-Net'i aldı ve ayarlarını veriye bakarak kendi kendine seçen bir düzenek kurdu: görüntü boyutu, ön işleme, artırma, eğitim süresi. Onlarca yarışmada, o yarışma için özel tasarlanmış ağları geçti. Çıkarılacak ders mimariyle ilgili değil: başarının büyük kısmı, bizim üç haftadır konuştuğumuz sıkıcı görünen kararlarda saklı.
+Tıbbi segmentasyonda ise şaşırtıcı bir tablo var. 2021'de yayımlanan nnU-Net yeni bir mimari önermedi; bildiğimiz U-Net'i aldı ve ayarlarını veriye bakarak kendi kendine seçen bir düzenek kurdu: görüntü boyutu, ön işleme, artırma, eğitim süresi. Onlarca yarışmada, o yarışma için özel tasarlanmış ağları geçti. Çıkarılacak ders mimariyle ilgili değil: Başarının büyük kısmı, bizim üç haftadır konuştuğumuz sıkıcı görünen kararlarda saklı.
 
 En yeni dalga da genel amaçlı modeller. 2023'te bir milyar maskeyle eğitilmiş bir model çıktı; bir noktaya dokunuyorsunuz, o nesnenin sınırını çiziyor. Bir yıl sonra bir buçuk milyon tıbbi görüntüyle eğitilmiş bir sürümü yayımlandı. Atölyede parmağınızla yaptığınız boyamayı tek dokunuşla yapan modeller artık var. Onların çizdiği sınıra ne kadar güveneceğinizi ise yine Dice, yine dış veri, yine beşinci ve altıncı cümle söyleyecek.
 
@@ -236,7 +236,7 @@ Görüntüyle çalışanlar için dört soru; son raporda cevaplarını görmek 
 3. Kullandığınız her veri artırma, bir hekimin gerçekte karşılaşabileceği bir değişiklik mi?
 4. Görüntünün ilgili bölgesini kapattığınızda başarınız ne oluyor?
 
-Tabloyla ya da sinyalle çalışanlar için de aynı soruların karşılığı var: dördüncü soruyu "en güçlü özniteliğimi çıkarınca ne oluyor" diye okuyun.
+Tabloyla ya da sinyalle çalışanlar için de aynı soruların karşılığı var: Dördüncü soruyu "en güçlü özniteliğimi çıkarınca ne oluyor" diye okuyun.
 
 ## Temel Kavramlar
 

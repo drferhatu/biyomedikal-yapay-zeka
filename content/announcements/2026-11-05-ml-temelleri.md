@@ -5,4 +5,4 @@ pinned: false
 kind: bilgi
 ---
 
-Bu ders bazı şeyleri temelden almıyor. Python, istatistik ya da makine öğrenmesi temeli olmadan gelenler için haftalara bağlı, tamamen ücretsiz kaynaklardan kurulu bir [tamamlayıcı yol haritası](/rehber/ml-temelleri) hazırlandı: hangi haftadan önce neyi bitirmeli, kaç saat sürer. Kaynaklar sayfasında da ilk sırada.
+Bu ders bazı şeyleri temelden almıyor. Python, istatistik ya da makine öğrenmesi temeli olmadan gelenler için haftalara bağlı, tamamen ücretsiz kaynaklardan kurulu bir [tamamlayıcı yol haritası](/rehber/ml-temelleri) hazırlandı: Hangi haftadan önce neyi bitirmeli, kaç saat sürer. Kaynaklar sayfasında da ilk sırada.

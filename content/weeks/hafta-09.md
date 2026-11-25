@@ -2,7 +2,7 @@
 week: 9
 title: "Proje Ara Sunumları (Vize)"
 topic: "Ara sınav (izlencede 8. hafta); yazılı sınav yerine proje ara sunumları olarak yapılır"
-description: "Vize notu için proje ara sunumları: her öğrenci on dakikada klinik sorusunu, veri kararlarını, doğrulama tasarımını ve temel modelinin eğrilerini sunar. Hikâye köşesinde hesap yapan at Akıllı Hans."
+description: "Vize notu için proje ara sunumları: Her öğrenci on dakikada klinik sorusunu, veri kararlarını, doğrulama tasarımını ve temel modelinin eğrilerini sunar. Hikâye köşesinde hesap yapan at Akıllı Hans."
 module: m4
 exam: true
 status: hazir
@@ -60,7 +60,7 @@ Von Osten gösterilerinden para almıyordu; bir şarlatan değildi, gördüğün
 
 ### Kurul ne dedi?
 
-Mesele o kadar büyüdü ki 1904'te bir kurul toplandı. Başında dönemin önde gelen psikologlarından Carl Stumpf vardı; yanında bir veteriner, bir sirk yöneticisi, süvari subayları, öğretmenler ve hayvanat bahçesinin müdürü oturuyordu. Hile aradılar. Gizli bir işaret, bir ip, bir yardımcı var mı diye baktılar. Bulamadılar, çünkü gerçekten yoktu. Kurulun vardığı sonuç şuydu: ortada bir hile yok.
+Mesele o kadar büyüdü ki 1904'te bir kurul toplandı. Başında dönemin önde gelen psikologlarından Carl Stumpf vardı; yanında bir veteriner, bir sirk yöneticisi, süvari subayları, öğretmenler ve hayvanat bahçesinin müdürü oturuyordu. Hile aradılar. Gizli bir işaret, bir ip, bir yardımcı var mı diye baktılar. Bulamadılar, çünkü gerçekten yoktu. Kurulun vardığı sonuç şuydu: Ortada bir hile yok.
 
 Buraya kadar hikâye, bugün "modelimiz test verisinde çok başarılı" diyen bir makaleye benziyor. Sonuç etkileyici, hakemler ikna olmuş, kimse yalan söylemiyor.
 
@@ -70,7 +70,7 @@ Stumpf'un genç öğrencisi Oskar Pfungst işin peşini bırakmadı ve iki basit
 
 Sonuç çarpıcıydı. Soran kişi cevabı biliyorsa Hans soruların onda dokuzuna yakınını doğru yanıtlıyordu. Soran kişi cevabı bilmiyorsa ya da at onu göremiyorsa, Hans neredeyse hiçbir soruyu bilemiyordu.
 
-Hans hesap yapmıyordu. İnsanı okuyordu. Soruyu soran kişi, at vurmaya başladığında farkında olmadan hafifçe öne eğiliyor, doğru sayıya yaklaşıldıkça geriliyor, doğru vuruşta ise başını belli belirsiz kaldırıp rahatlıyordu. Hans bu küçücük hareketi yakalıyor ve tam o anda duruyordu. İşin en ilginç yanı şu: von Osten bu işareti verdiğinin farkında değildi, Pfungst da kendini tutmaya çalıştığında bile işareti vermekten kendini alamadı.
+Hans hesap yapmıyordu. İnsanı okuyordu. Soruyu soran kişi, at vurmaya başladığında farkında olmadan hafifçe öne eğiliyor, doğru sayıya yaklaşıldıkça geriliyor, doğru vuruşta ise başını belli belirsiz kaldırıp rahatlıyordu. Hans bu küçücük hareketi yakalıyor ve tam o anda duruyordu. İşin en ilginç yanı şu: Von Osten bu işareti verdiğinin farkında değildi, Pfungst da kendini tutmaya çalıştığında bile işareti vermekten kendini alamadı.
 
 Pfungst bulgularını 1907'de yayımladı. Von Osten sonuca hiçbir zaman ikna olmadı.
 
@@ -88,7 +88,7 @@ Sağlıkta bedeli daha ağır. Göğüs röntgeninden zatürre tanıyan bir mode
 
 ### Bugün salonda Pfungst olun
 
-Kurul hile aradı ve bulamadı. Pfungst ise başka bir şey sordu: at cevabı nereden biliyor? Bugün her sunumda arkadaşınıza soracağınız soru budur.
+Kurul hile aradı ve bulamadı. Pfungst ise başka bir şey sordu: At cevabı nereden biliyor? Bugün her sunumda arkadaşınıza soracağınız soru budur.
 
 - Modelin cevabı nereden biliyor? Tahmin anında elinde olmayacak bir sütun veriye karışmış olabilir mi?
 - Aynı hasta hem eğitimde hem testte var mı? Varsa model hastalığı değil, hastayı tanıyor olabilir.
@@ -98,7 +98,7 @@ Kurul hile aradı ve bulamadı. Pfungst ise başka bir şey sordu: at cevabı ne
 Sunan arkadaşınız için de aynı şey geçerli. "Bunu denemedim, şöyle bakarım" demek, von Osten gibi sonuca inanmakta diretmekten çok daha değerlidir.
 
 > [!not] Hikâyenin özü
-> Hans'ı ele veren şey daha zor sorular olmadı. Onu ele veren, soruyu soranın cevabı bilmediği tek bir deneydi. İyi bir doğrulama tasarımı tam olarak budur: modelin cevabı başka bir yerden okuyamayacağı bir sınav kurmak.
+> Hans'ı ele veren şey daha zor sorular olmadı. Onu ele veren, soruyu soranın cevabı bilmediği tek bir deneydi. İyi bir doğrulama tasarımı tam olarak budur: Modelin cevabı başka bir yerden okuyamayacağı bir sınav kurmak.
 
 ## Sunumda Ne Anlatılır?
 
@@ -112,7 +112,7 @@ Sekiz başlık, yaklaşık birer slayt: klinik soru, veri, keşif, ön işleme k
 - **Yalnızca eğitim sonucunu göstermek.** [8. haftadaki](/haftalar/hafta-08) ezberci vakayı hatırlayın; eğitim ve doğrulama sonuçları yan yana gösterilir.
 - **Bölme stratejisini atlamak.** "Veriyi yüzde seksen, yüzde yirmi böldüm" yeterli değildir. Bir hastanın kaç satırı var, satırlar nasıl bölündü?
 - **Doğruluk raporlamak.** Sınıflar dengesizse doğruluk bir şey söylemez; görevinize uygun ölçütü kullanın.
-- **Grafiği okumamak.** Her grafiğin altında bir cümle olsun: bu grafik ne söylüyor?
+- **Grafiği okumamak.** Her grafiğin altında bir cümle olsun: Bu grafik ne söylüyor?
 - **Süreyi aşmak.** On dakika, sekiz slayttır. Prova yapın.
 
 ## Sunumdan Sonra

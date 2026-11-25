@@ -45,8 +45,8 @@ const pencereler = [
   <!-- 1) ANAHTAR DELİĞİ -->
   <div data-panel="delik" class="p-4 sm:p-5">
     <div class="text-sm leading-relaxed text-ink-2">
-      Karşınızda bir cilt görüntüsü var ama kapalı. Parmağınızı (ya da fareyi) üzerinde gezdirin: yalnızca küçük bir
-      pencereden görebilirsiniz. Ağın ilk katmanı dünyayı tam olarak böyle görür. Soru şu: bu görüntüde ne var?
+      Karşınızda bir cilt görüntüsü var ama kapalı. Parmağınızı (ya da fareyi) üzerinde gezdirin: Yalnızca küçük bir
+      pencereden görebilirsiniz. Ağın ilk katmanı dünyayı tam olarak böyle görür. Soru şu: Bu görüntüde ne var?
     </div>
     <div class="mt-3 flex flex-wrap gap-2" data-pencereler>
       {pencereler.map((p, i) => (
@@ -273,12 +273,12 @@ const pencereler = [
     let dP = { x: 64, y: 60 };
 
     const dMetinler = {
-      3: 'Dokuz piksel. Açık mı, koyu mu, belki bir geçiş. İlk katman bundan fazlasını göremez ve görmesi de gerekmez: işi yalnızca "burada bir kenar var mı" demektir. Lezyonun sınırında ve alttaki çizgilerde gezinin; ikisi bu pencereden aynı görünür.',
+      3: 'Dokuz piksel. Açık mı, koyu mu, belki bir geçiş. İlk katman bundan fazlasını göremez ve görmesi de gerekmez: İşi yalnızca "burada bir kenar var mı" demektir. Lezyonun sınırında ve alttaki çizgilerde gezinin; ikisi bu pencereden aynı görünür.',
       5: 'İki evrişim katmanı üst üste gelince pencere 5×5 olur. Hâlâ teşhis koyamazsınız, ama artık kenarın yönünü ve kıvrımını söyleyebilirsiniz.',
       7: 'Üç katman, 7×7. İnce koyu çizginin bir kıl olduğunu, alttaki düzenli çizgilerin başka bir şey olduğunu sezmeye başlarsınız. Katman eklemek, anahtar deliğini büyütmektir.',
-      15: 'Araya havuzlama girince pencere hızla büyür. Artık doku görüyorsunuz: lezyonun içi dışından farklı. Alttaki düzenli çizgilerin bir cetvel olduğu da belli oldu.',
+      15: 'Araya havuzlama girince pencere hızla büyür. Artık doku görüyorsunuz: Lezyonun içi dışından farklı. Alttaki düzenli çizgilerin bir cetvel olduğu da belli oldu.',
       31: 'Derin katmanlar. Lezyonun bir parçasını ve sınırının düzensizliğini aynı anda görebiliyorsunuz. Hekimin "sınır düzensiz" dediği şey ancak bu ölçekte görünür.',
-      0: 'Görüntünün tamamı. Dikkat edin: altta bir cetvel var. Hekimler şüphelendikleri lezyonu ölçmek için cetvel koyar. Bir ağ için "cetvel varsa kötü huylu" demek, lezyonu anlamaktan çok daha kolaydır. Haftanın altıncı cümlesi bunun hikâyesi.',
+      0: 'Görüntünün tamamı. Dikkat edin: Altta bir cetvel var. Hekimler şüphelendikleri lezyonu ölçmek için cetvel koyar. Bir ağ için "cetvel varsa kötü huylu" demek, lezyonu anlamaktan çok daha kolaydır. Haftanın altıncı cümlesi bunun hikâyesi.',
     };
 
     function delikCiz() {
@@ -356,13 +356,13 @@ const pencereler = [
     const fSahne = sahne(23);
     const fR = rng(5);
     const hazirlar = {
-      ayni: { k: [0, 0, 0, 0, 1, 0, 0, 0, 0], m: 'Ortada bir, çevrede sıfır: her piksel kendisi olarak kalır. Filtrenin ne yaptığını anlamanın en kolay yolu, hiçbir şey yapmayanıyla başlamaktır.' },
+      ayni: { k: [0, 0, 0, 0, 1, 0, 0, 0, 0], m: 'Ortada bir, çevrede sıfır: Her piksel kendisi olarak kalır. Filtrenin ne yaptığını anlamanın en kolay yolu, hiçbir şey yapmayanıyla başlamaktır.' },
       bulanik: { k: [1, 1, 1, 1, 1, 1, 1, 1, 1], m: 'Dokuz komşunun ortalaması. Kıllar ve gürültü yumuşar, lezyonun genel şekli kalır. Buzlu camdan bakmak gibi; ayrıntıyı atar, büyük resmi tutar.' },
       keskin: { k: [0, -1, 0, -1, 5, -1, 0, -1, 0], m: 'Ortayı güçlendir, komşuları çıkar. Telefonunuzdaki "keskinleştir" düğmesinin arkasında bu dokuz sayı var.' },
-      dikey: { k: [-1, 0, 1, -2, 0, 2, -1, 0, 1], m: 'Sol sütun eksi, sağ sütun artı: soldan sağa parlaklık değişen yerde yanar, düz yerde susar. Cetvelin çizgileri ışıl ışıl, yatay kenarlar kayıp. Bu filtreyi 1968\'de bir mühendis elle yazdı; ağlar bugün aynısını kendi kendine buluyor.' },
+      dikey: { k: [-1, 0, 1, -2, 0, 2, -1, 0, 1], m: 'Sol sütun eksi, sağ sütun artı: Soldan sağa parlaklık değişen yerde yanar, düz yerde susar. Cetvelin çizgileri ışıl ışıl, yatay kenarlar kayıp. Bu filtreyi 1968\'de bir mühendis elle yazdı; ağlar bugün aynısını kendi kendine buluyor.' },
       yatay: { k: [-1, -2, -1, 0, 0, 0, 1, 2, 1], m: 'Aynı filtrenin yan yatırılmışı. Şimdi cetvelin dikey çizgileri söndü, lezyonun alt ve üst sınırı yandı. Her filtre tek bir soru sorar.' },
-      kenar: { k: [-1, -1, -1, -1, 8, -1, -1, -1, -1], m: 'Orta piksel komşularından farklıysa yanar. Lezyonun bütün sınırı, kıllar ve cetvel aynı anda görünür. Dikkat: filtre hangisinin hastalık olduğunu bilmez; üçü de onun için kenardır.' },
-      rastgele: { k: null, m: 'Eğitimin ilk günü. Dokuz sayı rastgele; çıktı anlamsız bir gölge. Öğrenme dediğimiz şey, bu sayıların hata azalacak yönde azar azar kıpırdamasıdır. Binlerce adım sonra bu filtre bir kenar bulucuya dönüşür. Düğmeye bir daha basın: her ağ başka bir yerden başlar.' },
+      kenar: { k: [-1, -1, -1, -1, 8, -1, -1, -1, -1], m: 'Orta piksel komşularından farklıysa yanar. Lezyonun bütün sınırı, kıllar ve cetvel aynı anda görünür. Dikkat: Filtre hangisinin hastalık olduğunu bilmez; üçü de onun için kenardır.' },
+      rastgele: { k: null, m: 'Eğitimin ilk günü. Dokuz sayı rastgele; çıktı anlamsız bir gölge. Öğrenme dediğimiz şey, bu sayıların hata azalacak yönde azar azar kıpırdamasıdır. Binlerce adım sonra bu filtre bir kenar bulucuya dönüşür. Düğmeye bir daha basın: Her ağ başka bir yerden başlar.' },
     };
 
     function cekirdek() {
@@ -392,8 +392,8 @@ const pencereler = [
       for (let i = 0; i < out.length; i++) out[i] = sifir ? Math.min(1, (Math.abs(out[i]) / enb) * 3.2) : out[i] / top;
       ciz(fCikti, out);
       fNot.textContent = sifir
-        ? 'Toplam 0: düz bölge siyah, değişim beyaz.'
-        : `Toplam ${Math.round(top * 100) / 100}: parlaklık korunsun diye çıktı toplama bölünür.`;
+        ? 'Toplam 0: Düz bölge siyah, değişim beyaz.'
+        : `Toplam ${Math.round(top * 100) / 100}: Parlaklık korunsun diye çıktı toplama bölünür.`;
     }
 
     function hazirSec(id) {
@@ -407,7 +407,7 @@ const pencereler = [
     hucreler.forEach((el) =>
       el.addEventListener('input', () => {
         sec(hBtn, null);
-        fMetin.textContent = 'Kendi filtreniz. Bir deneme: üst satırı eksi, alt satırı artı yapın ve ne yandığına bakın. Sonra bütün sayıları aynı yapın.';
+        fMetin.textContent = 'Kendi filtreniz. Bir deneme: Üst satırı eksi, alt satırı artı yapın ve ne yandığına bakın. Sonra bütün sayıları aynı yapın.';
         filtreCiz();
       })
     );
@@ -467,14 +467,14 @@ const pencereler = [
       const boyali = tp + fp;
       if (boyali === 0) {
         bMetin.textContent = bosAcc > 0.97
-          ? `Henüz hiçbir şey boyamadınız ve piksel doğruluğunuz ${yuzde(bosAcc)}. Lezyonu tamamen kaçıran bir model, raporda "yüzde doksan dokuz doğru" diye görünür. Dice ise sıfır: o yalnızca lezyonla ilgilenir.`
+          ? `Henüz hiçbir şey boyamadınız ve piksel doğruluğunuz ${yuzde(bosAcc)}. Lezyonu tamamen kaçıran bir model, raporda "yüzde doksan dokuz doğru" diye görünür. Dice ise sıfır: O yalnızca lezyonla ilgilenir.`
           : 'Parmağınızla lezyonun üstünü boyayın. Taşırmak da eksik bırakmak da Dice puanını düşürür.';
       } else if (dice >= 0.9) {
-        bMetin.textContent = `Dice ${ondalik(dice)}: iki deneyimli hekimin aynı lezyonu çizdiğinde tutturduğu düzeydesiniz. Şimdi lezyonu küçültüp aynı başarıyı yakalamayı deneyin; birkaç piksellik taşma sayıyı ne kadar oynatıyor?`;
+        bMetin.textContent = `Dice ${ondalik(dice)}: İki deneyimli hekimin aynı lezyonu çizdiğinde tutturduğu düzeydesiniz. Şimdi lezyonu küçültüp aynı başarıyı yakalamayı deneyin; birkaç piksellik taşma sayıyı ne kadar oynatıyor?`;
       } else if (fp > fn * 2) {
         bMetin.textContent = `Fazla boyadınız: ${fp} piksel lezyonun dışında. Cerrahide bu, gereğinden geniş kesi demek. Silgiyle kenarları toplayın.`;
       } else if (fn > fp * 2) {
-        bMetin.textContent = `Eksik kaldı: lezyonun ${fn} pikseli boyanmadı. Radyoterapide bu, tümörün bir kısmının ışın almaması demek.`;
+        bMetin.textContent = `Eksik kaldı: Lezyonun ${fn} pikseli boyanmadı. Radyoterapide bu, tümörün bir kısmının ışın almaması demek.`;
       } else {
         bMetin.textContent = `Dice ${ondalik(dice)}, IoU ${ondalik(iou)}. İkisi aynı örtüşmeyi ölçer; IoU her zaman biraz daha serttir. "Referansı göster" ile nerede ayrıldığınıza bakın.`;
       }

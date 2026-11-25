@@ -6,7 +6,7 @@ description: "Sinyal zaman taşır. Gerçek EKG kayıtlarında örnekleme hızı
 module: m3
 exam: false
 status: hazir
-changeNote: "28 Ekim dersi Cumhuriyet Bayramı nedeniyle yapılmadığı için bu derste iki haftanın konusu birlikte işlenecek: önce kümeleme ve anomali tespiti (6. hafta), ardından biyomedikal sinyal analizi. Her iki haftanın sayfası ayrı kalır; notlar kendi sayfasında yayımlanır."
+changeNote: "28 Ekim dersi Cumhuriyet Bayramı nedeniyle yapılmadığı için bu derste iki haftanın konusu birlikte işlenecek: Önce kümeleme ve anomali tespiti (6. hafta), ardından biyomedikal sinyal analizi. Her iki haftanın sayfası ayrı kalır; notlar kendi sayfasında yayımlanır."
 tags:
   - "EEG"
   - "EKG"
@@ -65,7 +65,7 @@ import NotebookEmbed from '@/components/NotebookEmbed.astro';
 
 ## Ön Okuma ve Hazırlık
 
-Bu ders iki haftanın konusunu taşıyor; önce 6. haftanın kümeleme konusu kısaca, sonra bu haftanın asıl konusu sinyal. Ön okuma: PhysioNet'teki MIT-BIH Arrhythmia Database sayfasının açıklamasına göz atın; 48 kayıt, her atım kardiyolog etiketli. Bilgisayarınızla gelin; defter PhysioNet'ten gerçek kayıt indiriyor. İlk proje teslimi de bugün: depo bağlantınızı hazır tutun.
+Bu ders iki haftanın konusunu taşıyor; önce 6. haftanın kümeleme konusu kısaca, sonra bu haftanın asıl konusu sinyal. Ön okuma: PhysioNet'teki MIT-BIH Arrhythmia Database sayfasının açıklamasına göz atın; 48 kayıt, her atım kardiyolog etiketli. Bilgisayarınızla gelin; defter PhysioNet'ten gerçek kayıt indiriyor. İlk proje teslimi de bugün: Depo bağlantınızı hazır tutun.
 
 > [!not] Dersin akışı (4 Kasım)
 > 15 dakika proje teslimi ve sorular. Bir saat 6. hafta: kümeleme ve anomali. Ara. Bir saat on beş dakika sinyal: EKG üzerinden filtreleme, spektrum, HRV ve kayıt-bazlı doğrulama. Son 15 dakika: proje soruları.
@@ -78,13 +78,13 @@ Bu ders iki haftanın konusunu taşıyor; önce 6. haftanın kümeleme konusu k�
 
 ### Saniyede kaç fotoğraf?
 
-İlk kavram örnekleme hızı. Cihaz saniyede kaç ölçüm alıyor? MIT-BIH kayıtlarında 360. Bunun neden önemli olduğunu bir benzetmeyle anlatayım. Dönen bir tekerleğin fotoğrafını saniyede on kez çekerseniz, saniyede on turdan hızlı dönen tekerlek size duruyormuş ya da geri dönüyormuş gibi görünür. Sinyalde de aynı şey olur: örnekleme hızının yarısından hızlı titreşen her şey yanlış bir frekansa "katlanır". Bu yarıya Nyquist frekansı deniyor. EKG'nin ilgilendiğimiz bileşenleri 40 Hz'in altında olduğu için 360 fazlasıyla yeter; ama EMG için yetmeyebilir. Hangi frekansı görebildiğinizi bilmeden sinyale yorum yapmayın.
+İlk kavram örnekleme hızı. Cihaz saniyede kaç ölçüm alıyor? MIT-BIH kayıtlarında 360. Bunun neden önemli olduğunu bir benzetmeyle anlatayım. Dönen bir tekerleğin fotoğrafını saniyede on kez çekerseniz, saniyede on turdan hızlı dönen tekerlek size duruyormuş ya da geri dönüyormuş gibi görünür. Sinyalde de aynı şey olur: Örnekleme hızının yarısından hızlı titreşen her şey yanlış bir frekansa "katlanır". Bu yarıya Nyquist frekansı deniyor. EKG'nin ilgilendiğimiz bileşenleri 40 Hz'in altında olduğu için 360 fazlasıyla yeter; ama EMG için yetmeyebilir. Hangi frekansı görebildiğinizi bilmeden sinyale yorum yapmayın.
 
 ### Gürültüyü süzmek
 
 Ham EKG'de iki sıradan gürültü var. Biri hastanın nefes almasından ve kıpırdamasından gelen yavaş bir dalgalanma; taban çizgisi aşağı yukarı kayar. Diğeri prizden gelen 50 Hz uğultusu. İkisi de kalple ilgili değil. Filtre, sinyalin yalnızca istediğimiz frekans aralığını, EKG için yaklaşık 0.5 ile 40 Hz arasını, bırakıp gerisini süzer. Buna bant geçiren filtre deniyor.
 
-Defterde kasıtlı olarak kirlettiğimiz bir kayda filtre uygulayıp öncesi ve sonrasını yan yana çiziyoruz. Bir alışkanlık edinin: filtre uyguladığınızda yalnızca dalga biçimine değil, bir sonraki bölümde göreceğimiz spektruma da bakın. Filtrenin ne süzdüğünü asıl orada görürsünüz.
+Defterde kasıtlı olarak kirlettiğimiz bir kayda filtre uygulayıp öncesi ve sonrasını yan yana çiziyoruz. Bir alışkanlık edinin: Filtre uyguladığınızda yalnızca dalga biçimine değil, bir sonraki bölümde göreceğimiz spektruma da bakın. Filtrenin ne süzdüğünü asıl orada görürsünüz.
 
 ### Sinyali notalarına ayırmak
 
@@ -92,7 +92,7 @@ Bir akorun içindeki notaları ayırt etmek gibi, bir sinyalin içindeki frekans
 
 Aynı grafik başka sinyallerde başka şeyler anlatır. EEG'de delta, teta, alfa, beta bantlarının gücünü okursunuz; uyku evresi ya da nöbet buradan görünür. Kalp hızı değişkenliğinde düşük ve yüksek frekans bantlarının oranı otonom sinir sistemi hakkında bir şey söyler. BVYZ-08 projesi tam olarak bu grafiği EEG bantlarına taşıyacak.
 
-> [!ornek] Zaman–frekans: ne zaman hangi nota?
+> [!ornek] Zaman–frekans: Ne zaman hangi nota?
 > Spektrum "hangi frekanslar var" der ama "ne zaman" demez. Bir nöbetin kaçıncı saniyede başladığını görmek için sinyali kısa pencerelere bölüp her pencerenin spektrumunu yan yana koyarsınız; buna spektrogram deniyor. Dalgacık dönüşümü aynı işi değişken pencereyle yapar. Bugün bunlara girmiyoruz; defterin "deneyin" notunda ve 11. haftada yeniden karşılaşacağız.
 
 ### Atımdan sayıya
@@ -121,7 +121,7 @@ Defter PhysioNet'ten sekiz MIT-BIH kaydını indiriyor. Önce beş saniyelik ham
 
 <NotebookEmbed file="notebooks/hafta-07.ipynb" title="Hafta 7 · EKG: Filtreleme, Spektrum, HRV ve Kayıt-Bazlı Doğrulama" />
 
-**Ders içi çalışma:** Sinyal projesi olanlar (BVYZ-03, 04, 08) defterin hangi bölümünü doğrudan kendi verilerine taşıyabileceklerini söylesin. Diğerleri: kendi verinizde "aynı hastadan birden çok satır" durumu var mı; bugünkü rastgele/kayıt-bazlı farkı sizin projenizde de ortaya çıkar mı?
+**Ders içi çalışma:** Sinyal projesi olanlar (BVYZ-03, 04, 08) defterin hangi bölümünü doğrudan kendi verilerine taşıyabileceklerini söylesin. Diğerleri: Kendi verinizde "aynı hastadan birden çok satır" durumu var mı; bugünkü rastgele/kayıt-bazlı farkı sizin projenizde de ortaya çıkar mı?
 
 ## Tartışma Soruları
 
@@ -131,4 +131,4 @@ Defter PhysioNet'ten sekiz MIT-BIH kaydını indiriyor. Önce beş saniyelik ham
 
 ## Haftanın Özeti
 
-Sinyali dört adımda tabloya çevirdik: örnekleme hızını bilmek, gürültüyü süzmek, spektruma bakmak, atımdan öznitelik çıkarmak. Sonra 2. haftanın dersini sinyalde yeniden gördük: yeni hastaya genellemeyi ancak kayıt-bazlı bölme ölçer. Gelecek hafta derin öğrenmeye giriyoruz: bugün elle çıkardığımız öznitelikleri bir ağın kendi başına bulup bulamayacağına bakacağız.
+Sinyali dört adımda tabloya çevirdik: örnekleme hızını bilmek, gürültüyü süzmek, spektruma bakmak, atımdan öznitelik çıkarmak. Sonra 2. haftanın dersini sinyalde yeniden gördük: Yeni hastaya genellemeyi ancak kayıt-bazlı bölme ölçer. Gelecek hafta derin öğrenmeye giriyoruz: Bugün elle çıkardığımız öznitelikleri bir ağın kendi başına bulup bulamayacağına bakacağız.

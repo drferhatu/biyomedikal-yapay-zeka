@@ -249,7 +249,7 @@ const vakalar = [
     function adimMetin() {
       const h = HASTALAR[A.secili];
       const gercek = h.y ? 'riskli' : 'risksiz';
-      if (A.faz === 0) return `Hasta ${h.ad} seçili: potasyumu ${h.K.toFixed(1)} mmol/L, gerçekte <b>${gercek}</b>. Çizgilerin üzerindeki sayılar ağın şu anki ağırlıkları. <b>İleri</b>'ye basın ve ağın ne dediğine bakın.`;
+      if (A.faz === 0) return `Hasta ${h.ad} seçili: Potasyumu ${h.K.toFixed(1)} mmol/L, gerçekte <b>${gercek}</b>. Çizgilerin üzerindeki sayılar ağın şu anki ağırlıkları. <b>İleri</b>'ye basın ve ağın ne dediğine bakın.`;
       if (A.faz === 1) return `Potasyum ${h.K.toFixed(1)} ağa girdi. Gizli nöronlar girdiyi kendi ağırlıklarıyla tartıp ${f2(A.f.h[0])} ve ${f2(A.f.h[1])} dedi. Çıkış nöronu bu iki sayıyı kendi ağırlıklarıyla topladı ve <b>${yuzde(A.f.p)} risk</b> verdi. Şimdi bunu gerçekle karşılaştıralım: <b>Hata</b>.`;
       if (A.faz === 2) {
         const yon = A.f.p - h.y > 0 ? 'riski fazla buldu' : 'riski az buldu';
@@ -262,7 +262,7 @@ const vakalar = [
         return `Hata, çıkıştan girişe doğru bağlantılara paylaştırıldı. <b>Kalın çizgi, bu hatada payı büyük olan bağlantıdır.</b> En büyük pay ${adlar[i]} bağlantıda (${f2(gs[i])}). Kimse suçlanıp atılmıyor; herkes payı kadar düzeltilecek: <b>Güncelle</b>.`;
       }
       const yorum = A.L1 < A.L0 ? 'Hata azaldı.' : 'Bu adımda azalmadı; başka hastalarla birlikte tekrarlandıkça yön bulur.';
-      return `Her ağırlık, payının tersi yönünde bir adım attı (adım büyüklüğü ${LR_ADIM}). Bu hasta için kayıp <b>${f2(A.L0)} → ${f2(A.L1)}</b>. ${yorum} Aşağıdaki kutulara bakın: bir hastayı düzeltirken ötekiler bozulmuş olabilir. Bu yüzden ağ bütün hastaları tekrar tekrar görür; öğrenme, bu dört adımın binlerce kez yinelenmesidir. Başka bir hasta seçin ya da otomatik çalıştırın.`;
+      return `Her ağırlık, payının tersi yönünde bir adım attı (adım büyüklüğü ${LR_ADIM}). Bu hasta için kayıp <b>${f2(A.L0)} → ${f2(A.L1)}</b>. ${yorum} Aşağıdaki kutulara bakın: Bir hastayı düzeltirken ötekiler bozulmuş olabilir. Bu yüzden ağ bütün hastaları tekrar tekrar görür; öğrenme, bu dört adımın binlerce kez yinelenmesidir. Başka bir hasta seçin ya da otomatik çalıştırın.`;
     }
 
     function adimOzet() {
@@ -338,7 +338,7 @@ const vakalar = [
           adimCiz();
           const ps = HASTALAR.map((x) => ileri(A.ag, x.K).p);
           const dogru = HASTALAR.filter((x, i) => (ps[i] >= 0.5) === (x.y === 1)).length;
-          $('[data-adim-metin]').innerHTML = `30 tur bitti: her hasta 30 kez ağdan geçti ve her seferinde ağırlıklar bir tık düzeltildi. Ağ artık ${dogru}/3 hastayı doğru tarafa koyuyor (${ps.map(yuzde).join(', ')}). Kimse ona "potasyum iki uçta tehlikelidir" demedi; bunu hatalarından çıkardı. Ağırlıklara bakın: iki gizli nöron işi paylaştı, biri düşük potasyumu, diğeri yüksek potasyumu yakalıyor.`;
+          $('[data-adim-metin]').innerHTML = `30 tur bitti: Her hasta 30 kez ağdan geçti ve her seferinde ağırlıklar bir tık düzeltildi. Ağ artık ${dogru}/3 hastayı doğru tarafa koyuyor (${ps.map(yuzde).join(', ')}). Kimse ona "potasyum iki uçta tehlikelidir" demedi; bunu hatalarından çıkardı. Ağırlıklara bakın: İki gizli nöron işi paylaştı, biri düşük potasyumu, diğeri yüksek potasyumu yakalıyor.`;
         } else adimCiz();
       }, 45);
     });
@@ -394,23 +394,23 @@ const vakalar = [
 
     const VAKALAR: Record<string, { H: number; lr: number; n: number; tohum: number; dogru: string | null; sikayet: string; ipucu: string; aciklama: string }> = {
       v1: { H: 0, lr: 1, n: 200, tohum: 1, dogru: 'kapasite',
-        sikayet: '<b>Vaka 1.</b> Şikâyet: kayıp daha ilk adımlarda bir yerde takılıyor ve ne kadar beklerseniz bekleyin kıpırdamıyor. Başlat\'a basın, iki grafiğe birlikte bakın.',
-        ipucu: 'Soldaki risk eğrisine bakın: ağ ne çiziyor, gerçek risk (kesikli çizgi) neye benziyor?',
-        aciklama: '<b>Doğru: kör nokta.</b> Bu ağda gizli nöron yok; tek nöron tek bir düz eğilim çizebilir. Riskin hem düşük hem yüksek potasyumda arttığı U biçimini çizmesi imkânsız. Daha uzun eğitmek işe yaramaz. <b>Tedavi:</b> gizli nöron ekleyin; iki tanesi bile yeter.' },
+        sikayet: '<b>Vaka 1.</b> Şikâyet: Kayıp daha ilk adımlarda bir yerde takılıyor ve ne kadar beklerseniz bekleyin kıpırdamıyor. Başlat\'a basın, iki grafiğe birlikte bakın.',
+        ipucu: 'Soldaki risk eğrisine bakın: Ağ ne çiziyor, gerçek risk (kesikli çizgi) neye benziyor?',
+        aciklama: '<b>Doğru: kör nokta.</b> Bu ağda gizli nöron yok; tek nöron tek bir düz eğilim çizebilir. Riskin hem düşük hem yüksek potasyumda arttığı U biçimini çizmesi imkânsız. Daha uzun eğitmek işe yaramaz. <b>Tedavi:</b> Gizli nöron ekleyin; iki tanesi bile yeter.' },
       v2: { H: 4, lr: 0.003, n: 200, tohum: 1, dogru: 'dusuk',
-        sikayet: '<b>Vaka 2.</b> Şikâyet: ağ çalışıyor gibi ama yüzlerce adım sonra hâlâ başladığı yerin yakınında. Başlat\'a basın ve eğrinin eğimine dikkat edin.',
+        sikayet: '<b>Vaka 2.</b> Şikâyet: Ağ çalışıyor gibi ama yüzlerce adım sonra hâlâ başladığı yerin yakınında. Başlat\'a basın ve eğrinin eğimine dikkat edin.',
         ipucu: 'Eğri tam düz mü, yoksa çok yavaş da olsa iniyor mu? Vaka 1 ile farkı ne?',
-        aciklama: '<b>Doğru: emekleyen ağ.</b> Kapasite yeterli, yön doğru; ama adımlar o kadar küçük ki ağ yokuşu emekleyerek iniyor. Eğri düz değil, çok yavaş iniyor; kör noktadan farkı bu. <b>Tedavi:</b> öğrenme oranını artırın (1 civarı).' },
+        aciklama: '<b>Doğru: emekleyen ağ.</b> Kapasite yeterli, yön doğru; ama adımlar o kadar küçük ki ağ yokuşu emekleyerek iniyor. Eğri düz değil, çok yavaş iniyor; kör noktadan farkı bu. <b>Tedavi:</b> Öğrenme oranını artırın (1 civarı).' },
       v3: { H: 4, lr: 15, n: 200, tohum: 1, dogru: 'yuksek',
-        sikayet: '<b>Vaka 3.</b> Şikâyet: kayıp bir iniyor bir fırlıyor; ağın ne öğrendiği adımdan adıma değişiyor. Başlat\'a basın.',
+        sikayet: '<b>Vaka 3.</b> Şikâyet: Kayıp bir iniyor bir fırlıyor; ağın ne öğrendiği adımdan adıma değişiyor. Başlat\'a basın.',
         ipucu: 'Eğri düzgün bir iniş mi, yoksa düzensiz sıçramalar mı? Soldaki risk eğrisi yerinde duruyor mu?',
-        aciklama: '<b>Doğru: savrulan ağ.</b> Adımlar o kadar büyük ki ağ vadinin dibine inmek yerine bir yamaçtan ötekine sıçrıyor. Ritim bozukluğuna benzer: düzen yok. <b>Tedavi:</b> öğrenme oranını düşürün; eğri sakinleşecek.' },
+        aciklama: '<b>Doğru: savrulan ağ.</b> Adımlar o kadar büyük ki ağ vadinin dibine inmek yerine bir yamaçtan ötekine sıçrıyor. Ritim bozukluğuna benzer: Düzen yok. <b>Tedavi:</b> Öğrenme oranını düşürün; eğri sakinleşecek.' },
       v4: { H: 16, lr: 1.5, n: 14, tohum: 3, dogru: 'ezber',
-        sikayet: '<b>Vaka 4.</b> Şikâyet: eğitim kaybı mükemmel; yine de bu ağı yeni hastalarda kullanan herkes pişman. Başlat\'a basın ve iki eğriyi birlikte izleyin; soldaki eğrinin şekline de bakın.',
+        sikayet: '<b>Vaka 4.</b> Şikâyet: Eğitim kaybı mükemmel; yine de bu ağı yeni hastalarda kullanan herkes pişman. Başlat\'a basın ve iki eğriyi birlikte izleyin; soldaki eğrinin şekline de bakın.',
         ipucu: 'Eğitim ve doğrulama eğrileri birlikte mi hareket ediyor, yoksa aralarındaki makas açılıyor mu?',
-        aciklama: '<b>Doğru: ezberci.</b> 14 hasta, 16 nöron: ağ kuralı öğrenmek yerine hastaları tek tek ezberliyor. Eğitim kaybı sıfıra inerken doğrulama kaybı tırmanıyor; soldaki eğri her noktadan geçmek için kıvrılıyor. Kesikli dikey çizgi durulması gereken yeri gösterir. <b>Tedavi:</b> asıl ilaç veridir; eğitim hastasını artırın. Yalnızca ağı küçültmeyi de deneyin: 14 hastada o bile yetmiyor.' },
+        aciklama: '<b>Doğru: ezberci.</b> 14 hasta, 16 nöron: Ağ kuralı öğrenmek yerine hastaları tek tek ezberliyor. Eğitim kaybı sıfıra inerken doğrulama kaybı tırmanıyor; soldaki eğri her noktadan geçmek için kıvrılıyor. Kesikli dikey çizgi durulması gereken yeri gösterir. <b>Tedavi:</b> Asıl ilaç veridir; eğitim hastasını artırın. Yalnızca ağı küçültmeyi de deneyin: 14 hastada o bile yetmiyor.' },
       ok: { H: 4, lr: 1, n: 200, tohum: 3, dogru: null,
-        sikayet: '<b>Sağlıklı ağ (karşılaştırma için).</b> İki eğri birlikte iner ve birlikte düzleşir; ağın çizdiği risk, gerçek riske oturur. Kayıp sıfıra inmez, çünkü veri gürültülüdür: sınırdaki hastaların yarısı riskli, yarısı değildir. Sürgülerle oynayıp ağı hasta edebilirsiniz.',
+        sikayet: '<b>Sağlıklı ağ (karşılaştırma için).</b> İki eğri birlikte iner ve birlikte düzleşir; ağın çizdiği risk, gerçek riske oturur. Kayıp sıfıra inmez, çünkü veri gürültülüdür: Sınırdaki hastaların yarısı riskli, yarısı değildir. Sürgülerle oynayıp ağı hasta edebilirsiniz.',
         ipucu: '', aciklama: '' },
     };
 

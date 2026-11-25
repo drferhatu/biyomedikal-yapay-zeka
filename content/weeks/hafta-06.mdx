@@ -2,7 +2,7 @@
 week: 6
 title: "Denetimsiz Öğrenme: Hasta Alt-Tiplendirme, Kümeleme ve Anomali Tespiti"
 topic: "Denetimsiz öğrenme: hasta alt-tiplendirme (subtyping), kümeleme ve anomali tespiti"
-description: "Bu kez doğru cevap yok: etiketsiz veride benzer hastaları yan yana koymak, kaç küme olduğuna dürüstçe karar vermek, kümelerin gerçek olduğunu kanıtlamak ve tuhaf hastaları bulmak."
+description: "Bu kez doğru cevap yok: Etiketsiz veride benzer hastaları yan yana koymak, kaç küme olduğuna dürüstçe karar vermek, kümelerin gerçek olduğunu kanıtlamak ve tuhaf hastaları bulmak."
 module: m2
 exam: false
 status: hazir
@@ -67,28 +67,28 @@ Bu hafta 28 Ekim tatiline denk geldiği için konu 4 Kasım dersinde 7. haftayla
 
 ### Doğru cevap olmayınca
 
-Şimdiye kadar her modelde elimizde bir doğru cevap vardı: hasta mı değil mi, öldü mü sağ mı. Model tahmin etti, biz cevapla karşılaştırdık. Bu hafta cevap yok. Elimizde yalnızca hastaların ölçümleri var ve sorumuz şu: bu hastalar kendiliğinden gruplara ayrılıyor mu?
+Şimdiye kadar her modelde elimizde bir doğru cevap vardı: Hasta mı değil mi, öldü mü sağ mı. Model tahmin etti, biz cevapla karşılaştırdık. Bu hafta cevap yok. Elimizde yalnızca hastaların ölçümleri var ve sorumuz şu: Bu hastalar kendiliğinden gruplara ayrılıyor mu?
 
 Bunun klinik karşılığı alt-tiplendirme. Aynı tanıyı taşıyan hastalar aslında birbirinden çok farklı olabilir. Sepsis bunun en iyi örneği: Seymour ve arkadaşları yirmi bin hastanın yalnızca laboratuvar ve vital bulgularına bakarak dört grup buldular ve bu grupların ölüm oranları, tedaviye yanıtları birbirinden farklıydı. Hastalığın adı aynıydı; hastalar değildi.
 
 ### k-means: merkezleri taşıya taşıya
 
-En basit kümeleme yöntemi k-means. Yaptığı şey şu: siz "k tane küme istiyorum" dersiniz. Rastgele k merkez seçer, her hastayı en yakın merkeze atar, sonra her merkezi kendi hastalarının ortasına taşır, sonra yeniden atar, yeniden taşır. Birkaç turda durur. Bu kadar.
+En basit kümeleme yöntemi k-means. Yaptığı şey şu: Siz "k tane küme istiyorum" dersiniz. Rastgele k merkez seçer, her hastayı en yakın merkeze atar, sonra her merkezi kendi hastalarının ortasına taşır, sonra yeniden atar, yeniden taşır. Birkaç turda durur. Bu kadar.
 
-Tek bir dert var ve bu dert yöntemin kendisinden büyük: k-means her zaman k küme bulur. Veride hiç küme olmasa, hastalar düzgün bir bulut gibi dağılmış olsa bile, siz üç dediyseniz üçe böler ve size üç renkli güzel bir grafik verir. O grafik hiçbir şeyin kanıtı değildir.
+Tek bir dert var ve bu dert yöntemin kendisinden büyük: K-means her zaman k küme bulur. Veride hiç küme olmasa, hastalar düzgün bir bulut gibi dağılmış olsa bile, siz üç dediyseniz üçe böler ve size üç renkli güzel bir grafik verir. O grafik hiçbir şeyin kanıtı değildir.
 
 ### Kaç küme gerçek?
 
-O yüzden asıl iş, bulunan kümelerin gerçek olup olmadığını sınamak. İki iç ölçüt var. Silhouette, her hastanın kendi kümesine komşu kümeye göre ne kadar yakın olduğunu söyler; yüksekse kümeler birbirinden ayrık demektir. Kararlılık ise şu basit soruyu sorar: veriden rastgele bir yarısını alıp yeniden kümelesem, aynı hastalar yine birlikte mi düşüyor? Düşmüyorsa kümeler verinin değil, rastgeleliğin eseridir.
+O yüzden asıl iş, bulunan kümelerin gerçek olup olmadığını sınamak. İki iç ölçüt var. Silhouette, her hastanın kendi kümesine komşu kümeye göre ne kadar yakın olduğunu söyler; yüksekse kümeler birbirinden ayrık demektir. Kararlılık ise şu basit soruyu sorar: Veriden rastgele bir yarısını alıp yeniden kümelesem, aynı hastalar yine birlikte mi düşüyor? Düşmüyorsa kümeler verinin değil, rastgeleliğin eseridir.
 
 Ama bunlar iç kanıt; yani kümelerin matematiksel olarak düzgün olduğunu söyler, anlamlı olduğunu değil. Anlamlılık için dış kanıt gerekir: kümelemede hiç kullanmadığınız bir bilgiyle örtüşme. Sepsis örneğinde bu, ölüm oranıydı. Defterde biz Breast Cancer verisinde tanı etiketini saklayıp kümeledikten sonra açıyoruz; kümelerin malign ve benign ile ne kadar örtüştüğüne bakıyoruz. Örtüşüyorsa yöntem, tanıyı hiç görmeden, yalnızca hücre şeklinden iki hastalığı ayırmış demektir.
 
 > [!uyari] Güzel grafik, kanıt değildir
-> 3. haftadaki UMAP uyarısı burada daha da önemli. Bir kümeleme sonucunu "hastalar üç alt-tipe ayrılıyor" diye sunmadan önce üç şey gerekir: kümeler kararlı mı, kümelemede kullanılmayan bir klinik değişkenle örtüşüyor mu ve başka bir yöntem (hiyerarşik, GMM) aynı hastaları mı ayırıyor? Üçü de evetse bir bulgu var. Birinde hayır varsa henüz yok.
+> 3. haftadaki UMAP uyarısı burada daha da önemli. Bir kümeleme sonucunu "hastalar üç alt-tipe ayrılıyor" diye sunmadan önce üç şey gerekir: Kümeler kararlı mı, kümelemede kullanılmayan bir klinik değişkenle örtüşüyor mu ve başka bir yöntem (hiyerarşik, GMM) aynı hastaları mı ayırıyor? Üçü de evetse bir bulgu var. Birinde hayır varsa henüz yok.
 
 ### Tuhaf hastayı bulmak
 
-Son konu anomali tespiti. Burada soru "hangi hastalar gruplara ayrılıyor" değil, "hangi hasta kimseye benzemiyor". Isolation Forest'ın mantığı şaşırtıcı derecede basit. Veriyi rastgele sorularla bölersiniz: yaş 50'den büyük mü, kreatinin 2'den küçük mü. Sıradan bir hasta tek başına kalana kadar çok soru gerekir, çünkü etrafı benzerlerle dolu. Tuhaf bir hasta birkaç soruda tek kalır. Kaç soruda yalnız kaldığı, tuhaflık skorudur.
+Son konu anomali tespiti. Burada soru "hangi hastalar gruplara ayrılıyor" değil, "hangi hasta kimseye benzemiyor". Isolation Forest'ın mantığı şaşırtıcı derecede basit. Veriyi rastgele sorularla bölersiniz: Yaş 50'den büyük mü, kreatinin 2'den küçük mü. Sıradan bir hasta tek başına kalana kadar çok soru gerekir, çünkü etrafı benzerlerle dolu. Tuhaf bir hasta birkaç soruda tek kalır. Kaç soruda yalnız kaldığı, tuhaflık skorudur.
 
 Tuhaf hasta ne demek? Burada yöntem susar, alan bilgisi konuşur. Tansiyonu 1200 yazılan hasta veri giriş hatasıdır, silinir. Tümör alanı herkesinkinin üç katı olan hasta ileri evre bir vakadır, silinmez; belki de en önemli hastadır. Defterde işaretlenen hastaların ölçümlerine bakıp bu kararı birlikte veriyoruz.
 
@@ -113,4 +113,4 @@ Defter üç kısa bölüm: Breast Cancer verisinde etiketi saklayıp k-means ile
 
 ## Haftanın Özeti
 
-Etiketsiz veride yapı aramayı öğrendik: k-means ile kümeleme, iç ve dış kanıtla kümelerin sınanması, Isolation Forest ile tuhaf hastalar. Ana ders tek cümle: güzel bir küme grafiği, kümelemede kullanılmayan bir klinik bilgiyle örtüşmedikçe bulgu değildir. Modül 2 burada tamamlandı; aynı derste sinyal analizine geçiyoruz.
+Etiketsiz veride yapı aramayı öğrendik: k-means ile kümeleme, iç ve dış kanıtla kümelerin sınanması, Isolation Forest ile tuhaf hastalar. Ana ders tek cümle: Güzel bir küme grafiği, kümelemede kullanılmayan bir klinik bilgiyle örtüşmedikçe bulgu değildir. Modül 2 burada tamamlandı; aynı derste sinyal analizine geçiyoruz.

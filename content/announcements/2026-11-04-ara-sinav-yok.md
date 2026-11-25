@@ -1,5 +1,5 @@
 ---
-title: "Yazılı ara sınav yok: vize notu proje üzerinden"
+title: "Yazılı ara sınav yok: Vize notu proje üzerinden"
 date: 2026-11-04
 pinned: false
 kind: onemli

@@ -78,7 +78,7 @@ Ayrıntılı notlar ve türetimler ders yaklaştıkça buraya eklenecektir.
 - **SHAP** — Shapley değerlerinin yerel açıklamaya uyarlanması; TreeSHAP ağaç modellerinde polinom zamanda kesin hesap yapar.
 - **LIME** — Tek gözlemin çevresinde bozulmuş örneklerle eğitilen seyrek doğrusal vekil model; hızlı ama komşuluk seçimine duyarlı.
 - **Grad-CAM** — Son evrişim katmanının sınıf-özel gradyanlarla ağırlıklandırılmış ısı haritası; modelin 'baktığı' bölgeyi gösterir.
-- **Karşıt-olgusal açıklama** — 'Şu öznitelikler şöyle olsaydı karar değişirdi': hastaya eyleme dönük öneri üretir; tıbbi olarak mümkün olmalıdır.
+- **Karşıt-olgusal açıklama** — 'Şu öznitelikler şöyle olsaydı karar değişirdi': Hastaya eyleme dönük öneri üretir; tıbbi olarak mümkün olmalıdır.
 - **Adalet ölçütleri** — Demografik parite (pozitif oranı eşit), eşit fırsat (duyarlılık eşit), kalibrasyon eşitliği; aynı anda hepsini sağlamak genelde imkânsızdır.
 
 ## Biyomedikal Uygulama Örnekleri

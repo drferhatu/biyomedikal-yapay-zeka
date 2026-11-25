@@ -60,7 +60,7 @@ import NotebookEmbed from '@/components/NotebookEmbed.astro';
 
 ## Ön Okuma ve Hazırlık
 
-Bu hafta ön okuma hafif. scikit-learn dokümantasyonunda PCA sayfasının ilk yarısına göz atın; formülleri atlayabilirsiniz, şekillere bakmanız yeterli. Bir de şunu düşünerek gelin: elinizdeki bir veri setinde "bu iki sütunu birleştirsem daha anlamlı bir şey çıkar" dediğiniz bir durum oldu mu? Olduysa aklınızda tutun, derste kullanacağız.
+Bu hafta ön okuma hafif. scikit-learn dokümantasyonunda PCA sayfasının ilk yarısına göz atın; formülleri atlayabilirsiniz, şekillere bakmanız yeterli. Bir de şunu düşünerek gelin: Elinizdeki bir veri setinde "bu iki sütunu birleştirsem daha anlamlı bir şey çıkar" dediğiniz bir durum oldu mu? Olduysa aklınızda tutun, derste kullanacağız.
 
 > [!not] Dersin akışı
 > İlk saat veriye bakmak ve yeni sütun türetmek, ikinci saat özellik seçimi ve PCA, son saat UMAP ve defter. Defterde Heart Disease veri setiyle çalışıyoruz; 303 hasta, 13 ölçüm.
@@ -79,17 +79,17 @@ Buna keşifçi veri analizi deniyor. Adı büyük ama yaptığı şey mütevazı
 
 Veriye bakarken ilk fark edeceğiniz tuzaklardan biri şudur. Heart Disease veri setinde göğüs ağrısı tipi 1, 2, 3, 4 diye kodlanmış. Bilgisayar için bunlar sayıdır; 4, 2'nin iki katıdır. Ama klinik olarak tip 4 "asemptomatik", tip 2 "atipik anjina"dır. Aralarında bir büyüklük sıralaması yok. Bu sütunu sayı olarak modele verirseniz model var olmayan bir düzen arar.
 
-Bu yüzden ilk işlerden biri sütunları ikiye ayırmaktır: gerçekten sayı olanlar ve sayıyla kodlanmış kategoriler. Sayı olanlar için kutu grafiği çizersiniz, kategoriler için her kategoride hastalık oranına bakarsınız. Defterin ikinci bölümünde bunu yapıyoruz ve sonuç rahatlatıcı: tıkalı damar sayısı arttıkça hastalık oranı artıyor, asemptomatik göğüs ağrısında oran yüksek. Veri, kardiyoloji bilgisiyle uyumlu. Bu da etiketin, yani "hasta mı değil mi" bilgisinin makul olduğunu söylüyor.
+Bu yüzden ilk işlerden biri sütunları ikiye ayırmaktır: gerçekten sayı olanlar ve sayıyla kodlanmış kategoriler. Sayı olanlar için kutu grafiği çizersiniz, kategoriler için her kategoride hastalık oranına bakarsınız. Defterin ikinci bölümünde bunu yapıyoruz ve sonuç rahatlatıcı: Tıkalı damar sayısı arttıkça hastalık oranı artıyor, asemptomatik göğüs ağrısında oran yüksek. Veri, kardiyoloji bilgisiyle uyumlu. Bu da etiketin, yani "hasta mı değil mi" bilgisinin makul olduğunu söylüyor.
 
 ### Yeni sütun türetmek
 
 Hastaneden gelen veri, model için her zaman en kullanışlı biçimde gelmez. Bazen iki sütunu birleştirince çok daha anlamlı bir şey ortaya çıkar. Buna öznitelik mühendisliği deniyor ama ben şöyle anlatmayı tercih ediyorum: klinik bilgiyi sütuna çevirmek.
 
-Bir örnek. Veri setinde hastanın efor testinde ulaştığı maksimum nabız var. Tek başına 150 atım/dakika ne anlama gelir? Yirmi yaşındaki biri için düşük, yetmiş yaşındaki biri için yüksektir. Kardiyologların kullandığı kaba bir kural var: beklenen maksimum nabız yaklaşık 220 eksi yaş. Hastanın ulaştığı nabzı bu beklentiye bölerseniz, yaştan bağımsız bir "efor kapasitesi" ölçüsü elde edersiniz. Bu yeni sütun, iki eski sütunun ayrı ayrı söyleyemediği bir şeyi söyler.
+Bir örnek. Veri setinde hastanın efor testinde ulaştığı maksimum nabız var. Tek başına 150 atım/dakika ne anlama gelir? Yirmi yaşındaki biri için düşük, yetmiş yaşındaki biri için yüksektir. Kardiyologların kullandığı kaba bir kural var: Beklenen maksimum nabız yaklaşık 220 eksi yaş. Hastanın ulaştığı nabzı bu beklentiye bölerseniz, yaştan bağımsız bir "efor kapasitesi" ölçüsü elde edersiniz. Bu yeni sütun, iki eski sütunun ayrı ayrı söyleyemediği bir şeyi söyler.
 
 Başka bir örnek, risk faktörlerini saymak. Tansiyon yüksek mi, kolesterol yüksek mi, açlık şekeri yüksek mi, erkek mi? Her biri birer evet/hayır. Toplarsanız 0 ile 4 arasında bir sayı çıkar ve bu sayı arttıkça hastalık oranının artıp artmadığına bakabilirsiniz. Defterde bakıyoruz.
 
-Burada önemli olan nokta şu: bu sütunları türetmek için makine öğrenmesi bilmeniz gerekmiyor, alanı bilmeniz gerekiyor. Mühendislik kökenli arkadaşlar için bu, sağlık bilimleri kökenli arkadaşlarla neden aynı masada oturduğumuzun cevabı.
+Burada önemli olan nokta şu: Bu sütunları türetmek için makine öğrenmesi bilmeniz gerekmiyor, alanı bilmeniz gerekiyor. Mühendislik kökenli arkadaşlar için bu, sağlık bilimleri kökenli arkadaşlarla neden aynı masada oturduğumuzun cevabı.
 
 > [!ornek] Yoğun bakımda zaman penceresi
 > Yoğun bakım verisinde her saatte bir nabız ölçümü vardır. Modele "son ölçüm" vermek yerine son altı saatin ortalamasını, en yükseğini ve eğimini (yükseliyor mu, düşüyor mu) ayrı sütunlar olarak verirseniz, model hastanın kötüleşip kötüleşmediğini çok daha iyi görür. Bu da öznitelik türetmedir; sadece zaman ekseninde.
@@ -108,9 +108,9 @@ Ama geçen haftadan bir uyarı burada tekrar ediyor. Sütun seçimini tüm veriy
 
 PCA'nın yaptığı şeyi şöyle düşünün. Elinizde havada asılı duran bir nokta bulutu var. Bu buluta bir fener tutup gölgesini duvara düşüreceksiniz. Feneri hangi yönden tutarsanız gölge en çok yayılır, en az üst üste biner? PCA tam o yönü bulur ve ona birinci bileşen der. Sonra ona dik yönler arasında yine en çok yayılanı bulur, ikinci bileşen. Her bileşenin verideki toplam değişimin yüzde kaçını taşıdığını da söyler. "İlk iki bileşen değişimin yüzde kırkını taşıyor" gibi.
 
-PCA'nın en sevdiğim özelliği dürüst olması. Neyi attığını bilirsiniz. Yüzde seksen için kaç bileşen gerektiğini sayıyla söyler. Her bileşenin hangi sütunlardan oluştuğuna bakabilirsiniz; buna yükleme deniyor. Defterde birinci bileşenin yüklemelerine bakıyoruz. Bir ucunda efor testinde ulaşılan nabız var; diğer ucunda ST depresyonu, efor anjinası, yaş ve tıkalı damar sayısı. Yani PCA kimse söylemeden, "genel hastalık yükü" diyebileceğimiz bir eksen bulmuş: bir yanda eforu iyi tolere eden genç hastalar, öbür yanda bulgusu çok olan yaşlı hastalar.
+PCA'nın en sevdiğim özelliği dürüst olması. Neyi attığını bilirsiniz. Yüzde seksen için kaç bileşen gerektiğini sayıyla söyler. Her bileşenin hangi sütunlardan oluştuğuna bakabilirsiniz; buna yükleme deniyor. Defterde birinci bileşenin yüklemelerine bakıyoruz. Bir ucunda efor testinde ulaşılan nabız var; diğer ucunda ST depresyonu, efor anjinası, yaş ve tıkalı damar sayısı. Yani PCA kimse söylemeden, "genel hastalık yükü" diyebileceğimiz bir eksen bulmuş: Bir yanda eforu iyi tolere eden genç hastalar, öbür yanda bulgusu çok olan yaşlı hastalar.
 
-Bir sınırı var: sadece düz çizgiler kullanır. Veri kıvrımlı bir yapıdaysa PCA onu göremez.
+Bir sınırı var: Sadece düz çizgiler kullanır. Veri kıvrımlı bir yapıdaysa PCA onu göremez.
 
 ### Güzel resimler ve bir uyarı: UMAP
 
@@ -148,4 +148,4 @@ Defter altı bölümden oluşuyor ve bugünkü anlatımın sırasını izliyor: 
 
 ## Haftanın Özeti
 
-Bu hafta model kurmadık; veriyi tanıdık. Önce baktık ve verinin klinik bilgiyle uyumlu olduğunu gördük. Sonra klinik bilgiyi yeni sütunlara çevirdik ve hangi sütunların kalacağına, geçen haftanın dersini unutmadan, boru hattının içinde karar verdik. Son olarak on altı sütunu iki boyuta indirip resmini çizdik; PCA ile dürüst bir biçimde, UMAP ile güzel ama dikkatle. Birinci modülü böylece tamamlamış olduk. Gelecek hafta ilk gerçek modelimizi kuruyoruz ve asıl soruyu soruyoruz: bu model klinik olarak iyi mi, nereden bileceğiz?
+Bu hafta model kurmadık; veriyi tanıdık. Önce baktık ve verinin klinik bilgiyle uyumlu olduğunu gördük. Sonra klinik bilgiyi yeni sütunlara çevirdik ve hangi sütunların kalacağına, geçen haftanın dersini unutmadan, boru hattının içinde karar verdik. Son olarak on altı sütunu iki boyuta indirip resmini çizdik; PCA ile dürüst bir biçimde, UMAP ile güzel ama dikkatle. Birinci modülü böylece tamamlamış olduk. Gelecek hafta ilk gerçek modelimizi kuruyoruz ve asıl soruyu soruyoruz: Bu model klinik olarak iyi mi, nereden bileceğiz?
