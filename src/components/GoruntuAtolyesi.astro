@@ -1,0 +1,522 @@
+---
+/**
+ * Görüntü atölyesi (10. hafta). Bağımlılık yok; her şey ziyaretçinin tarayıcısında çalışır.
+ *
+ * Üç tezgâh:
+ *  1) Anahtar deliği — görüntü kapalıdır; küçük bir pencere parmakla gezdirilir.
+ *     Pencere büyüdükçe "alıcı alan" büyür. Yandaki kutu, ağın gördüğü sayıları gösterir.
+ *  2) Filtre tezgâhı — 3×3 filtre elle yazılır ya da hazır seçilir; çıktı canlı hesaplanır.
+ *  3) Sınırı siz çizin — lezyon parmakla boyanır; piksel doğruluğu, Dice ve IoU canlı ölçülür.
+ *
+ * Görüntüler sentetiktir (dermatoskopi benzeri, tohumlu rastgele üretim); gerçek hasta verisi yoktur.
+ * Sayfada tek örnek kullanılır. MDX içinde: <GoruntuAtolyesi />
+ */
+const hazir = [
+  { id: 'ayni', ad: 'Dokunma' },
+  { id: 'bulanik', ad: 'Bulanıklaştır' },
+  { id: 'keskin', ad: 'Keskinleştir' },
+  { id: 'dikey', ad: 'Dikey kenar' },
+  { id: 'yatay', ad: 'Yatay kenar' },
+  { id: 'kenar', ad: 'Her yönde kenar' },
+  { id: 'rastgele', ad: 'Eğitilmemiş ağ' },
+];
+const pencereler = [
+  { s: 3, ad: '3×3' },
+  { s: 5, ad: '5×5' },
+  { s: 7, ad: '7×7' },
+  { s: 15, ad: '15×15' },
+  { s: 31, ad: '31×31' },
+  { s: 0, ad: 'Tamamı' },
+];
+---
+<section class="ga not-prose my-10 overflow-hidden rounded-2xl border border-line bg-white shadow-soft" data-ga aria-label="Görüntü atölyesi">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-paper px-4 py-3 sm:px-5">
+    <div>
+      <div class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">Görüntü atölyesi · cihazınızda çalışır</div>
+      <div class="mt-0.5 font-display text-lg font-semibold leading-snug text-ink">Bir ağ gibi bakmak, bir ağ gibi ölçülmek</div>
+    </div>
+    <div class="ga-tabs flex rounded-lg border border-line-2 bg-white p-0.5 text-sm font-semibold" role="tablist" aria-label="Tezgâh seçimi">
+      <button type="button" role="tab" data-tab="delik" aria-selected="true">Anahtar deliği</button>
+      <button type="button" role="tab" data-tab="filtre" aria-selected="false">Filtre</button>
+      <button type="button" role="tab" data-tab="boya" aria-selected="false">Sınırı çiz</button>
+    </div>
+  </div>
+
+  <!-- 1) ANAHTAR DELİĞİ -->
+  <div data-panel="delik" class="p-4 sm:p-5">
+    <div class="text-sm leading-relaxed text-ink-2">
+      Karşınızda bir cilt görüntüsü var ama kapalı. Parmağınızı (ya da fareyi) üzerinde gezdirin: yalnızca küçük bir
+      pencereden görebilirsiniz. Ağın ilk katmanı dünyayı tam olarak böyle görür. Soru şu: bu görüntüde ne var?
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2" data-pencereler>
+      {pencereler.map((p, i) => (
+        <button type="button" class="ga-chip" data-s={p.s} aria-pressed={i === 0 ? 'true' : 'false'}>{p.ad}</button>
+      ))}
+    </div>
+    <div class="mt-3 grid gap-4 sm:grid-cols-[minmax(0,1fr)_220px]">
+      <div>
+        <canvas data-delik-ana width="128" height="128" class="ga-canvas ga-touch" aria-label="Kapalı görüntü; pencereyi gezdirin"></canvas>
+      </div>
+      <div>
+        <div class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">Pencerenin içi</div>
+        <canvas data-delik-buyutec width="220" height="220" class="ga-canvas mt-1" aria-hidden="true"></canvas>
+        <div class="mt-2 font-mono text-xs leading-relaxed text-ink-3" data-delik-bilgi></div>
+      </div>
+    </div>
+    <div class="mt-3 min-h-[4.5rem] rounded-xl border-l-4 border-brand bg-brand-soft/40 px-4 py-3 text-sm leading-relaxed text-ink" data-delik-metin aria-live="polite"></div>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <button type="button" class="ga-btn-ghost" data-delik-yeni>Yeni görüntü</button>
+    </div>
+  </div>
+
+  <!-- 2) FİLTRE TEZGÂHI -->
+  <div data-panel="filtre" class="p-4 sm:p-5" hidden>
+    <div class="text-sm leading-relaxed text-ink-2">
+      Dokuz sayı, bir filtredir. Hazır olanlardan birini seçin ya da sayıları kendiniz değiştirin; sağdaki görüntü
+      her değişiklikte yeniden hesaplanır. Telefonunuzdaki "keskinleştir" düğmesi de bundan ibarettir.
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2" data-hazirlar>
+      {hazir.map((h, i) => (
+        <button type="button" class="ga-chip" data-hazir={h.id} aria-pressed={i === 3 ? 'true' : 'false'}>{h.ad}</button>
+      ))}
+    </div>
+    <div class="mt-4 grid items-start gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <div>
+        <div class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">Girdi</div>
+        <canvas data-filtre-girdi width="128" height="128" class="ga-canvas mt-1" aria-label="Girdi görüntüsü"></canvas>
+      </div>
+      <div class="mx-auto">
+        <div class="text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">Filtre</div>
+        <div class="ga-cekirdek mt-1" data-cekirdek>
+          {Array.from({ length: 9 }).map((_, i) => (
+            <input type="number" step="0.5" inputmode="decimal" data-k={i} aria-label={`Filtre hücresi ${i + 1}`} />
+          ))}
+        </div>
+        <div class="mt-2 max-w-[150px] text-center font-mono text-[11px] leading-relaxed text-ink-3" data-filtre-not></div>
+      </div>
+      <div>
+        <div class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">Çıktı (öznitelik haritası)</div>
+        <canvas data-filtre-cikti width="128" height="128" class="ga-canvas mt-1" aria-label="Filtre çıktısı"></canvas>
+      </div>
+    </div>
+    <div class="mt-3 min-h-[4.5rem] rounded-xl border-l-4 border-brand bg-brand-soft/40 px-4 py-3 text-sm leading-relaxed text-ink" data-filtre-metin aria-live="polite"></div>
+  </div>
+
+  <!-- 3) SINIRI SİZ ÇİZİN -->
+  <div data-panel="boya" class="p-4 sm:p-5" hidden>
+    <div class="text-sm leading-relaxed text-ink-2">
+      Şimdi ağ sizsiniz. Lezyonu parmağınızla boyayın; sayılar boyadıkça değişir. Sonra lezyonu küçültün ve hiçbir
+      şey boyamadan sayılara bir daha bakın.
+    </div>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <span class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">Lezyon</span>
+      <button type="button" class="ga-chip" data-boyut="34" aria-pressed="true">Büyük</button>
+      <button type="button" class="ga-chip" data-boyut="19" aria-pressed="false">Orta</button>
+      <button type="button" class="ga-chip" data-boyut="7" aria-pressed="false">Küçük</button>
+      <span class="ml-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">Fırça</span>
+      <button type="button" class="ga-chip" data-firca="2" aria-pressed="false">İnce</button>
+      <button type="button" class="ga-chip" data-firca="5" aria-pressed="true">Kalın</button>
+      <button type="button" class="ga-chip" data-firca="-4" aria-pressed="false">Silgi</button>
+    </div>
+    <div class="mt-3 grid gap-4 sm:grid-cols-[minmax(0,1fr)_240px]">
+      <div>
+        <canvas data-boya-ana width="128" height="128" class="ga-canvas ga-touch" aria-label="Lezyonu boyayın"></canvas>
+      </div>
+      <div>
+        <div class="grid grid-cols-3 gap-2 sm:grid-cols-1">
+          <div class="ga-olcut"><span>Piksel doğruluğu</span><strong data-o="acc">–</strong></div>
+          <div class="ga-olcut" data-vurgu><span>Dice</span><strong data-o="dice">–</strong></div>
+          <div class="ga-olcut"><span>IoU</span><strong data-o="iou">–</strong></div>
+        </div>
+        <div class="mt-2 rounded-lg border border-line bg-paper px-3 py-2 font-mono text-xs leading-relaxed text-ink-2" data-boya-bos></div>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button type="button" class="ga-btn-ghost" data-boya-ref>Referansı göster</button>
+          <button type="button" class="ga-btn-ghost" data-boya-temizle>Temizle</button>
+          <button type="button" class="ga-btn-ghost" data-boya-yeni>Yeni lezyon</button>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 min-h-[4.5rem] rounded-xl border-l-4 border-brand bg-brand-soft/40 px-4 py-3 text-sm leading-relaxed text-ink" data-boya-metin aria-live="polite"></div>
+  </div>
+
+  <div class="border-t border-line bg-paper px-4 py-2.5 font-mono text-[11px] leading-relaxed text-ink-3 sm:px-5">
+    Görüntüler sentetiktir; gerçek hastaya ait değildir. Sayfayı yenilemek her şeyi baştan başlatır.
+  </div>
+</section>
+
+<style is:global>
+  .ga button { font: inherit; cursor: pointer; }
+  .ga-tabs button { border-radius: 6px; padding: 6px 12px; color: var(--color-ink-2); background: transparent; border: 0; }
+  .ga-tabs button[aria-selected='true'] { background: var(--color-ink); color: var(--color-paper); }
+  .ga-chip { border: 1px solid var(--color-line-2); border-radius: 999px; padding: 7px 13px; font-weight: 600; font-size: 13px; background: transparent; color: var(--color-ink-2); }
+  .ga-chip[aria-pressed='true'] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+  .ga-btn-ghost { border: 1px solid var(--color-line-2); border-radius: 10px; padding: 9px 14px; font-weight: 600; font-size: 13px; background: transparent; color: var(--color-ink); }
+  .ga-btn-ghost:hover { border-color: var(--color-ink); }
+  .ga-canvas { display: block; width: 100%; max-width: 380px; aspect-ratio: 1 / 1; border-radius: 12px; border: 1px solid var(--color-line); background: #0b1526; image-rendering: pixelated; }
+  .ga-touch { touch-action: none; cursor: crosshair; }
+  .ga-cekirdek { display: grid; grid-template-columns: repeat(3, 46px); gap: 4px; justify-content: center; }
+  .ga-cekirdek input { width: 46px; height: 42px; border: 1px solid var(--color-line-2); border-radius: 8px; background: transparent; color: var(--color-ink); text-align: center; font-family: var(--font-mono); font-size: 14px; font-weight: 600; -moz-appearance: textfield; appearance: textfield; }
+  .ga-cekirdek input::-webkit-outer-spin-button, .ga-cekirdek input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .ga-cekirdek input:focus { outline: 2px solid var(--color-brand); outline-offset: 1px; }
+  .ga-olcut { border: 1px solid var(--color-line); border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .ga-olcut span { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-3); }
+  .ga-olcut strong { font-family: var(--font-display); font-size: 24px; line-height: 1.1; color: var(--color-ink); }
+  .ga-olcut[data-vurgu] { border-color: var(--color-accent); background: var(--color-accent-soft); }
+</style>
+
+<script>
+  const N = 128;
+
+  function rng(seed) {
+    let a = seed >>> 0;
+    return () => {
+      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /** Sentetik cilt görüntüsü: g = gri değerler (0..1), m = lezyon maskesi (0/1). */
+  function sahne(seed, { r0 = 26, cetvel = true, kil = true } = {}) {
+    const R = rng(seed);
+    const g = new Float32Array(N * N);
+    const m = new Uint8Array(N * N);
+    const p = [R() * 6.28, R() * 6.28, R() * 6.28, R() * 6.28, R() * 6.28, R() * 6.28];
+    const pay = Math.max(8, 56 - r0);
+    const cx = N / 2 + (R() - 0.5) * pay;
+    const cy = N / 2 - 4 + (R() - 0.5) * pay;
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+        const bg = 0.74 + 0.035 * Math.sin(x * 0.07 + p[0]) + 0.035 * Math.sin(y * 0.09 + p[1]) + 0.02 * Math.sin((x + y) * 0.05 + p[2]);
+        const dx = x - cx, dy = y - cy;
+        const d = Math.hypot(dx, dy), th = Math.atan2(dy, dx);
+        const rr = r0 * (1 + 0.2 * Math.sin(3 * th + p[3]) + 0.12 * Math.sin(5 * th + p[4]) + 0.06 * Math.sin(9 * th + p[5]));
+        const t = 1 / (1 + Math.exp((d - rr) / 0.7));
+        const ic = 0.3 + 0.07 * Math.sin(dx * 0.33 + p[1]) * Math.sin(dy * 0.27 + p[0]);
+        g[y * N + x] = bg * (1 - t) + ic * t + (R() - 0.5) * 0.03;
+        if (d < rr) m[y * N + x] = 1;
+      }
+    }
+    if (kil) {
+      for (let k = 0; k < 4; k++) {
+        let x = R() * N, y = R() * N * 0.8, a = R() * 6.28;
+        const egri = (R() - 0.5) * 0.03, uz = 40 + R() * 40;
+        for (let s = 0; s < uz; s++) {
+          const xi = Math.round(x), yi = Math.round(y);
+          if (xi >= 0 && xi < N && yi >= 0 && yi < N) g[yi * N + xi] = Math.min(g[yi * N + xi], 0.16);
+          x += Math.cos(a); y += Math.sin(a); a += egri;
+        }
+      }
+    }
+    if (cetvel) {
+      for (let y = N - 12; y < N; y++) {
+        for (let x = 0; x < N; x++) {
+          let v = 0.93;
+          if (x % 4 === 0 && y < N - 6) v = 0.12;
+          if (x % 20 === 0 && y < N - 2) v = 0.12;
+          g[y * N + x] = v;
+          m[y * N + x] = 0;
+        }
+      }
+    }
+    return { g, m };
+  }
+
+  function ciz(ctx, g, x0 = 0, y0 = 0, x1 = N, y1 = N) {
+    const img = ctx.getImageData(0, 0, N, N);
+    for (let y = y0; y < y1; y++) {
+      for (let x = x0; x < x1; x++) {
+        const v = Math.max(0, Math.min(255, Math.round(g[y * N + x] * 255)));
+        const i = (y * N + x) * 4;
+        img.data[i] = v; img.data[i + 1] = v; img.data[i + 2] = v; img.data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function konum(canvas, ev) {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(N - 1, Math.floor(((ev.clientX - r.left) / r.width) * N))),
+      y: Math.max(0, Math.min(N - 1, Math.floor(((ev.clientY - r.top) / r.height) * N))),
+    };
+  }
+
+  function sec(grup, secili) {
+    grup.forEach((b) => b.setAttribute('aria-pressed', b === secili ? 'true' : 'false'));
+  }
+
+  const kok = document.querySelector('[data-ga]');
+  if (kok) {
+    /* ---------- sekmeler ---------- */
+    const sekmeler = [...kok.querySelectorAll('[data-tab]')];
+    const paneller = [...kok.querySelectorAll('[data-panel]')];
+    sekmeler.forEach((s) =>
+      s.addEventListener('click', () => {
+        sekmeler.forEach((t) => t.setAttribute('aria-selected', t === s ? 'true' : 'false'));
+        paneller.forEach((p) => (p.hidden = p.dataset.panel !== s.dataset.tab));
+      })
+    );
+
+    /* ---------- 1) anahtar deliği ---------- */
+    const dAna = kok.querySelector('[data-delik-ana]');
+    const dBuy = kok.querySelector('[data-delik-buyutec]');
+    const dBilgi = kok.querySelector('[data-delik-bilgi]');
+    const dMetin = kok.querySelector('[data-delik-metin]');
+    const dCtx = dAna.getContext('2d');
+    const bCtx = dBuy.getContext('2d');
+    const pBtn = [...kok.querySelectorAll('[data-pencereler] [data-s]')];
+    let dTohum = 11;
+    let dSahne = sahne(dTohum);
+    let dS = 3;
+    let dP = { x: 64, y: 60 };
+
+    const dMetinler = {
+      3: 'Dokuz piksel. Açık mı, koyu mu, belki bir geçiş. İlk katman bundan fazlasını göremez ve görmesi de gerekmez: işi yalnızca "burada bir kenar var mı" demektir. Lezyonun sınırında ve alttaki çizgilerde gezinin; ikisi bu pencereden aynı görünür.',
+      5: 'İki evrişim katmanı üst üste gelince pencere 5×5 olur. Hâlâ teşhis koyamazsınız, ama artık kenarın yönünü ve kıvrımını söyleyebilirsiniz.',
+      7: 'Üç katman, 7×7. İnce koyu çizginin bir kıl olduğunu, alttaki düzenli çizgilerin başka bir şey olduğunu sezmeye başlarsınız. Katman eklemek, anahtar deliğini büyütmektir.',
+      15: 'Araya havuzlama girince pencere hızla büyür. Artık doku görüyorsunuz: lezyonun içi dışından farklı. Alttaki düzenli çizgilerin bir cetvel olduğu da belli oldu.',
+      31: 'Derin katmanlar. Lezyonun bir parçasını ve sınırının düzensizliğini aynı anda görebiliyorsunuz. Hekimin "sınır düzensiz" dediği şey ancak bu ölçekte görünür.',
+      0: 'Görüntünün tamamı. Dikkat edin: altta bir cetvel var. Hekimler şüphelendikleri lezyonu ölçmek için cetvel koyar. Bir ağ için "cetvel varsa kötü huylu" demek, lezyonu anlamaktan çok daha kolaydır. Haftanın altıncı cümlesi bunun hikâyesi.',
+    };
+
+    function delikCiz() {
+      const s = dS || N;
+      const h = Math.floor(s / 2);
+      const x0 = dS ? Math.max(0, Math.min(N - s, dP.x - h)) : 0;
+      const y0 = dS ? Math.max(0, Math.min(N - s, dP.y - h)) : 0;
+      dCtx.fillStyle = '#0b1526';
+      dCtx.fillRect(0, 0, N, N);
+      ciz(dCtx, dSahne.g, x0, y0, x0 + s, y0 + s);
+      if (dS) {
+        // putImageData tüm tuvali yazar; pencere dışını yeniden kapat
+        dCtx.fillStyle = '#0b1526';
+        dCtx.fillRect(0, 0, N, y0);
+        dCtx.fillRect(0, y0 + s, N, N - y0 - s);
+        dCtx.fillRect(0, y0, x0, s);
+        dCtx.fillRect(x0 + s, y0, N - x0 - s, s);
+        dCtx.strokeStyle = '#25b3a3';
+        dCtx.lineWidth = 1;
+        dCtx.strokeRect(x0 - 0.5, y0 - 0.5, s + 1, s + 1);
+      }
+      // büyüteç
+      const B = dBuy.width;
+      const hucre = B / s;
+      bCtx.clearRect(0, 0, B, B);
+      for (let j = 0; j < s; j++) {
+        for (let i = 0; i < s; i++) {
+          const v = Math.max(0, Math.min(255, Math.round(dSahne.g[(y0 + j) * N + (x0 + i)] * 255)));
+          bCtx.fillStyle = `rgb(${v},${v},${v})`;
+          bCtx.fillRect(Math.floor(i * hucre), Math.floor(j * hucre), Math.ceil(hucre), Math.ceil(hucre));
+          if (s <= 5) {
+            bCtx.fillStyle = v > 128 ? '#0b1526' : '#f5f7fb';
+            bCtx.font = `600 ${s === 3 ? 20 : 13}px ui-monospace, monospace`;
+            bCtx.textAlign = 'center';
+            bCtx.textBaseline = 'middle';
+            bCtx.fillText(String(v), (i + 0.5) * hucre, (j + 0.5) * hucre);
+          }
+        }
+      }
+      const pik = s * s;
+      dBilgi.textContent = dS
+        ? `Alıcı alan: ${s}×${s} = ${pik} piksel · görüntünün %${((pik / (N * N)) * 100).toFixed(pik < 200 ? 2 : 1).replace('.', ',')}'i`
+        : `Alıcı alan: görüntünün tamamı (${N}×${N})`;
+    }
+
+    function delikTasi(ev) {
+      dP = konum(dAna, ev);
+      delikCiz();
+    }
+    dAna.addEventListener('pointerdown', (ev) => { dAna.setPointerCapture(ev.pointerId); delikTasi(ev); });
+    dAna.addEventListener('pointermove', (ev) => { if (ev.pointerType === 'mouse' || ev.buttons) delikTasi(ev); });
+    pBtn.forEach((b) =>
+      b.addEventListener('click', () => {
+        dS = Number(b.dataset.s);
+        sec(pBtn, b);
+        dMetin.textContent = dMetinler[dS];
+        delikCiz();
+      })
+    );
+    kok.querySelector('[data-delik-yeni]').addEventListener('click', () => {
+      dTohum += 7;
+      dSahne = sahne(dTohum);
+      delikCiz();
+    });
+    dMetin.textContent = dMetinler[3];
+    delikCiz();
+
+    /* ---------- 2) filtre tezgâhı ---------- */
+    const fGirdi = kok.querySelector('[data-filtre-girdi]').getContext('2d');
+    const fCikti = kok.querySelector('[data-filtre-cikti]').getContext('2d');
+    const fMetin = kok.querySelector('[data-filtre-metin]');
+    const fNot = kok.querySelector('[data-filtre-not]');
+    const hucreler = [...kok.querySelectorAll('[data-k]')];
+    const hBtn = [...kok.querySelectorAll('[data-hazir]')];
+    const fSahne = sahne(23);
+    const fR = rng(5);
+    const hazirlar = {
+      ayni: { k: [0, 0, 0, 0, 1, 0, 0, 0, 0], m: 'Ortada bir, çevrede sıfır: her piksel kendisi olarak kalır. Filtrenin ne yaptığını anlamanın en kolay yolu, hiçbir şey yapmayanıyla başlamaktır.' },
+      bulanik: { k: [1, 1, 1, 1, 1, 1, 1, 1, 1], m: 'Dokuz komşunun ortalaması. Kıllar ve gürültü yumuşar, lezyonun genel şekli kalır. Buzlu camdan bakmak gibi; ayrıntıyı atar, büyük resmi tutar.' },
+      keskin: { k: [0, -1, 0, -1, 5, -1, 0, -1, 0], m: 'Ortayı güçlendir, komşuları çıkar. Telefonunuzdaki "keskinleştir" düğmesinin arkasında bu dokuz sayı var.' },
+      dikey: { k: [-1, 0, 1, -2, 0, 2, -1, 0, 1], m: 'Sol sütun eksi, sağ sütun artı: soldan sağa parlaklık değişen yerde yanar, düz yerde susar. Cetvelin çizgileri ışıl ışıl, yatay kenarlar kayıp. Bu filtreyi 1968\'de bir mühendis elle yazdı; ağlar bugün aynısını kendi kendine buluyor.' },
+      yatay: { k: [-1, -2, -1, 0, 0, 0, 1, 2, 1], m: 'Aynı filtrenin yan yatırılmışı. Şimdi cetvelin dikey çizgileri söndü, lezyonun alt ve üst sınırı yandı. Her filtre tek bir soru sorar.' },
+      kenar: { k: [-1, -1, -1, -1, 8, -1, -1, -1, -1], m: 'Orta piksel komşularından farklıysa yanar. Lezyonun bütün sınırı, kıllar ve cetvel aynı anda görünür. Dikkat: filtre hangisinin hastalık olduğunu bilmez; üçü de onun için kenardır.' },
+      rastgele: { k: null, m: 'Eğitimin ilk günü. Dokuz sayı rastgele; çıktı anlamsız bir gölge. Öğrenme dediğimiz şey, bu sayıların hata azalacak yönde azar azar kıpırdamasıdır. Binlerce adım sonra bu filtre bir kenar bulucuya dönüşür. Düğmeye bir daha basın: her ağ başka bir yerden başlar.' },
+    };
+
+    function cekirdek() {
+      return hucreler.map((h) => (Number.isFinite(parseFloat(h.value)) ? parseFloat(h.value) : 0));
+    }
+
+    function filtreCiz() {
+      const k = cekirdek();
+      const top = k.reduce((a, b) => a + b, 0);
+      const out = new Float32Array(N * N);
+      let enb = 1e-9;
+      for (let y = 0; y < N; y++) {
+        for (let x = 0; x < N; x++) {
+          let s = 0;
+          for (let j = -1; j <= 1; j++) {
+            const yy = Math.max(0, Math.min(N - 1, y + j));
+            for (let i = -1; i <= 1; i++) {
+              const xx = Math.max(0, Math.min(N - 1, x + i));
+              s += k[(j + 1) * 3 + (i + 1)] * fSahne.g[yy * N + xx];
+            }
+          }
+          out[y * N + x] = s;
+          if (Math.abs(s) > enb) enb = Math.abs(s);
+        }
+      }
+      const sifir = Math.abs(top) < 1e-6;
+      for (let i = 0; i < out.length; i++) out[i] = sifir ? Math.min(1, (Math.abs(out[i]) / enb) * 3.2) : out[i] / top;
+      ciz(fCikti, out);
+      fNot.textContent = sifir
+        ? 'Toplam 0: düz bölge siyah, değişim beyaz.'
+        : `Toplam ${Math.round(top * 100) / 100}: parlaklık korunsun diye çıktı toplama bölünür.`;
+    }
+
+    function hazirSec(id) {
+      const h = hazirlar[id];
+      const k = h.k || Array.from({ length: 9 }, () => Math.round((fR() * 4 - 2) * 2) / 2);
+      hucreler.forEach((el, i) => (el.value = String(k[i])));
+      fMetin.textContent = h.m;
+      filtreCiz();
+    }
+    hBtn.forEach((b) => b.addEventListener('click', () => { sec(hBtn, b); hazirSec(b.dataset.hazir); }));
+    hucreler.forEach((el) =>
+      el.addEventListener('input', () => {
+        sec(hBtn, null);
+        fMetin.textContent = 'Kendi filtreniz. Bir deneme: üst satırı eksi, alt satırı artı yapın ve ne yandığına bakın. Sonra bütün sayıları aynı yapın.';
+        filtreCiz();
+      })
+    );
+    ciz(fGirdi, fSahne.g);
+    hazirSec('dikey');
+
+    /* ---------- 3) sınırı siz çizin ---------- */
+    const bAna = kok.querySelector('[data-boya-ana]');
+    const bC = bAna.getContext('2d');
+    const bMetin = kok.querySelector('[data-boya-metin]');
+    const bBos = kok.querySelector('[data-boya-bos]');
+    const oAcc = kok.querySelector('[data-o="acc"]');
+    const oDice = kok.querySelector('[data-o="dice"]');
+    const oIou = kok.querySelector('[data-o="iou"]');
+    const boyutBtn = [...kok.querySelectorAll('[data-boyut]')];
+    const fircaBtn = [...kok.querySelectorAll('[data-firca]')];
+    const refBtn = kok.querySelector('[data-boya-ref]');
+    let bTohum = 41;
+    let bR0 = 34;
+    let bSahne = sahne(bTohum, { r0: bR0, cetvel: false, kil: false });
+    let boya = new Uint8Array(N * N);
+    let firca = 5;
+    let refGoster = false;
+    let son = null;
+
+    const yuzde = (v) => '%' + (v * 100).toFixed(1).replace('.', ',');
+    const ondalik = (v) => v.toFixed(2).replace('.', ',');
+
+    function boyaCiz() {
+      const img = bC.getImageData(0, 0, N, N);
+      let tp = 0, fp = 0, fn = 0, ref = 0;
+      for (let i = 0; i < N * N; i++) {
+        const v = Math.max(0, Math.min(255, Math.round(bSahne.g[i] * 255)));
+        let r = v, g = v, b = v;
+        const m = bSahne.m[i], u = boya[i];
+        if (m) ref++;
+        if (u && m) tp++; else if (u) fp++; else if (m) fn++;
+        if (u) { r = Math.round(v * 0.45 + 37 * 0.55); g = Math.round(v * 0.45 + 179 * 0.55); b = Math.round(v * 0.45 + 163 * 0.55); }
+        if (refGoster && m) {
+          const x = i % N, y = (i / N) | 0;
+          const kenar = x === 0 || y === 0 || x === N - 1 || y === N - 1 || !bSahne.m[i - 1] || !bSahne.m[i + 1] || !bSahne.m[i - N] || !bSahne.m[i + N];
+          if (kenar) { r = 250; g = 204; b = 21; }
+        }
+        const j = i * 4;
+        img.data[j] = r; img.data[j + 1] = g; img.data[j + 2] = b; img.data[j + 3] = 255;
+      }
+      bC.putImageData(img, 0, 0);
+      const tum = N * N;
+      const acc = (tum - fp - fn) / tum;
+      const dice = tp + fp + fn === 0 ? 0 : (2 * tp) / (2 * tp + fp + fn);
+      const iou = tp + fp + fn === 0 ? 0 : tp / (tp + fp + fn);
+      oAcc.textContent = yuzde(acc);
+      oDice.textContent = ondalik(dice);
+      oIou.textContent = ondalik(iou);
+      const bosAcc = (tum - ref) / tum;
+      bBos.textContent = `Lezyon görüntünün ${yuzde(ref / tum)}'i. Hiçbir şey boyamayan model: doğruluk ${yuzde(bosAcc)}, Dice 0,00.`;
+      const boyali = tp + fp;
+      if (boyali === 0) {
+        bMetin.textContent = bosAcc > 0.97
+          ? `Henüz hiçbir şey boyamadınız ve piksel doğruluğunuz ${yuzde(bosAcc)}. Lezyonu tamamen kaçıran bir model, raporda "yüzde doksan dokuz doğru" diye görünür. Dice ise sıfır: o yalnızca lezyonla ilgilenir.`
+          : 'Parmağınızla lezyonun üstünü boyayın. Taşırmak da eksik bırakmak da Dice puanını düşürür.';
+      } else if (dice >= 0.9) {
+        bMetin.textContent = `Dice ${ondalik(dice)}: iki deneyimli hekimin aynı lezyonu çizdiğinde tutturduğu düzeydesiniz. Şimdi lezyonu küçültüp aynı başarıyı yakalamayı deneyin; birkaç piksellik taşma sayıyı ne kadar oynatıyor?`;
+      } else if (fp > fn * 2) {
+        bMetin.textContent = `Fazla boyadınız: ${fp} piksel lezyonun dışında. Cerrahide bu, gereğinden geniş kesi demek. Silgiyle kenarları toplayın.`;
+      } else if (fn > fp * 2) {
+        bMetin.textContent = `Eksik kaldı: lezyonun ${fn} pikseli boyanmadı. Radyoterapide bu, tümörün bir kısmının ışın almaması demek.`;
+      } else {
+        bMetin.textContent = `Dice ${ondalik(dice)}, IoU ${ondalik(iou)}. İkisi aynı örtüşmeyi ölçer; IoU her zaman biraz daha serttir. "Referansı göster" ile nerede ayrıldığınıza bakın.`;
+      }
+    }
+
+    function damga(x, y) {
+      const r = Math.abs(firca), deger = firca > 0 ? 1 : 0;
+      for (let j = -r; j <= r; j++) {
+        for (let i = -r; i <= r; i++) {
+          if (i * i + j * j > r * r) continue;
+          const xx = x + i, yy = y + j;
+          if (xx >= 0 && xx < N && yy >= 0 && yy < N) boya[yy * N + xx] = deger;
+        }
+      }
+    }
+    function surukle(ev) {
+      const p = konum(bAna, ev);
+      if (son) {
+        const adim = Math.max(Math.abs(p.x - son.x), Math.abs(p.y - son.y), 1);
+        for (let t = 1; t <= adim; t++) damga(Math.round(son.x + ((p.x - son.x) * t) / adim), Math.round(son.y + ((p.y - son.y) * t) / adim));
+      } else damga(p.x, p.y);
+      son = p;
+      boyaCiz();
+    }
+    bAna.addEventListener('pointerdown', (ev) => { bAna.setPointerCapture(ev.pointerId); son = null; surukle(ev); });
+    bAna.addEventListener('pointermove', (ev) => { if (ev.buttons) surukle(ev); });
+    ['pointerup', 'pointercancel'].forEach((t) => bAna.addEventListener(t, () => (son = null)));
+
+    function yeniLezyon() {
+      bSahne = sahne(bTohum, { r0: bR0, cetvel: false, kil: false });
+      boya = new Uint8Array(N * N);
+      boyaCiz();
+    }
+    boyutBtn.forEach((b) => b.addEventListener('click', () => { bR0 = Number(b.dataset.boyut); sec(boyutBtn, b); yeniLezyon(); }));
+    fircaBtn.forEach((b) => b.addEventListener('click', () => { firca = Number(b.dataset.firca); sec(fircaBtn, b); }));
+    refBtn.addEventListener('click', () => {
+      refGoster = !refGoster;
+      refBtn.textContent = refGoster ? 'Referansı gizle' : 'Referansı göster';
+      boyaCiz();
+    });
+    kok.querySelector('[data-boya-temizle]').addEventListener('click', () => { boya = new Uint8Array(N * N); boyaCiz(); });
+    kok.querySelector('[data-boya-yeni]').addEventListener('click', () => { bTohum += 13; yeniLezyon(); });
+    boyaCiz();
+  }
+</script>

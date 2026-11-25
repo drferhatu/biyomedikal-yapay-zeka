@@ -36,3 +36,6 @@ Yoklama/
 
 # defterlerin indirdiği PhysioNet kayıtları (yerel önbellek)
 notebooks/mitdb/
+
+# öğrenci vize sunumları (yerel; depoya girmez)
+vizeSunumlar/
