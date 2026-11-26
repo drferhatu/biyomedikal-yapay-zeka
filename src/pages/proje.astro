@@ -202,7 +202,7 @@ const toc = [
           </tbody>
         </table>
         <p>Toplam 8–10 sayfa; şekil ve tablolar dâhil, kaynakça hariç. Türkçe yazılır; terimlerin ilk geçtiği yerde İngilizcesi parantez içinde verilebilir.</p>
-        <aside class="callout callout-uyari callout-warn"><p class="callout-title">Yapay zeka araçları</p><p>Kod ve metin yazarken yapay zeka asistanı kullanabilirsiniz; bu derste bunu öğretiyoruz. İki koşul var: raporun sonuna hangi aracı ne için kullandığınızı bir paragrafla yazın ve her sayıyı, her atfı kendiniz doğrulayın. Uydurma referans ya da çalıştırılmamış koddan üretilmiş sonuç, projenin tamamını geçersiz kılar.</p></aside>
+        <aside class="callout callout-uyari callout-warn"><p class="callout-title">Yapay zeka araçları</p><p>Kod ve metin yazarken yapay zeka asistanı kullanabilirsiniz; bu derste bunu öğretiyoruz. İki koşul var: Raporun sonuna hangi aracı ne için kullandığınızı bir paragrafla yazın ve her sayıyı, her atfı kendiniz doğrulayın. Uydurma referans ya da çalıştırılmamış koddan üretilmiş sonuç, projenin tamamını geçersiz kılar.</p></aside>
       </section>
 
       <!-- DEĞERLENDİRME -->
@@ -242,7 +242,7 @@ const toc = [
 
       async function deriveKey(no) {
         const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(no), 'PBKDF2', false, ['deriveKey']);
-        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: New TextEncoder().encode(salt), iterations: iter, hash: 'SHA-256' },
+        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: new TextEncoder().encode(salt), iterations: iter, hash: 'SHA-256' },
           base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
       }
       async function tryOpen(key, card) {
